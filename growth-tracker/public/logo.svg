@@ -1,0 +1,53 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo transparente (opcional: descomente se quiser fundo escuro) -->
+  <!-- <rect width="512" height="512" fill="#0f0b25"/> -->
+
+  <!-- Elemento central: seta/espada ascendente -->
+  <path
+    d="M256 80 L280 180 L340 180 L260 260 L280 360 L256 380 L232 360 L252 260 L172 180 L232 180 Z"
+    fill="#8A2BE2"
+    stroke="#00FFFF"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+
+  <!-- Brilho interno -->
+  <path
+    d="M256 80 L270 160 L256 200 L242 160 Z"
+    fill="url(#glow)"
+  />
+
+  <!-- Gradiente de brilho -->
+  <defs>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00FFFF" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#8A2BE2" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Texto "growth-tracker" estilizado -->
+  <text
+    x="256"
+    y="460"
+    text-anchor="middle"
+    font-family="'Orbitron', 'Share Tech Mono', monospace"
+    font-size="24"
+    fill="#00FFFF"
+    letter-spacing="1"
+  >
+    growth-tracker
+  </text>
+
+  <!-- Contorno sutil no texto -->
+  <text
+    x="256"
+    y="460"
+    text-anchor="middle"
+    font-family="'Orbitron', 'Share Tech Mono', monospace"
+    font-size="24"
+    fill="none"
+    stroke="#8A2BE2"
+    stroke-width="0.5"
+    letter-spacing="1"
+  />
+</svg>
