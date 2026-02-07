@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function HomePage() {
-  const {  session, status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   // Redireciona para login se não estiver autenticado

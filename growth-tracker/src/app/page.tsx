@@ -25,7 +25,7 @@ export default function LandingPage() {
         >
           <span>Entrar com Google</span>
         </button>
-        <Link href="/home" className="btn-arise px-6 py-3 border border-gray-700 text-center min-w-[180px]">
+        <Link href="/teste" className="btn-arise px-6 py-3 border border-gray-700 text-center min-w-[180px]">
           Ver Academia
         </Link>
       </div>
