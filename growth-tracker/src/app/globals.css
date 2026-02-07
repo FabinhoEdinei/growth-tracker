@@ -38,3 +38,29 @@ body {
 .arise-card {
   @apply bg-gray-800/50 border border-cyan-500/30 rounded-xl backdrop-blur-sm shadow-[0_0_12px_rgba(138,43,226,0.3)];
 }
+/* NOISE BACKGROUND */
+.bg-noise{
+  background-image: 
+      radial-gradient(circle at 10% 20%, #00f0ff 1px, transparent 1px),
+          radial-gradient(circle at 90% 80%, #00f0ff 1px, transparent 1px),
+              radial-gradient(circle at 50% 40%, #0099ff 1px, transparent 1px);
+                background-size: 120px 120px;
+                  animation: noiseMove 8s linear infinite;
+                  }
+
+                  @keyframes noiseMove{
+                    from{ transform: translateY(0px); }
+                      to{ transform: translateY(-120px); }
+                      }
+
+                      /* BORDA ANIMADA */
+                      .animate-border{
+                        background-size: 300% 300%;
+                          animation: borderMove 6s linear infinite;
+                          }
+
+                          @keyframes borderMove{
+                            0%{background-position:0% 50%}
+                              50%{background-position:100% 50%}
+                                100%{background-position:0% 50%}
+                                }
