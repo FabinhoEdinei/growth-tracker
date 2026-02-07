@@ -1,3 +1,5 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -23,4 +25,16 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.btn-arise {
+  @apply px-4 py-2 rounded-lg border border-cyan-500/50 bg-purple-900/30 text-cyan-300 hover:bg-cyan-500/20 transition-all duration-300 shadow-[0_0_12px_rgba(138,43,226,0.5)];
+}
+.arise-card {
+  @apply bg-gray-800/50 border border-cyan-500/30 rounded-xl backdrop-blur-sm shadow-[0_0_12px_rgba(138,43,226,0.3)];
 }
