@@ -1,39 +1,28 @@
-// src/app/page.tsx
-'use client';
 
-import { signIn } from 'next-auth/react';
-import Link from 'next/link';
-
-export default function LandingPage() {
+import './globals.css';
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-900 text-cyan-300 flex flex-col items-center justify-center p-4">
-      {/* Cabeçalho */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl md:text-5xl font-orbitron text-cyan-300 mb-2 tracking-wide">
-          growth-tracker
-        </h1>
-        <p className="text-cyan-200 max-w-md">
-          Sua jornada épica de força começa aqui — inspirado por<span className="text-purple-400">FabioEdinei</span>.
+    <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
+      {/* Ruído */}
+      <div 
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 10% 20%, #00f0ff 1px, transparent 1px),
+            radial-gradient(circle at 90% 80%, #00f0ff 1px, transparent 1px),
+            radial-gradient(circle at 50% 40%, #00aaff 1px, transparent 1px)
+          `,
+          backgroundSize: '100px 100px',
+        }}
+      />
+
+      {/* Caixa central */}
+      <div className="w-[400px] h-[300px] bg-black border border-cyan-400 rounded-lg flex flex-col items-center justify-center p-6">
+        <h1 className="text-cyan-400 text-xl font-mono uppercase">NOTIFICATION</h1>
+        <p className="text-cyan-300 text-sm font-mono mt-4 text-center">
+          The following video is:<br />
+          Fan-made, not affiliated with Solo Leveling or Crunchyroll
         </p>
-      </div>
-
-      {/* Botões */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-12">
-        <button
-          onClick={() => signIn('google')}
-          className="btn-arise px-6 py-3 flex items-center justify-center gap-2 min-w-[180px]"
-        >
-          <span>Entrar com Google</span>
-        </button>
-        <Link href="/teste" className="btn-arise px-6 py-3 border border-gray-700 text-center min-w-[180px]">
-          Ver Academia
-        </Link>
-      </div>
-
-      {/* Rodapé motivacional */}
-      <div className="text-center text-cyan-200 text-sm max-w-md">
-        <p>“A força não vem do que você pode fazer. Vem do que você já superou.”</p>
-        <p className="mt-2 font-orbitron text-cyan-300">— Tale of Arise</p>
       </div>
     </div>
   );
