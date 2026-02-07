@@ -13,7 +13,7 @@ export default function LandingPage() {
           growth-tracker
         </h1>
         <p className="text-cyan-200 max-w-md">
-          Sua jornada épica de força começa aqui — inspirado em <span className="text-purple-400">Tale of Arise</span>.
+          Sua jornada épica de força começa aqui — inspirado por<span className="text-purple-400">FabioEdinei</span>.
         </p>
       </div>
 
@@ -25,7 +25,7 @@ export default function LandingPage() {
         >
           <span>Entrar com Google</span>
         </button>
-        <Link href="/login" className="btn-arise px-6 py-3 border border-gray-700 text-center min-w-[180px]">
+        <Link href="/home" className="btn-arise px-6 py-3 border border-gray-700 text-center min-w-[180px]">
           Ver Academia
         </Link>
       </div>
