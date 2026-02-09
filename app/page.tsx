@@ -1,5 +1,5 @@
-import './globals.css'
 
+import "./globals.css "
 export default function HomePage() {
   return (
       <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
