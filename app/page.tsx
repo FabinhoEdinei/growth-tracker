@@ -1,5 +1,4 @@
 
-import "./globals.css "
 export default function HomePage() {
   return (
       <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
@@ -11,6 +10,7 @@ export default function HomePage() {
                               <div className="absolute w-[900px] h-[900px] bg-cyan-500 blur-[180px] opacity-20 rounded-full" />
 
                                     {/* CONTAINER CENTRAL */}
+                   
                                           <div className="relative z-10">
 
                                                   {/* BORDA NEON */}

@@ -1,26 +1,35 @@
+/* app/globals.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === CUSTOM STYLES BELOW === */
+
 /* NOISE BACKGROUND */
-.bg-noise{
+.bg-noise {
   background-image: 
-    radial-gradient(circle at 10% 20%, #00f0ff 1px, transparent 1px),
-    radial-gradient(circle at 90% 80%, #00f0ff 1px, transparent 1px),
-    radial-gradient(circle at 50% 40%, #0099ff 1px, transparent 1px);
-  background-size: 120px 120px;
-  animation: noiseMove 8s linear infinite;
-}
+      radial-gradient(circle at 10% 20%, #00f0ff 1px, transparent 1px),
+          radial-gradient(circle at 90% 80%, #00f0ff 1px, transparent 1px),
+              radial-gradient(circle at 50% 40%, #0099ff 1px, transparent 1px);
+                background-size: 120px 120px;
+                  animation: noiseMove 8s linear infinite;
+                  }
 
-@keyframes noiseMove{
-  from{ transform: translateY(0px); }
-  to{ transform: translateY(-120px); }
-}
+                  @keyframes noiseMove {
+                    from { transform: translateY(0); }
+                      to { transform: translateY(-120px); }
+                      }
 
-/* BORDA ANIMADA */
-.animate-border{
-  background-size: 300% 300%;
-  animation: borderMove 6s linear infinite;
-}
+                      /* BORDA ANIMADA */
+                      .animate-border {
+                        background: linear-gradient(45deg, #00f0ff, #0099ff, #8000ff, #00f0ff);
+                          background-size: 300% 300%;
+                            animation: borderMove 6s linear infinite;
+                            }
 
-@keyframes borderMove{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
-} 
+                            @keyframes borderMove {
+                              0% { background-position: 0% 50%; }
+                                50% { background-position: 100% 50%; }
+                                  100% { background-position: 0% 50%; }
+                                  }
