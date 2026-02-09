@@ -1,64 +1,36 @@
-# 🌱 Growth Tracker
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Um app de autoconhecimento com interface cyberpunk inspirada em *Tales of Arise*. Acompanhe seus indicadores de **Força**, **Determinação**, **Saúde Mental** e **Comprometimento**.
+## Getting Started
 
-![Preview](https://i.imgur.com/fake-preview.png) <!-- substitua por print real depois -->
+First, run the development server:
 
-## 🛠 Tecnologias
-
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- Prisma + SQLite
-- Canvas API (gráfico radar)
-
-## ▶️ Como rodar
-
-1. Clone o repositório:
 ```bash
-   git clone https://github.com/SEU_USUARIO/growth-tracker.git
-   cd growth-tracker
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-2. Instale dependências:
-```bash
-   npm install
-```
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-3. Gere o cliente Prisma:
-```bash
-   npx prisma generate
-```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-4. Inicie o app:
-```bash
-   npm run dev
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Acesse: http://localhost:3000
+## Learn More
 
-## 🧪 Dados de teste
+To learn more about Next.js, take a look at the following resources:
 
-Popule o banco com dados iniciais:
-```bash
-npx ts-node scripts/test-db.ts
-```
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## 📂 Estrutura
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-- `/src/app` → páginas e rotas de API
-- `/src/hooks/useUserData.ts` → lógica de dados
-- `/src/components/RadarChart.tsx` → gráfico animado
-- `prisma/schema.prisma` → modelo de dados
+## Deploy on Vercel
 
-## 📸 Telas
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-1. **Home** – Introdução
-2. **Dashboard** – Visão geral dos indicadores
-3. **Perfil** – Edite seu nome e meta
-4. **Treino** – Registre sessões e aumente indicadores
-5. **Status** – Gráfico radar estilo *Tales of Arise*
-
----
-
-Feito com 💙 para quem busca evoluir todos os dias.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
