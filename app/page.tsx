@@ -1,13 +1,12 @@
-// app/page.tsx
-   import SoftNeuralField from './components/SoftNeuralField';
+import SoftNeuralField from './components/SoftNeuralField';
 
-      export default function Home() {
-           return (
-                  <>
-                           <SoftNeuralField particleCount={40} fps={24} />
-                                    <main className="relative z-10 p-6">
-                                               <h1>Academia Neural</h1>
-                                                        </main>
-                                                               </>
-                                                                    );
-                                                                       }
+   export default function Page() {
+        return (
+               <>
+                        <SoftNeuralField particleCount={50} fps={24} />
+                                 <main className="relative z-10 p-6 text-white">
+                                            <h1>Funcionando!</h1>
+                                                     </main>
+                                                            </>
+                                                                 );
+                                                                    }

@@ -1,164 +1,141 @@
- 'use client';
+'use client';
 
 import { useEffect, useRef } from 'react';
-
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  alpha: number;
-  hue: number; // cor ciano/azul suave
-  life: number; // vida restante (0–1)
-}
+import styles from './SoftNeuralField.module.css';
 
 export default function SoftNeuralField({
-  particleCount = 60,
-  fps = 24,
-}: {
-  particleCount?: number;
-  fps?: number;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const animationRef = useRef<number>(0);
-  const lastRenderTime = useRef<number>(0);
-  const frameInterval = useRef(1000 / fps); // ex: ~41.66ms para 24 FPS
+  particleCount = 50,
+    fps = 24,
+    }: {
+      particleCount?: number;
+        fps?: number;
+        }) {
+          const canvasRef = useRef<HTMLCanvasElement>(null);
+            const particles = useRef<Array<{
+                x: number;
+                    y: number;
+                        vx: number;
+                            vy: number;
+                                size: number;
+                                    hue: number;
+                                        life: number;
+                                          }>>([]);
 
-  // Inicializa partículas suaves
-  const initParticles = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+                                            // Inicializa partículas
+                                              const init = () => {
+                                                  const canvas = canvasRef.current;
+                                                      if (!canvas) return;
 
-    const w = canvas.width;
-    const h = canvas.height;
-    particlesRef.current = Array.from({ length: particleCount }, () => {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 0.3 + Math.random() * 0.7;
-      const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed;
+                                                          const w = canvas.width;
+                                                              const h = canvas.height;
+                                                                  particles.current = Array.from({ length: particleCount }, () => ({
+                                                                        x: Math.random() * w,
+                                                                              y: Math.random() * h,
+                                                                                    vx: (Math.random() - 0.5) * 1.0,
+                                                                                          vy: (Math.random() - 0.5) * 1.0,
+                                                                                                size: 1 + Math.random() * 2,
+                                                                                                      hue: 180 + Math.random() * 40,
+                                                                                                            life: 1,
+                                                                                                                }));
+                                                                                                                  };
 
-      return {
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx,
-        vy,
-        size: 1 + Math.random() * 2,
-        alpha: 0.2 + Math.random() * 0.3,
-        hue: 180 + Math.random() * 40, // ciano → azul claro
-        life: 1,      };
-    });
-  };
+                                                                                                                    // Atualiza partículas
+                                                                                                                      const update = () => {
+                                                                                                                          const canvas = canvasRef.current;
+                                                                                                                              if (!canvas) return;
 
-  // Atualiza partículas (suave, sem colisão pesada)
-  const update = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+                                                                                                                                  const w = canvas.width;
+                                                                                                                                      const h = canvas.height;
 
-    const w = canvas.width;
-    const h = canvas.height;
-    const particles = particlesRef.current;
+                                                                                                                                          for (const p of particles.current) {      // Movimento suave
+                                                                                                                                                p.x += p.vx;
+                                                                                                                                                      p.y += p.vy;
 
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
+                                                                                                                                                            // Leve turbulência
+                                                                                                                                                                  p.vx += (Math.random() - 0.5) * 0.02;
+                                                                                                                                                                        p.vy += (Math.random() - 0.5) * 0.02;
 
-      // Movimento suave com leve turbulência
-      p.x += p.vx;
-      p.y += p.vy;
+                                                                                                                                                                              // Limita velocidade
+                                                                                                                                                                                    const speed = Math.hypot(p.vx, p.vy);
+                                                                                                                                                                                          if (speed > 1.2) {
+                                                                                                                                                                                                  p.vx = (p.vx / speed) * 1.2;
+                                                                                                                                                                                                          p.vy = (p.vy / speed) * 1.2;
+                                                                                                                                                                                                                }
 
-      // Leve deriva (simula campo de força suave)
-      p.vx += (Math.random() - 0.5) * 0.02;
-      p.vy += (Math.random() - 0.5) * 0.02;
+                                                                                                                                                                                                                      // Reaparece nas bordas
+                                                                                                                                                                                                                            if (p.x < -10) p.x = w + 10;
+                                                                                                                                                                                                                                  if (p.x > w + 10) p.x = -10;
+                                                                                                                                                                                                                                        if (p.y < -10) p.y = h + 10;
+                                                                                                                                                                                                                                              if (p.y > h + 10) p.y = -10;
 
-      // Limita velocidade
-      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-      if (speed > 1.2) {
-        p.vx = (p.vx / speed) * 1.2;
-        p.vy = (p.vy / speed) * 1.2;
-      }
+                                                                                                                                                                                                                                                    // Renova partícula
+                                                                                                                                                                                                                                                          p.life -= 0.001;
+                                                                                                                                                                                                                                                                if (p.life <= 0) {
+                                                                                                                                                                                                                                                                        p.x = Math.random() * w;
+                                                                                                                                                                                                                                                                                p.y = Math.random() * h;
+                                                                                                                                                                                                                                                                                        p.life = 1;
+                                                                                                                                                                                                                                                                                              }
+                                                                                                                                                                                                                                                                                                  }
+                                                                                                                                                                                                                                                                                                    };
 
-      // Reaparece suavemente nas bordas
-      if (p.x < -10) p.x = w + 10;
-      if (p.x > w + 10) p.x = -10;
-      if (p.y < -10) p.y = h + 10;
-      if (p.y > h + 10) p.y = -10;
+                                                                                                                                                                                                                                                                                                      // Renderiza partículas
+                                                                                                                                                                                                                                                                                                        const render = () => {
+                                                                                                                                                                                                                                                                                                            const canvas = canvasRef.current;
+                                                                                                                                                                                                                                                                                                                const ctx = canvas?.getContext('2d');
+                                                                                                                                                                                                                                                                                                                    if (!ctx || !canvas) return;
 
-      // Efeito de desvanecimento suave
-      p.life -= 0.001;
-      if (p.life <= 0) {
-        p.x = Math.random() * w;
-        p.y = Math.random() * h;
-        p.life = 1;
-      }
-    }
-  };
+                                                                                                                                                                                                                                                                                                                        // Limpa com transparência para manter fundo CSS visível
+                                                                                                                                                                                                                                                                                                                            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Renderiza com transparência suave
-  const render = () => {
-    const canvas = canvasRef.current;    if (!canvas) return;
+                                                                                                                                                                                                                                                                                                                                // Desenha partículas
+                                                                                                                                                                                                                                                                                                                                    for (const p of particles.current) {
+                                                                                                                                                                                                                                                                                                                                          const alpha = 0.3 * p.life;
+                                                                                                                                                                                                                                                                                                                                                if (alpha <= 0) continue;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+                                                                                                                                                                                                                                                                                                                                                      ctx.save();
+                                                                                                                                                                                                                                                                                                                                                            ctx.globalAlpha = alpha;
+                                                                                                                                                                                                                                                                                                                                                                  ctx.fillStyle = `hsl(${p.hue}, 70%, 65%)`;
+                                                                                                                                                                                                                                                                                                                                                                        ctx.beginPath();
+                                                                                                                                                                                                                                                                                                                                                                              ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);      ctx.fill();
+                                                                                                                                                                                                                                                                                                                                                                                    ctx.restore();
+                                                                                                                                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                                                                                                                                                                          };
 
-    // Fundo escuro translúcido (efeito de camada)
-    ctx.fillStyle = 'rgba(3, 5, 15, 0.1)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                                                                                                                                                                                                                                                                                                                                                                            // Loop animado
+                                                                                                                                                                                                                                                                                                                                                                                              useEffect(() => {
+                                                                                                                                                                                                                                                                                                                                                                                                  const canvas = canvasRef.current;
+                                                                                                                                                                                                                                                                                                                                                                                                      if (!canvas) return;
 
-    // Desenha partículas
-    const particles = particlesRef.current;
-    for (const p of particles) {
-      const alpha = p.alpha * p.life;
-      if (alpha <= 0) continue;
+                                                                                                                                                                                                                                                                                                                                                                                                          // Ajusta tamanho
+                                                                                                                                                                                                                                                                                                                                                                                                              const resize = () => {
+                                                                                                                                                                                                                                                                                                                                                                                                                    canvas.width = window.innerWidth;
+                                                                                                                                                                                                                                                                                                                                                                                                                          canvas.height = window.innerHeight;
+                                                                                                                                                                                                                                                                                                                                                                                                                              };
+                                                                                                                                                                                                                                                                                                                                                                                                                                  resize();
+                                                                                                                                                                                                                                                                                                                                                                                                                                      window.addEventListener('resize', resize);
 
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${alpha})`;
-      
-      // Círculo suave
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.restore();
-    }
-  };
+                                                                                                                                                                                                                                                                                                                                                                                                                                          // Inicia
+                                                                                                                                                                                                                                                                                                                                                                                                                                              init();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                  let lastTime = 0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      const interval = 1000 / fps;
 
-  // Loop controlado por FPS
-  const animate = (timestamp: number) => {
-    if (timestamp - lastRenderTime.current >= frameInterval.current) {
-      lastRenderTime.current = timestamp;
-      update();
-      render();
-    }
-    animationRef.current = requestAnimationFrame(animate);
-  };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          const animate = (time: number) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                if (time - lastTime >= interval) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        lastTime = time;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                update();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        render();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    requestAnimationFrame(animate);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            requestAnimationFrame(animate);
 
-  // Setup inicial
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                return () => window.removeEventListener('resize', resize);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  }, [particleCount, fps]);
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resize();
-    window.addEventListener('resize', resize);    initParticles();
-    animate(0);
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationRef.current);
-    };
-  }, [particleCount]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0"
-      style={{ background: 'radial-gradient(circle at center, #000410 0%, #000000 100%)' }}
-    />
-  );
-}                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    return (
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <canvas
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ref={canvasRef}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    className={`fixed inset-0 w-full h-full pointer-events-none z-0 ${styles.field}`}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        />
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          );
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          }
