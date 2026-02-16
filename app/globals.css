@@ -1,35 +1,17 @@
-/* app/globals.css */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* === CUSTOM STYLES BELOW === */
+/* Import Google Font Orbitron para o header */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-/* NOISE BACKGROUND */
-.bg-noise {
-  background-image: 
-      radial-gradient(circle at 10% 20%, #00f0ff 1px, transparent 1px),
-          radial-gradient(circle at 90% 80%, #00f0ff 1px, transparent 1px),
-              radial-gradient(circle at 50% 40%, #0099ff 1px, transparent 1px);
-                background-size: 120px 120px;
-                  animation: noiseMove 8s linear infinite;
-                  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-                  @keyframes noiseMove {
-                    from { transform: translateY(0); }
-                      to { transform: translateY(-120px); }
-                      }
-
-                      /* BORDA ANIMADA */
-                      .animate-border {
-                        background: linear-gradient(45deg, #00f0ff, #0099ff, #8000ff, #00f0ff);
-                          background-size: 300% 300%;
-                            animation: borderMove 6s linear infinite;
-                            }
-
-                            @keyframes borderMove {
-                              0% { background-position: 0% 50%; }
-                                50% { background-position: 100% 50%; }
-                                  100% { background-position: 0% 50%; }
-                                  }
+body {
+  background: #000;
+  overflow-x: hidden;
+}
