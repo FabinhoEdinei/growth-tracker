@@ -29,7 +29,7 @@ export class LightningEffect {
       life: 1,
     });
 
-    this.headerGlow = Math.min(1, this.headerGlow + 0.3);
+    this.headerGlow = Math.min(1, this.headerGlow + 0.4);
   }
 
   private generateLightningPath(
