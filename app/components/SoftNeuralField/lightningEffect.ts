@@ -29,7 +29,7 @@ export class LightningEffect {
       life: 1,
     });
 
-    this.headerGlow = Math.min(1, this.headerGlow + 0.4);
+    this.headerGlow = Math.min(1, this.headerGlow + 0.3);
   }
 
   private generateLightningPath(
@@ -39,22 +39,38 @@ export class LightningEffect {
     y2: number
   ): Array<{ x: number; y: number }> {
     const points: Array<{ x: number; y: number }> = [];
-    const segments = 8 + Math.floor(Math.random() * 6);
+    const distance = Math.hypot(x2 - x1, y2 - y1);
+    
+    // Mais segmentos = mais dobras (aumentado de 8-14 para 15-25)
+    const segments = 15 + Math.floor(Math.random() * 10);
     
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;
-      const x = x1 + (x2 - x1) * t;
-      const y = y1 + (y2 - y1) * t;
+      let x = x1 + (x2 - x1) * t;
+      let y = y1 + (y2 - y1) * t;
       
-      const offset = (Math.random() - 0.5) * 20 * (1 - Math.abs(t - 0.5) * 2);
+      // Offset mais agressivo (aumentado de 20 para 40)
+      const offsetIntensity = 40 * (1 - Math.abs(t - 0.5) * 2);
+      
+      // Adiciona zigzag perpendicular
       const perpX = -(y2 - y1);
       const perpY = (x2 - x1);
       const length = Math.hypot(perpX, perpY);
       
-      points.push({
-        x: x + (perpX / length) * offset,
-        y: y + (perpY / length) * offset,
-      });
+      // Offset principal
+      const mainOffset = (Math.random() - 0.5) * offsetIntensity;
+      
+      // Adiciona sub-branches (ramificações)
+      if (i % 3 === 0 && Math.random() > 0.5) {
+        const branchOffset = (Math.random() - 0.5) * offsetIntensity * 1.5;
+        x += (perpX / length) * branchOffset;
+        y += (perpY / length) * branchOffset;
+      } else {
+        x += (perpX / length) * mainOffset;
+        y += (perpY / length) * mainOffset;
+      }
+      
+      points.push({ x, y });
     }
     
     return points;
@@ -78,10 +94,13 @@ export class LightningEffect {
       ctx.save();
       ctx.globalAlpha = lightning.alpha;
       
+      // Raio principal (cyan) - mais grosso
       ctx.strokeStyle = '#00ffff';
-      ctx.lineWidth = 2;
-      ctx.shadowBlur = 15;
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 20;
       ctx.shadowColor = '#00ffff';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       
       ctx.beginPath();
       lightning.points.forEach((point, i) => {
@@ -90,9 +109,24 @@ export class LightningEffect {
       });
       ctx.stroke();
 
+      // Raio secundário (magenta)
       ctx.strokeStyle = '#ff00ff';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
+      ctx.shadowBlur = 15;
       ctx.shadowColor = '#ff00ff';
+      
+      ctx.beginPath();
+      lightning.points.forEach((point, i) => {
+        if (i === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.stroke();
+
+      // Core brilhante (branco)
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 0.5;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = '#ffffff';
       
       ctx.beginPath();
       lightning.points.forEach((point, i) => {
