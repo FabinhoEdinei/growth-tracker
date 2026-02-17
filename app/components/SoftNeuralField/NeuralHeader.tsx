@@ -79,8 +79,8 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             <span className="indicator"></span>
           </div>
           
-          <h1 className="title">Funcionando</h1>
-          <p className="subtitle">neural growth system online</p>
+          <h1 className="title">Growth-tracker</h1>
+          <p className="subtitle">track↘️grow⬇️envolve↙️</p>
           
           <div className="tech-details">
             <span className="detail-item">SYNC: ACTIVE</span>
