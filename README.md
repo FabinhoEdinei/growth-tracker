@@ -13,10 +13,9 @@
 
 O **Neural Growth System** é uma experiência visual imersiva desenvolvida com **Next.js** e **Canvas API**. Ele simula um campo neural dinâmico onde partículas interagem em tempo real, reagindo a inputs do usuário e gerando efeitos visuais complexos, como relâmpagos e brilhos dinâmicos.
 
-O foco do projeto é unir performance gráfica com uma estética futurista, criando uma interface que responde fluidamente em diferentes dispositivos.
+O foco do projeto é unir performance gráfica com uma estética futurista, criando uma interface que responde fluidamente em tempo atuais.
 
-![Demo do Projeto](./public/demo.png) 
-*(Dica: Tire um print da tela "Funcionando" e salve como demo.png na pasta public para aparecer aqui)*
+https://growth-tracker-lilac.vercel.app/
 
 ## ✨ Funcionalidades
 
