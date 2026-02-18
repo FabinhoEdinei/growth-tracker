@@ -1,5 +1,8 @@
 'use client';
 
+import { orbitalSystem, INITIAL_ORBITAL_PAYLOADS } from './OrbitalSystem';
+import { OrbitalInfoCard } from './OrbitalInfoCard';
+import { OrbitalParticle } from './orbitalTypes';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import styles from './SoftNeuralField.module.css';
 import { ModalInfo, HeaderBounds } from './types';
