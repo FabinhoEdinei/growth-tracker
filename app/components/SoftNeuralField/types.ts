@@ -74,3 +74,9 @@ export interface ModalInfo {
   data: ParticleData | null;
   zone: Zone;
 }
+
+export interface AgendaState {
+  visible: boolean;
+  x: number;
+  y: number;
+}
