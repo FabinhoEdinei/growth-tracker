@@ -7,6 +7,7 @@ import { ParticleManager } from './particleManager';
 import { ParticleRenderer } from './particleRenderer';
 import { ParticleModal } from './ParticleModal';
 import { NeuralHeader } from './NeuralHeader';
+import { AgendaModule } from './AgendaModule'; // ← NOVO
 
 export default function SoftNeuralField({
   particleCount = 50,
@@ -30,6 +31,13 @@ export default function SoftNeuralField({
     zone: 'alpha',
   });
 
+  // ← NOVO: Estado da agenda
+  const [agendaState, setAgendaState] = useState({
+    visible: false,
+    x: 20,
+    y: 200,
+  });
+
   const handleHeaderBoundsUpdate = useCallback((bounds: HeaderBounds) => {
     setHeaderBounds(bounds);
   }, []);
@@ -45,6 +53,16 @@ export default function SoftNeuralField({
     const closestParticle = particleManager.current.findClosestParticle(x, y, 50);
 
     if (closestParticle) {
+      // ← NOVO: Abre agenda se partícula está na zona Alpha
+      if (closestParticle.currentZone === 'alpha') {
+        setAgendaState({
+          visible: true,
+          x: event.clientX,
+          y: event.clientY,
+        });
+        return; // ← Não abre modal de partícula se zona Alpha
+      }
+
       setModalInfo({
         visible: true,
         x: event.clientX,
@@ -59,11 +77,16 @@ export default function SoftNeuralField({
     setModalInfo({ ...modalInfo, visible: false });
   };
 
+  // ← NOVO
+  const handleCloseAgenda = () => {
+    setAgendaState(prev => ({ ...prev, visible: false }));
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d', { 
+    const ctx = canvas.getContext('2d', {
       alpha: true,
       desynchronized: true,
     });
@@ -75,22 +98,18 @@ export default function SoftNeuralField({
     };
     resize();
     window.addEventListener('resize', resize);
-
     canvas.addEventListener('click', handleCanvasClick as any);
 
     particleManager.current.initialize(particleCount, canvas.width, canvas.height);
-    
-    const deviceTier = particleManager.current.getDeviceTier();
 
+    const deviceTier = particleManager.current.getDeviceTier();
     let lastTime = 0;
     const interval = 1000 / fps;
     let frameCount = 0;
-    
     const skipFrames = deviceTier === 'low' ? 2 : 1;
 
     const animate = (time: number) => {
       frameCount++;
-      
       if (frameCount % skipFrames === 0) {
         if (time - lastTime >= interval) {
           lastTime = time;
@@ -108,7 +127,6 @@ export default function SoftNeuralField({
           setHeaderGlow(lightningEffect.getHeaderGlow());
         }
       }
-      
       requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
@@ -127,7 +145,16 @@ export default function SoftNeuralField({
       />
       
       <NeuralHeader onBoundsUpdate={handleHeaderBoundsUpdate} glow={headerGlow} />
+
+      {/* ← NOVO: Agenda abre ao clicar em partícula Alpha */}
+      <AgendaModule
+        visible={agendaState.visible}
+        onClose={handleCloseAgenda}
+        positionX={agendaState.x}
+        positionY={agendaState.y}
+      />
       
+      {/* Modal normal para zonas Beta e Gamma */}
       <ParticleModal modalInfo={modalInfo} onClose={handleCloseModal} />
     </>
   );
