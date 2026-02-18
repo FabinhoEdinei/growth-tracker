@@ -1,3 +1,4 @@
+import { particleStore } from './particleStore';
 import { Particle, Zone, HeaderBounds } from './types';
 import { cyberpunkHues, shapes, generateParticleData, getZoneFromPosition, zoneColors } from './particleUtils';
 import { handleCollisions, updateDisintegration } from './physicsEngine';
