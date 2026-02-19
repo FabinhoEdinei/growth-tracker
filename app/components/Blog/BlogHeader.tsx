@@ -1,42 +1,149 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+
+interface Lightning {
+  id: number;
+  startX: number;
+  points: Array<{ x: number; y: number }>;
+  alpha: number;
+  hue: number;
+}
 
 export const BlogHeader = () => {
-  const [particles, setParticles] = useState<Array<{
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    size: number;
-    hue: number;
-  }>>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [lightnings, setLightnings] = useState<Lightning[]>([]);
+  const nextId = useRef(0);
 
-  useEffect(() => {
-    // Criar 10 mini-partículas
-    const newParticles = Array.from({ length: 10 }, () => ({
-      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 400),
-      y: 0,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: Math.random() * 0.3 + 0.2,
-      size: 2 + Math.random() * 3,
-      hue: [180, 300, 340][Math.floor(Math.random() * 3)],
-    }));
+  // Gerar caminho zigzag do raio
+  const generateLightningPath = (startX: number, startY: number): Array<{ x: number; y: number }> => {
+    const points: Array<{ x: number; y: number }> = [];
+    const endY = startY + 100 + Math.random() * 50; // 100-150px para baixo
+    const segments = 12 + Math.floor(Math.random() * 8); // 12-20 segmentos
     
-    setParticles(newParticles);
+    let x = startX;
+    let y = startY;
+    
+    points.push({ x, y });
+    
+    for (let i = 1; i <= segments; i++) {
+      const t = i / segments;
+      y = startY + (endY - startY) * t;
+      
+      // Offset horizontal agressivo (zigzag)
+      const offsetIntensity = 25 * (1 - Math.abs(t - 0.5) * 2);
+      x += (Math.random() - 0.5) * offsetIntensity;
+      
+      // Ramificações aleatórias
+      if (i % 3 === 0 && Math.random() > 0.6) {
+        x += (Math.random() - 0.5) * offsetIntensity * 1.8;
+      }
+      
+      points.push({ x, y });
+    }
+    
+    return points;
+  };
 
-    // Animar partículas
-    const interval = setInterval(() => {
-      setParticles(prev => prev.map(p => ({
-        ...p,
-        x: p.x + p.vx,
-        y: p.y + p.vy,
-        vy: p.vy + 0.01, // gravidade
-      })).filter(p => p.y < 100)); // remove partículas que saíram
-    }, 50);
+  // Criar novo raio
+  const spawnLightning = () => {
+    if (typeof window === 'undefined') return;
+    
+    const startX = Math.random() * window.innerWidth;
+    const startY = 0;
+    const hue = [180, 300, 340][Math.floor(Math.random() * 3)]; // cyan, magenta, vermelho
+    
+    const newLightning: Lightning = {
+      id: nextId.current++,
+      startX,
+      points: generateLightningPath(startX, startY),
+      alpha: 1,
+      hue,
+    };
+    
+    setLightnings(prev => [...prev, newLightning]);
+  };
 
-    return () => clearInterval(interval);
-  }, []);
+  // Loop de animação
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Resize canvas
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = 180;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Spawn raios periodicamente
+    const spawnInterval = setInterval(() => {
+      if (Math.random() > 0.3) { // 70% chance a cada 500ms
+        spawnLightning();
+      }
+    }, 500);
+
+    // Update e render
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Update lightnings
+      setLightnings(prev => 
+        prev.map(l => ({ ...l, alpha: l.alpha - 0.05 }))
+           .filter(l => l.alpha > 0)
+      );
+
+      // Render lightnings
+      lightnings.forEach(lightning => {
+        if (lightning.alpha <= 0) return;
+
+        ctx.save();
+        ctx.globalAlpha = lightning.alpha;
+
+        // Layer 1: Glow grosso (cyan/magenta/vermelho)
+        ctx.strokeStyle = `hsl(${lightning.hue}, 100%, 60%)`;
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = `hsl(${lightning.hue}, 100%, 60%)`;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        lightning.points.forEach((p, i) => {
+          if (i === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+
+        // Layer 2: Core fino (branco)
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#ffffff';
+
+        ctx.beginPath();
+        lightning.points.forEach((p, i) => {
+          if (i === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+
+        ctx.restore();
+      });
+
+      requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      clearInterval(spawnInterval);
+      window.removeEventListener('resize', resize);
+    };
+  }, [lightnings]);
 
   return (
     <div className="blog-header">
@@ -46,31 +153,19 @@ export const BlogHeader = () => {
         <p className="header-subtitle">Neural insights • Tech stories • Evolution logs</p>
       </div>
 
-      {/* Linha inferior com partículas caindo */}
-      <div className="header-bottom">
+      {/* Canvas de raios */}
+      <div className="lightning-container">
+        <canvas ref={canvasRef} className="lightning-canvas" />
         <div className="bottom-line"></div>
-        <svg className="particles-svg" width="100%" height="80">
-          {particles.map((p, i) => (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r={p.size}
-              fill={`hsl(${p.hue}, 100%, 60%)`}
-              opacity="0.6"
-              filter={`blur(${p.size * 0.5}px)`}
-            />
-          ))}
-        </svg>
       </div>
 
       <style jsx>{`
         .blog-header {
           position: relative;
-          padding: 60px 20px 20px;
+          padding: 60px 20px 0;
           text-align: center;
-          border-bottom: 2px solid rgba(0,255,255,0.2);
           background: linear-gradient(180deg, rgba(0,255,255,0.05), transparent);
+          overflow: hidden;
         }
 
         .header-icon {
@@ -103,13 +198,24 @@ export const BlogHeader = () => {
           font-size: 12px;
           color: rgba(255,255,255,0.5);
           letter-spacing: 3px;
-          margin: 0;
+          margin: 0 0 20px 0;
         }
 
-        .header-bottom {
+        .lightning-container {
           position: relative;
-          height: 80px;
+          width: 100%;
+          height: 180px;
           margin-top: 20px;
+        }
+
+        .lightning-canvas {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 2;
         }
 
         .bottom-line {
@@ -126,23 +232,23 @@ export const BlogHeader = () => {
             transparent
           );
           animation: lineGlow 2s ease-in-out infinite;
+          z-index: 1;
         }
 
         @keyframes lineGlow {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-
-        .particles-svg {
-          position: absolute;
-          top: 0;
-          left: 0;
-          pointer-events: none;
+          0%, 100% { 
+            opacity: 0.3; 
+            box-shadow: 0 0 5px rgba(0,255,255,0.3);
+          }
+          50% { 
+            opacity: 1; 
+            box-shadow: 0 0 20px rgba(0,255,255,0.6);
+          }
         }
 
         @media (max-width: 768px) {
           .blog-header {
-            padding: 40px 15px 30px;
+            padding: 40px 15px 0;
           }
 
           .header-icon {
@@ -156,6 +262,10 @@ export const BlogHeader = () => {
 
           .header-subtitle {
             font-size: 10px;
+          }
+
+          .lightning-container {
+            height: 120px;
           }
         }
       `}</style>
