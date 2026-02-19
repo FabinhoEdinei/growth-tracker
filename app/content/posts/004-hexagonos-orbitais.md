@@ -1,34 +1,30 @@
-### **POST 4: Hexágonos Orbitais**
-
-**Arquivo:** `app/content/posts/004-hexagonos-orbitais.md`
-
-```markdown
 ---
-title: "Hexágonos Orbitais: O Sistema Paralelo"
-slug: "hexagonos-orbitais"
-date: "2026-02-21"
-author: "Growth Team"
-category: "Features"
-excerpt: "Como criamos um segundo sistema completamente isolado com órbita elíptica."
+title: "Como formatar seu Markdown para Blog"
+date: 2023-10-27
+description: "Um guia rápido sobre Front Matter e boas práticas de escrita."
+tags:
+  - tutorial
+  - markdown
+  - blog
+cover: "/assets/images/capa-markdown.png"
+draft: false
 ---
 
-# Hexágonos Orbitais
+<!-- O conteúdo começa aqui. Note que não uso # aqui, pois o título já está lá em cima -->
 
-## Dois Mundos, Um Canvas
+## Introdução
 
-Growth Tracker tem **dois sistemas completamente isolados**:
+Escrever em Markdown é simples, mas para um **blog**, precisamos de estrutura.
 
-1. Partículas normais — movimento livre
-2. Hexágonos orbitais — órbita elíptica fixa
+## Por que o Front Matter importa?
 
-E eles **nunca se tocam**.
+Sem ele, o sistema não sabe a data do post e pode não listá-lo na homepage.
 
----
+1. Item da lista
+2. Outro item
 
-## A Rota Invisível
+> Isso é uma citação em destaque.
 
-```typescript
-x = cx + radius × cos(angle)
-y = cy + radius × tilt × sin(angle)
-Você não vê a rota. Mas ela existe.
-Publicado em 21 de fevereiro de 2026
+## Conclusão
+
+Certifique-se de salvar o arquivo em **UTF-8**.
