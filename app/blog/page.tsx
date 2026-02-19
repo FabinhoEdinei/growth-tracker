@@ -8,10 +8,10 @@ import styles from './blog.module.css';
 
 function getAllPosts() {
   try {
-    const postsDirectory = path.join(process.cwd(), 'app/content/post');
+    const postsDirectory = path.join(process.cwd(), 'app/content/posts');
     
     if (!fs.existsSync(postsDirectory)) {
-      console.log('Post directory not found');
+      console.log('Posts directory not found');
       return [];
     }
 
@@ -58,7 +58,7 @@ export default function BlogPage() {
       </Link>
 
       <BlogHeader />
-      <BlogList post={post} />
+      <BlogList posts={posts} />
     </div>
   );
 }
