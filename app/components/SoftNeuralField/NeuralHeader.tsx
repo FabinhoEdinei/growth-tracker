@@ -79,8 +79,13 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             <span className="indicator"></span>
           </div>
           
-          <h1 className="title">Growth-tracker</h1>
-          <p className="subtitle">track↘️grow⬇️envolve↙️</p>
+          <h1 className="title">Growth Tracker</h1>
+          <p className="subtitle">track • grow • evolve</p>
+          
+          {/* Botão do Blog */}
+          <a href="/blog" className="blog-button">
+            📰 Blog
+          </a>
           
           <div className="tech-details">
             <span className="detail-item">SYNC: ACTIVE</span>
@@ -432,6 +437,30 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
           text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
 
+        /* Botão do Blog */
+        .blog-button {
+          display: inline-block;
+          margin-top: 12px;
+          padding: 8px 20px;
+          background: rgba(255, 0, 102, 0.15);
+          border: 1px solid rgba(255, 0, 102, 0.4);
+          border-radius: 6px;
+          color: #ff0066;
+          font-family: 'Courier New', monospace;
+          font-size: 11px;
+          letter-spacing: 2px;
+          text-decoration: none;
+          transition: all 0.3s;
+          cursor: pointer;
+          pointer-events: auto;
+        }
+
+        .blog-button:hover {
+          background: rgba(255, 0, 102, 0.3);
+          box-shadow: 0 0 20px rgba(255, 0, 102, 0.4);
+          transform: scale(1.05);
+        }
+
         .tech-details {
           display: flex;
           justify-content: center;
@@ -485,6 +514,12 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
           .subtitle {
             font-size: 9px;
             letter-spacing: 2px;
+          }
+
+          .blog-button {
+            margin-top: 10px;
+            padding: 6px 16px;
+            font-size: 10px;
           }
 
           .tech-details {
