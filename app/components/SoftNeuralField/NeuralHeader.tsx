@@ -102,7 +102,7 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
           left: 0;
           right: 0;
           z-index: 10;
-          padding: 15px;
+          padding: 8px;
           display: flex;
           justify-content: center;
           align-items: flex-start;
@@ -121,7 +121,7 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             rgba(25, 10, 45, 0.95)
           );
           backdrop-filter: blur(15px);
-          border-radius: 50px;
+          border-radius: 30px;
           box-shadow: 
             0 0 40px rgba(0, 255, 255, calc(0.2 + var(--glow-intensity) * 0.6)),
             inset 0 0 60px rgba(0, 255, 255, calc(0.05 + var(--glow-intensity) * 0.15)),
@@ -135,7 +135,7 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
         .top-handle {
           position: absolute;
           top: -15px;
-          width: 150px;
+          width: 100px;
           height: 30px;
           background: linear-gradient(
             180deg,
