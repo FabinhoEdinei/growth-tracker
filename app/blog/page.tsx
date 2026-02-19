@@ -1,70 +1,33 @@
+'use client';
+
 import { BlogHeader } from '../components/Blog/BlogHeader';
 import { BlogList } from '../components/Blog/BlogList';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-// Função helper para ler posts
-function getPosts() {
-  // Por enquanto, posts hardcoded
-  // Depois vamos ler de app/content/posts/*.md
-  return [
-    {
-      title: 'A História do Growth Tracker: Do Zero ao Sistema Neural',
-      slug: 'historia-growth-tracker',
-      date: '2026-02-18',
-      author: 'Claude AI',
-      category: 'Desenvolvimento',
-      excerpt: 'A jornada completa de como transformamos uma ideia simples em um sistema complexo de partículas neurais inteligentes.',
-      image: '/blog/hero-1.jpg',
-    },
-    {
-      title: 'Como Funciona o Sistema de Partículas',
-      slug: 'sistema-particulas',
-      date: '2026-02-19',
-      author: 'Growth Team',
-      category: 'Técnico',
-      excerpt: 'Deep dive na física, matemática e arquitetura por trás do canvas de partículas.',
-    },
-    {
-      title: 'Otimização para 50K Usuários Simultâneos',
-      slug: 'otimizacao-escala',
-      date: '2026-02-20',
-      author: 'Claude AI',
-      category: 'Performance',
-      excerpt: 'Técnicas de Spatial Hashing, Device Detection e SSG que tornaram o app escalável.',
-    },
-    {
-      title: 'Hexágonos Orbitais: O Sistema Paralelo',
-      slug: 'hexagonos-orbitais',
-      date: '2026-02-21',
-      author: 'Growth Team',
-      category: 'Features',
-      excerpt: 'Como criamos um segundo sistema completamente isolado com dados persistentes.',
-    },
-    {
-      title: 'O Futuro: Machine Learning Neural',
-      slug: 'futuro-ml',
-      date: '2026-02-22',
-      author: 'Claude AI',
-      category: 'Roadmap',
-      excerpt: 'Partículas que aprendem, preveem e evoluem com comportamento emergente.',
-    },
-    {
-      title: 'Behind the Scenes: Design do Header PS5',
-      slug: 'design-header-ps5',
-      date: '2026-02-23',
-      author: 'Growth Team',
-      category: 'Design',
-      excerpt: 'O processo criativo por trás do header futurista inspirado no controle PlayStation 5.',
-    },
-  ];
+interface Post {
+  title: string;
+  slug: string;
+  date: string;
+  author: string;
+  category: string;
+  excerpt: string;
+  image?: string;
 }
 
 export default function BlogPage() {
-  const posts = getPosts();
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    // Fetch posts do endpoint API
+    fetch('/api/posts')
+      .then(res => res.json())
+      .then(data => setPosts(data))
+      .catch(err => console.error('Error loading posts:', err));
+  }, []);
 
   return (
     <div className="blog-page">
-      {/* Botão voltar */}
       <Link href="/" className="back-button">
         ← Voltar ao App
       </Link>
