@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
+import styles from './post.module.css';
 
 marked.setOptions({
   gfm: true,
@@ -87,54 +88,20 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <>
-      <style jsx global>{`
-        .post-page-container {
-          min-height: 100vh;
-          background: radial-gradient(circle at 50% 50%, rgba(10,10,30,1), rgba(0,0,0,1));
-          position: relative;
-        }
+    <div className={styles.postPageContainer}>
+      <Link href="/blog" className={styles.backButton}>
+        ← Voltar ao Blog
+      </Link>
 
-        .post-back-button {
-          position: fixed;
-          top: 20px;
-          left: 20px;
-          z-index: 100;
-          padding: 10px 20px;
-          background: rgba(0,255,255,0.1);
-          border: 1px solid rgba(0,255,255,0.3);
-          border-radius: 8px;
-          color: #00ffff;
-          font-family: 'Courier New', monospace;
-          font-size: 12px;
-          letter-spacing: 1px;
-          text-decoration: none;
-          transition: all 0.3s;
-          backdrop-filter: blur(10px);
-        }
-
-        .post-back-button:hover {
-          background: rgba(0,255,255,0.2);
-          box-shadow: 0 0 20px rgba(0,255,255,0.3);
-          transform: translateX(-4px);
-        }
-      `}</style>
-
-      <div className="post-page-container">
-        <Link href="/blog" className="post-back-button">
-          ← Voltar ao Blog
-        </Link>
-
-        <BlogPost 
-          content={post.content} 
-          metadata={{
-            title: post.title,
-            date: post.date,
-            author: post.author,
-            category: post.category,
-          }} 
-        />
-      </div>
-    </>
+      <BlogPost 
+        content={post.content} 
+        metadata={{
+          title: post.title,
+          date: post.date,
+          author: post.author,
+          category: post.category,
+        }} 
+      />
+    </div>
   );
 }
