@@ -21,8 +21,8 @@ function getAllPostSlugs() {
 
     const fileNames = fs.readdirSync(postsDirectory);
     return fileNames
-      .filter(name => name.endsWith('.md'))
-      .map(name => {
+      .filter((name: string) => name.endsWith('.md'))
+      .map((name: string) => {
         const fullPath = path.join(postsDirectory, name);
         const fileContents = fs.readFileSync(fullPath, 'utf8');
         const { data } = matter(fileContents);
@@ -42,7 +42,7 @@ function getPostBySlug(slug: string) {
     }
 
     const fileNames = fs.readdirSync(postsDirectory);
-    const fileName = fileNames.find(name => {
+    const fileName = fileNames.find((name: string) => {
       const fullPath = path.join(postsDirectory, name);
       const fileContents = fs.readFileSync(fullPath, 'utf8');
       const { data } = matter(fileContents);
@@ -76,7 +76,7 @@ function getPostBySlug(slug: string) {
 
 export async function generateStaticParams() {
   const slugs = getAllPostSlugs();
-  return slugs.map(slug => ({ slug }));
+  return slugs.map((slug: string) => ({ slug }));
 }
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
@@ -87,43 +87,54 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'radial-gradient(circle at 50% 50%, rgba(10,10,30,1), rgba(0,0,0,1))',
-      position: 'relative',
-    }}>
-      <Link 
-        href="/blog"
-        style={{
-          position: 'fixed',
-          top: '20px',
-          left: '20px',
-          zIndex: 100,
-          padding: '10px 20px',
-          background: 'rgba(0,255,255,0.1)',
-          border: '1px solid rgba(0,255,255,0.3)',
-          borderRadius: '8px',
-          color: '#00ffff',
-          fontFamily: 'Courier New, monospace',
-          fontSize: '12px',
-          letterSpacing: '1px',
-          textDecoration: 'none',
-          transition: 'all 0.3s',
-          backdropFilter: 'blur(10px)',
-        }}
-      >
-        ← Voltar ao Blog
-      </Link>
+    <>
+      <style jsx global>{`
+        .post-page-container {
+          min-height: 100vh;
+          background: radial-gradient(circle at 50% 50%, rgba(10,10,30,1), rgba(0,0,0,1));
+          position: relative;
+        }
 
-      <BlogPost 
-        content={post.content} 
-        metadata={{
-          title: post.title,
-          date: post.date,
-          author: post.author,
-          category: post.category,
-        }} 
-      />
-    </div>
+        .post-back-button {
+          position: fixed;
+          top: 20px;
+          left: 20px;
+          z-index: 100;
+          padding: 10px 20px;
+          background: rgba(0,255,255,0.1);
+          border: 1px solid rgba(0,255,255,0.3);
+          border-radius: 8px;
+          color: #00ffff;
+          font-family: 'Courier New', monospace;
+          font-size: 12px;
+          letter-spacing: 1px;
+          text-decoration: none;
+          transition: all 0.3s;
+          backdrop-filter: blur(10px);
+        }
+
+        .post-back-button:hover {
+          background: rgba(0,255,255,0.2);
+          box-shadow: 0 0 20px rgba(0,255,255,0.3);
+          transform: translateX(-4px);
+        }
+      `}</style>
+
+      <div className="post-page-container">
+        <Link href="/blog" className="post-back-button">
+          ← Voltar ao Blog
+        </Link>
+
+        <BlogPost 
+          content={post.content} 
+          metadata={{
+            title: post.title,
+            date: post.date,
+            author: post.author,
+            category: post.category,
+          }} 
+        />
+      </div>
+    </>
   );
 }
