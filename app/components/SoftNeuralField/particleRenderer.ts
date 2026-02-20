@@ -1,4 +1,4 @@
-import { Particle } from './types';
+import { Particle, Lightning } from './types';
 import { drawShape } from './shapeRenderer';
 import { LightningEffect } from './lightningEffect';
 
@@ -10,124 +10,99 @@ export class ParticleRenderer {
     height: number,
     lightningEffect: LightningEffect
   ): void {
-    // Motion blur
     ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
     ctx.fillRect(0, 0, width, height);
 
-    // Renderiza raios primeiro (atrás das partículas)
+    // Render lightnings
     lightningEffect.render(ctx);
 
+    // Render particles
     for (const p of particles) {
       if (p.state === 'disintegrating') {
-        this.renderDisintegrating(ctx, p);
+        this.renderDisintegration(ctx, p);
       } else {
         this.renderParticle(ctx, p);
       }
     }
   }
 
-  private renderDisintegrating(ctx: CanvasRenderingContext2D, p: Particle): void {
-    const progress = 1 - (p.disintegrationTimer / 3000);
-    
-    for (const shadow of p.shadowParticles) {
-      ctx.save();
-      ctx.globalAlpha = shadow.alpha * 0.7;
-      
-      const color = `hsl(${p.hue}, 100%, 50%)`;
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = color;
-      ctx.fillStyle = color;
-      
-      ctx.beginPath();
-      ctx.arc(shadow.x, shadow.y, shadow.size, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.restore();
-    }
-    
-    if (progress < 0.5) {
-      ctx.save();
-      const pulseAlpha = 0.5 + Math.sin(Date.now() * 0.01) * 0.3;
-      ctx.globalAlpha = pulseAlpha;
-      
-      const color = `hsl(${p.hue}, 100%, 50%)`;
-      ctx.shadowBlur = 40;
-      ctx.shadowColor = color;
-      ctx.fillStyle = color;
-      
-      drawShape(ctx, p.shape, p.x, p.y, p.size * (1 - progress), p.rotation);
-      ctx.restore();
-    }
-  }
-
   private renderParticle(ctx: CanvasRenderingContext2D, p: Particle): void {
-    const alpha = 0.7 * p.life;
-    if (alpha <= 0) return;
+    const color = `hsl(${p.hue}, 100%, 60%)`;
+    const colorDark = `hsl(${p.hue}, 100%, 40%)`;
 
-    const color = `hsl(${p.hue}, 100%, 50%)`;
-    const colorDark = `hsl(${p.hue}, 90%, 35%)`;
-
-    this.renderTrail(ctx, p, alpha, colorDark);
-
-    if (Math.abs(p.glitchOffset) > 0.5) {
-      this.renderGlitch(ctx, p, alpha);
+    // Trail
+    if (p.trail.length > 0) {
+      for (let i = 0; i < p.trail.length - 1; i++) {
+        const t = p.trail[i];
+        ctx.save();
+        ctx.globalAlpha = t.alpha * 0.3;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = p.size * 0.3;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
+        ctx.beginPath();
+        ctx.moveTo(p.trail[i].x, p.trail[i].y);
+        ctx.lineTo(p.trail[i + 1].x, p.trail[i + 1].y);
+        ctx.stroke();
+        ctx.restore();
+      }
     }
 
-    this.renderMainParticle(ctx, p, alpha, color, colorDark);
+    ctx.save();
+
+    // Glitch offset
+    if (p.glitchOffset !== 0) {
+      ctx.translate(p.glitchOffset, 0);
+    }
+
+    // Layer 1: Dark halo
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = colorDark;
+    ctx.shadowBlur = 40;
+    ctx.shadowColor = colorDark;
+    drawShape(ctx, p.shape, p.x, p.y, p.size * 1.5, p.rotation, colorDark);
+
+    // Layer 2: Bright neon
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = color;
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = color;
+    drawShape(ctx, p.shape, p.x, p.y, p.size, p.rotation, color);
+
+    // Layer 3: White hot center
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#ffffff';
+    drawShape(ctx, p.shape, p.x, p.y, p.size * 0.4, p.rotation, '#ffffff');
+
+    ctx.restore();
   }
 
-  private renderTrail(ctx: CanvasRenderingContext2D, p: Particle, alpha: number, colorDark: string): void {
-    for (let i = 0; i < p.trail.length; i++) {
-      const t = p.trail[i];
-      const trailSize = p.size * (0.2 + (i / p.trail.length) * 0.8);
-      
+  private renderDisintegration(ctx: CanvasRenderingContext2D, p: Particle): void {
+    const progress = 1 - p.life;
+    const color = `hsl(${p.hue}, 100%, 60%)`;
+
+    // Render shadow particles
+    for (const sp of p.shadowParticles) {
       ctx.save();
-      ctx.globalAlpha = t.alpha * alpha * 0.5;
+      ctx.globalAlpha = (1 - progress) * 0.6;
+      ctx.fillStyle = color;
       ctx.shadowBlur = 15;
-      ctx.shadowColor = colorDark;
-      ctx.fillStyle = colorDark;
-      drawShape(ctx, p.shape, t.x, t.y, trailSize * 0.5, p.rotation);
+      ctx.shadowColor = color;
+
+      // ✅ FIX: Adicionar argumento 'color' (7º parâmetro)
+      drawShape(ctx, p.shape, sp.x, sp.y, sp.size * (1 - progress), sp.rotation, color);
       ctx.restore();
     }
-  }
 
-  private renderGlitch(ctx: CanvasRenderingContext2D, p: Particle, alpha: number): void {
+    // Render original particle fading
     ctx.save();
-    ctx.globalAlpha = alpha * 0.3;
-    ctx.fillStyle = '#ff0066';
-    drawShape(ctx, p.shape, p.x + p.glitchOffset, p.y, p.size, p.rotation);
-    ctx.restore();
-
-    ctx.save();
-    ctx.globalAlpha = alpha * 0.3;
-    ctx.fillStyle = '#00ffff';
-    drawShape(ctx, p.shape, p.x - p.glitchOffset, p.y, p.size, p.rotation);
-    ctx.restore();
-  }
-
-  private renderMainParticle(
-    ctx: CanvasRenderingContext2D,
-    p: Particle,
-    alpha: number,
-    color: string,
-    colorDark: string
-  ): void {
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    
-    ctx.shadowBlur = 40;
-    ctx.shadowColor = color;
-    ctx.fillStyle = colorDark;
-    drawShape(ctx, p.shape, p.x, p.y, p.size, p.rotation);
-    
-    ctx.shadowBlur = 20;
+    ctx.globalAlpha = 1 - progress;
     ctx.fillStyle = color;
-    drawShape(ctx, p.shape, p.x, p.y, p.size * 0.5, p.rotation);
-    
-    ctx.shadowBlur = 10;
-    ctx.fillStyle = '#ffffff';
-    drawShape(ctx, p.shape, p.x, p.y, p.size * 0.2, p.rotation);
-    
+
+    // ✅ FIX: Adicionar argumento 'color' (7º parâmetro)
+    drawShape(ctx, p.shape, p.x, p.y, p.size * (1 - progress), p.rotation, color);
     ctx.restore();
   }
 }
