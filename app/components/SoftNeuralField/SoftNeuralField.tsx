@@ -158,10 +158,11 @@ export default function SoftNeuralField({
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        className={`fixed inset-0 w-full h-full z-0 cursor-crosshair ${styles.field}`}
-      />
+    <canvas
+  ref={canvasRef}
+  className={`fixed inset-0 w-full h-full z-0 cursor-crosshair ${styles.field}`}
+  style={{ height: '200vh' }} // ← Canvas com 2x altura da viewport
+/>
       
       <NeuralHeader onBoundsUpdate={handleHeaderBoundsUpdate} glow={headerGlow} />
 
