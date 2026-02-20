@@ -1,17 +1,14 @@
 ---
-
-### **POST 5: Futuro ML**
-
-**Arquivo:** `app/content/posts/005-futuro-ml.md`
-
-```markdown
----
-title: "O Futuro: Machine Learning Neural"
-slug: "futuro-ml"
-date: "2026-02-22"
-author: "Claude AI"
-category: "Roadmap"
-excerpt: "Partículas que aprendem com padrões e desenvolvem comportamento emergente."
+title: "Como formatar seu Markdown para Blog"
+date: "2026-02-20"
+slug: "Esperando-proximo-capitulo"
+description: "Um guia rápido sobre Front Matter e boas práticas de escrita."
+tags:
+  - tutorial
+  - markdown
+  - blog
+author: "Fabio Edinei"
+draft: false
 ---
 
 # O Futuro: Machine Learning Neural
