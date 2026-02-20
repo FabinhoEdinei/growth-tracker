@@ -19,8 +19,8 @@ export const BlogHeader = () => {
   const generateLightningPath = (startX: number): Array<{ x: number; y: number }> => {
     const points: Array<{ x: number; y: number }> = [];
     const startY = 0;
-    const endY = 60 + Math.random() * 20; // 60-80px
-    const segments = 8 + Math.floor(Math.random() * 4); // 8-12 segmentos
+    const endY = 60 + Math.random() * 20;
+    const segments = 8 + Math.floor(Math.random() * 4);
     
     let x = startX;
     let y = startY;
@@ -51,9 +51,8 @@ export const BlogHeader = () => {
     resize();
     window.addEventListener('resize', resize);
 
-    // Spawn raios a cada 200ms (mais rápido)
     spawnIntervalRef.current = setInterval(() => {
-      if (Math.random() > 0.2) { // 80% chance
+      if (Math.random() > 0.2) {
         const startX = Math.random() * canvas.width;
         const hue = [180, 300, 340][Math.floor(Math.random() * 3)];
         
@@ -69,17 +68,14 @@ export const BlogHeader = () => {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update
       lightningsRef.current = lightningsRef.current
         .map(l => ({ ...l, alpha: l.alpha - 0.08 }))
         .filter(l => l.alpha > 0);
 
-      // Render
       lightningsRef.current.forEach(lightning => {
         ctx.save();
         ctx.globalAlpha = lightning.alpha;
 
-        // Glow
         ctx.strokeStyle = `hsl(${lightning.hue}, 100%, 60%)`;
         ctx.lineWidth = 2.5;
         ctx.shadowBlur = 12;
@@ -93,7 +89,6 @@ export const BlogHeader = () => {
         });
         ctx.stroke();
 
-        // Core
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 0.8;
         ctx.shadowBlur = 6;
@@ -203,3 +198,4 @@ export const BlogHeader = () => {
       `}</style>
     </div>
   );
+};
