@@ -1,11 +1,14 @@
 ---
 title: "Como formatar seu Markdown para Blog"
-date: "2023-10-27"
+date: "2026-02-20"
+slug: "como-formatar-markdown-blog"
 description: "Um guia rápido sobre Front Matter e boas práticas de escrita."
 tags:
   - tutorial
   - markdown
-  - intensivo
+  - blog
+author: "Fabio Edinei"
+draft: false
 ---
 
 <!-- O conteúdo começa aqui. Note que não uso # aqui, pois o título já está lá em cima -->
