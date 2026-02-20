@@ -14,7 +14,7 @@ draft: false
 
 ## Introdução
 
-Escrever em Markdown é simples, mas para um **blog**, precisamos de estrutura.
+Escrever em Markdown é simples, mas para um **blog**, precisamos saber qual é o estrutura certa que roda o arquivo. Esse aqui eu mudei hoje dia 20/02 fabio 
 
 ## Por que o Front Matter importa?
 
