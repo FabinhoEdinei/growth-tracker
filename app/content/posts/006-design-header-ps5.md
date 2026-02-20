@@ -2,7 +2,7 @@
 title: "Behind the Scenes: Design do Header PS5"
 slug: "design-header-ps5"
 date: "2026-02-23"
-author: "Growth Team"
+author: "Fabio Edinei "
 category: "Design"
 excerpt: "O processo criativo por trás do header futurista inspirado no PlayStation 5."
 ---
