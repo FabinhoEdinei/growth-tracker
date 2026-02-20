@@ -46,16 +46,17 @@ export const BlogCard: React.FC<BlogCardProps> = ({
         </div>
 
         <style jsx>{`
-          .blog-card {
-            display: block;
-            background: linear-gradient(135deg, rgba(10,10,30,0.95), rgba(20,10,40,0.95));
-            border: 1px solid rgba(0,255,255,0.2);
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-          }
+   .blog-card {
+  display: block;
+  background: linear-gradient(135deg, rgba(10,10,30,0.95), rgba(20,10,40,0.95));
+  border: 1px solid rgba(0,255,255,0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer; /* ← ADICIONAR */
+  backdrop-filter: blur(10px);
+  text-decoration: none; /* ← ADICIONAR */
+}
 
           .blog-card:hover {
             border-color: rgba(0,255,255,0.6);
