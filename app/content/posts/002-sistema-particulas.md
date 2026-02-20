@@ -1,188 +1,268 @@
-002-sistema-particulas.md
----
-title: "Como Funciona o Sistema de Partículas"
-slug: "sistema-particulas"
-date: "2026-02-19"
-author: "Growth Team"
-category: "Técnico"
-image: "/blog/particles-tech.jpg"
-excerpt: "Deep dive na física, matemática e arquitetura por trás do canvas de partículas do Growth Tracker."
----
+# As 30 Empresas que Movem Caxias do Sul: História, Gigantes e Inovação
 
-# Como Funciona o Sistema de Partículas
-
-## Arquitetura Modular
-
-O sistema de partículas do Growth Tracker foi construído com **separação total de responsabilidades**:
-particleManager.ts   → Gerencia ciclo de vida
-particleRenderer.ts  → Renderiza no canvas
-physicsEngine.ts     → Calcula colisões
-lightningEffect.ts   → Efeitos visuais
-Cada módulo tem **uma única responsabilidade** — fácil de testar e manter.
+Caxias do Sul é muito mais que a capital da uva e do vinho. É um dos maiores polos industriais do Brasil, berço de gigantes da metalurgia, automotivo e, mais recentemente, um hub crescente de tecnologia. Nesta matéria, exploramos a trajetória de 30 empresas fundamentais para a economia local, destacando as pioneiras que construíram a base, as gigantes que lideram o mercado e as novas promessas que estão contratando e inovando.
 
 ---
 
-## Física de Colisão
+## 🏛️ Pesquisa Especial: Os Destaques
 
-### Detecção (Spatial Hashing)
+Antes de conhecer a lista completa, destacamos três categorias essenciais para entender o ecossistema empresarial caxiense.
 
-Ao invés de verificar todas as partículas contra todas (O(n²)), usamos **grid espacial**:
+### 🕰️ Top 5 Mais Velhas (Pioneiras)
+Empresas que resistiram ao tempo e ajudaram a fundar a identidade industrial da cidade.
 
-```typescript
-// Divide canvas em células 50x50px
-const cellX = Math.floor(particle.x / 50);
-const cellY = Math.floor(particle.y / 50);
-const key = `${cellX},${cellY}`;
+1.  **Vinícola Salton** – *Setor: Bebidas/Vinícola*
+    *   Fundada na década de 1880, é uma das vinícolas mais tradicionais do Brasil.
+2.  **Abramo Eberle** – *Setor: Metalurgia e Utensílios*
+    *   Fundada em 1896, começou com ferragens e evoluiu para panelas e componentes.
+3.  **Bebidas Santa Clara** – *Setor: Bebidas*
+    *   Fundada em 1922, famosa por seus refrigerantes e sucos.
+4.  **Zandoná** – *Setor: Autopeças*
+    *   Com raízes na década de 1940/50, referência em sistemas de escapamento.
+5.  **Pame** – *Setor: Metalurgia e Implementos*
+    *   Tradicional fabricante de peças e implementos desde meados do século XX.
 
-// Só verifica partículas na mesma célula + 8 vizinhas
-Resultado: O(n²) → O(n)
-Ganho: 10-20x mais rápido
-Resolução de Colisão
-Baseado em conservação de momento:
-// Vetor normal da colisão
-const nx = dx / distance;
-const ny = dy / distance;
+### 💰 Top 5 Mais Valiosas (Por Faturamento/Impacto)
+As empresas que geram maior receita e movimentam a economia da região.
 
-// Velocidade relativa
-const dvx = p2.vx - p1.vx;
-const dvy = p2.vy - p1.vy;
-const dotProduct = dvx * nx + dvy * ny;
+1.  **Randoncorp** – *Setor: Implementos Rodoviários e Serviços*
+    *   Um dos maiores conglomerados industriais do Brasil.
+2.  **Marcopolo** – *Setor: Automotivo (Carrocerias)*
+    *   Gigante global na fabricação de carrocerias de ônibus.
+3.  **Embraer Defesa e Segurança** – *Setor: Aeroespacial e Tecnologia*
+    *   Unidade estratégica que desenvolve sistemas de radar e defesa.
+4.  **Carrier** – *Setor: Climatização*
+    *   Multinacional líder em sistemas de ar-condicionado e refrigeração.
+5.  **Sotreq** – *Setor: Máquinas Agrícolas e Pesadas*
+    *   Maior distribuidora de máquinas John Deere da América Latina.
 
-// Impulso
-const impulse = (2 * dotProduct) / (m1 + m2);
+### 🚀 Top 5 Mais Recentes (Com +25 Funcionários)
+Empresas fundadas ou que ganharam grande escala nos últimos 15 anos, focadas em tecnologia e serviços.
 
-// Aplica às partículas
-p1.vx += impulse * m2 * nx * restitution;
-p1.vy += impulse * m2 * ny * restitution;
-Coeficiente de restituição: 0.8 (80% da energia conservada)
-Sistema de Renderização
-Motion Blur
-Ao invés de clearRect(), usamos overlay semi-transparente:
-ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-ctx.fillRect(0, 0, width, height);
-Cria efeito de rastro natural sem processamento extra.
-Triple-Layer Rendering
-Cada partícula é renderizada em 3 camadas:
-Halo escuro (shadow blur 40px)
-Core neon (shadow blur 20px)
-Centro white-hot (shadow blur 10px)
-// Layer 1: Halo
-ctx.fillStyle = colorDark;
-ctx.shadowBlur = 40;
-drawShape(ctx, shape, x, y, size, rotation);
+1.  **Voalle** – *Setor: Tecnologia e Logística*
+    *   Startup que se tornou scale-up em gestão de transporte.
+2.  **Logcomex** – *Setor: Tecnologia e Comércio Exterior*
+    *   Plataforma de inteligência de dados para importação e exportação.
+3.  **Sensum** – *Setor: Automação Industrial*
+    *   Focada em soluções de automação e robótica para indústrias.
+4.  **Pulso Network** – *Setor: Tecnologia e Internet*
+    *   Provedor e empresa de tecnologia em crescimento na região.
+5.  **Infonet** – *Setor: Tecnologia e Infraestrutura*    *   Soluções em infraestrutura de TI e connectivity para empresas.
 
-// Layer 2: Neon
-ctx.fillStyle = color;
-ctx.shadowBlur = 20;
-drawShape(ctx, shape, x, y, size * 0.5, rotation);
-
-// Layer 3: Core
-ctx.fillStyle = '#ffffff';
-ctx.shadowBlur = 10;
-drawShape(ctx, shape, x, y, size * 0.2, rotation);
-Device Detection
-Ajustamos quantidade de partículas baseado em hardware disponível:
-const cores = navigator.hardwareConcurrency || 2;
-const memory = navigator.deviceMemory || 4;
-
-if (isMobile || cores <= 2 || memory <= 2) {
-  return 'low';    // 20 partículas
-}
-if (cores <= 4 || memory <= 4) {
-  return 'medium'; // 35 partículas
-}
-return 'high';     // 50 partículas
-Mobile low-end: 20 partículas, 12 FPS
-Desktop high-end: 50 partículas, 24 FPS
-Frame Throttling
-const skipFrames = deviceTier === 'low' ? 2 : 1;
-
-if (frameCount % skipFrames === 0) {
-  // Só atualiza a cada 2 frames em devices fracos
-  update();
-  render();
-}
-Garante FPS estável mesmo em hardware limitado.
-Raios Elétricos
-Path Generation
-Raios usam Bézier com offset aleatório:
-const segments = 15 + Math.floor(Math.random() * 10);
-
-for (let i = 0; i <= segments; i++) {
-  const t = i / segments;
-  let x = x1 + (x2 - x1) * t;
-  let y = y1 + (y2 - y1) * t;
-  
-  // Offset perpendicular
-  const offset = (Math.random() - 0.5) * 40;
-  const perpX = -(y2 - y1);
-  const perpY = (x2 - x1);
-  const length = Math.hypot(perpX, perpY);
-  
-  x += (perpX / length) * offset;
-  y += (perpY / length) * offset;
-  
-  points.push({ x, y });
-}
-Multi-Layer Lightning
-// Layer 1: Cyan (grosso)
-ctx.strokeStyle = '#00ffff';
-ctx.lineWidth = 3;
-
-// Layer 2: Magenta (fino)
-ctx.strokeStyle = '#ff00ff';
-ctx.lineWidth = 1.5;
-
-// Layer 3: White core (super fino)
-ctx.strokeStyle = '#ffffff';
-ctx.lineWidth = 0.5;
-Cria efeito de profundidade e energia.
-Performance Metrics
-Antes da otimização:
-FPS: ~15 (instável)
-CPU: 60-80%
-Máx usuários simultâneos: ~100
-Depois da otimização:
-FPS: 24 (sólido)
-CPU: 20-30%
-Máx usuários simultâneos: 50.000+
-Ferramentas de Debug
-Durante desenvolvimento, usamos:
-// FPS counter
-const fps = 1000 / (time - lastTime);
-console.log('FPS:', Math.round(fps));
-
-// Collision count
-console.log('Collisions this frame:', collisionCount);
-
-// Memory usage
-console.log('Particles:', particles.length);
-console.log('Memory:', (performance.memory.usedJSHeapSize / 1048576).toFixed(2) + ' MB');
-Próximos Upgrades
-WebGL Renderer
-Migrar de Canvas 2D para WebGL pode dar:
-10x mais partículas
-Shaders customizados
-Física em GPU
-Web Workers
-Mover física para worker thread:
-Desacoplamento do frame rate
-Melhor uso de multi-core
-UI sempre responsiva
-WASM Physics
-Reescrever engine de física em Rust + WASM:
-2-5x mais rápido
-Determinístico
-Zero GC pauses
-Conclusão
-O sistema de partículas é engenharia de alto nível disfarçada de arte visual.
-Cada frame é uma dança cuidadosa entre:
-Física realista
-Performance otimizada
-Estética cyberpunk
-E o mais incrível? Tudo roda no navegador, em JavaScript puro.
-Bem-vindo ao futuro do canvas.
-Publicado em 19 de fevereiro de 2026
-Escrito por Growth Team
-Categoria: Técnico
 ---
+
+## 🏭 As 30 Empresas de Caxias do Sul
+
+Abaixo, a lista completa com nome, breve descrição do setor de atuação, link oficial, tempo de mercado e estimativa de colaboradores.
+
+> **Nota:** *Os números de colaboradores são estimativas baseadas em dados públicos (LinkedIn, relatórios anuais) e podem variar. Os anos de atuação são calculados até 2024.*
+
+1.  **Randoncorp**
+    *   **Setor:** Implementos Rodoviários e Serviços
+    *   **Site:** [www.randon.com.br](https://www.randon.com.br)
+    *   **Anos de Atuação:** 75 anos
+    *   **Colaboradores:** +10.000
+    *   #Randoncorp
+
+2.  **Marcopolo**
+    *   **Setor:** Automotivo (Carrocerias)
+    *   **Site:** [www.marcopolo.com.br](https://www.marcopolo.com.br)
+    *   **Anos de Atuação:** 75 anos
+    *   **Colaboradores:** +7.000 (local)
+    *   #Marcopolo
+
+3.  **Abramo Eberle**
+    *   **Setor:** Metalurgia e Utensílios
+    *   **Site:** [www.eberle.com.br](https://www.eberle.com.br)
+    *   **Anos de Atuação:** 128 anos
+    *   **Colaboradores:** +1.500
+    *   #AbramoEberle
+
+4.  **Vinícola Salton**
+    *   **Setor:** Bebidas/Vinícola
+    *   **Site:** [www.salton.com.br](https://www.salton.com.br)
+    *   **Anos de Atuação:** 144 anos
+    *   **Colaboradores:** +500
+    *   #VinicolaSalton
+
+5.  **Bebidas Santa Clara**
+    *   **Setor:** Bebidas
+    *   **Site:** [www.santaclara.com.br](https://www.santaclara.com.br)
+    *   **Anos de Atuação:** 102 anos
+    *   **Colaboradores:** +800
+    *   #SantaClara
+
+6.  **Embraer Defesa e Segurança**
+    *   **Setor:** Aeroespacial e Tecnologia
+    *   **Site:** [www.embraer.com](https://www.embraer.com)
+    *   **Anos de Atuação:** 55 anos (Empresa)
+    *   **Colaboradores:** +1.200 (unidade)    *   #EmbraerDefesa
+
+7.  **Carrier**
+    *   **Setor:** Climatização
+    *   **Site:** [www.carrier.com.br](https://www.carrier.com.br)
+    *   **Anos de Atuação:** 60 anos (unidade BR)
+    *   **Colaboradores:** +2.000
+    *   #CarrierBrasil
+
+8.  **Sotreq**
+    *   **Setor:** Máquinas Agrícolas e Pesadas
+    *   **Site:** [www.sotreq.com.br](https://www.sotreq.com.br)
+    *   **Anos de Atuação:** 50 anos
+    *   **Colaboradores:** +3.500
+    *   #Sotreq
+
+9.  **Iochpe-Maxion**
+    *   **Setor:** Autopeças (Rodas)
+    *   **Site:** [www.iochpe-maxion.com](https://www.iochpe-maxion.com)
+    *   **Anos de Atuação:** 90 anos
+    *   **Colaboradores:** +1.000
+    *   #IochpeMaxion
+
+10. **Carraro Agriculture**
+    *   **Setor:** Máquinas Agrícolas
+    *   **Site:** [www.carraro.com.br](https://www.carraro.com.br)
+    *   **Anos de Atuação:** 30 anos (no BR)
+    *   **Colaboradores:** +600
+    *   #CarraroAgriculture
+
+11. **Zandoná**
+    *   **Setor:** Autopeças
+    *   **Site:** [www.zandona.com.br](https://www.zandona.com.br)
+    *   **Anos de Atuação:** 70 anos
+    *   **Colaboradores:** +1.200
+    *   #Zandona
+
+12. **Pame**
+    *   **Setor:** Metalurgia e Implementos
+    *   **Site:** [www.pame.com.br](https://www.pame.com.br)
+    *   **Anos de Atuação:** 65 anos
+    *   **Colaboradores:** +400
+    *   #Pame
+
+13. **Ravagnani**
+    *   **Setor:** Autopeças
+    *   **Site:** [www.ravagnani.com.br](https://www.ravagnani.com.br)
+    *   **Anos de Atuação:** 55 anos
+    *   **Colaboradores:** +500
+    *   #Ravagnani
+14. **Mader**
+    *   **Setor:** Construção Civil (Esquadrias)
+    *   **Site:** [www.mader.com.br](https://www.mader.com.br)
+    *   **Anos de Atuação:** 35 anos
+    *   **Colaboradores:** +800
+    *   #MaderPVC
+
+15. **Cerâmica Poian**
+    *   **Setor:** Construção Civil (Telhas)
+    *   **Site:** [www.poian.com.br](https://www.poian.com.br)
+    *   **Anos de Atuação:** 45 anos
+    *   **Colaboradores:** +300
+    *   #CeramicaPoian
+
+16. **Unicafé**
+    *   **Setor:** Alimentos (Café)
+    *   **Site:** [www.unicafe.com.br](https://www.unicafe.com.br)
+    *   **Anos de Atuação:** 40 anos
+    *   **Colaboradores:** +200
+    *   #Unicafe
+
+17. **Hospital Geral**
+    *   **Setor:** Saúde
+    *   **Site:** [www.hospitalgeral.com.br](https://www.hospitalgeral.com.br)
+    *   **Anos de Atuação:** 50 anos
+    *   **Colaboradores:** +1.500
+    *   #HospitalGeral
+
+18. **UCS (Universidade de Caxias do Sul)**
+    *   **Setor:** Educação
+    *   **Site:** [www.ucs.br](https://www.ucs.br)
+    *   **Anos de Atuação:** 52 anos
+    *   **Colaboradores:** +3.000
+    *   #UCS
+
+19. **Sicredi Pioneira RS**
+    *   **Setor:** Financeiro
+    *   **Site:** [www.sicredi.com.br](https://www.sicredi.com.br)
+    *   **Anos de Atuação:** 20 anos (Cooperativa atual)
+    *   **Colaboradores:** +1.000
+    *   #SicrediPioneiraRS
+
+20. **Supermercados Beltrame**
+    *   **Setor:** Varejo
+    *   **Site:** [www.beltrame.com.br](https://www.beltrame.com.br)
+    *   **Anos de Atuação:** 30 anos
+    *   **Colaboradores:** +2.500
+    *   #Beltrame
+21. **Construtora Gaffrée**
+    *   **Setor:** Construção Civil
+    *   **Site:** [www.gaffree.com.br](https://www.gaffree.com.br)
+    *   **Anos de Atuação:** 40 anos
+    *   **Colaboradores:** +400
+    *   #Gaffree
+
+22. **Voalle**
+    *   **Setor:** Tecnologia e Logística
+    *   **Site:** [www.voalle.com.br](https://www.voalle.com.br)
+    *   **Anos de Atuação:** 11 anos
+    *   **Colaboradores:** +300
+    *   #Voalle
+
+23. **Logcomex**
+    *   **Setor:** Tecnologia e Comércio Exterior
+    *   **Site:** [www.logcomex.com](https://www.logcomex.com)
+    *   **Anos de Atuação:** 8 anos
+    *   **Colaboradores:** +150
+    *   #Logcomex
+
+24. **Sensum**
+    *   **Setor:** Automação Industrial
+    *   **Site:** [www.sensum.com.br](https://www.sensum.com.br)
+    *   **Anos de Atuação:** 12 anos
+    *   **Colaboradores:** +100
+    *   #Sensum
+
+25. **Aceel**
+    *   **Setor:** Eletrônica Embarcada
+    *   **Site:** [www.aceel.com.br](https://www.aceel.com.br)
+    *   **Anos de Atuação:** 30 anos
+    *   **Colaboradores:** +250
+    *   #Aceel
+
+26. **Bertolini**
+    *   **Setor:** Tintas e Químicos
+    *   **Site:** [www.bertolini.com.br](https://www.bertolini.com.br)
+    *   **Anos de Atuação:** 50 anos
+    *   **Colaboradores:** +600
+    *   #BertoliniTintas
+
+27. **Pulso Network**
+    *   **Setor:** Tecnologia e Internet
+    *   **Site:** [www.pulso.com.br](https://www.pulso.com.br)
+    *   **Anos de Atuação:** 15 anos
+    *   **Colaboradores:** +80
+    *   #PulsoNetwork
+
+28. **Freios Varga**    *   **Setor:** Autopeças
+    *   **Site:** [www.varga.com.br](https://www.varga.com.br)
+    *   **Anos de Atuação:** 60 anos
+    *   **Colaboradores:** +700
+    *   #FreiosVarga
+
+29. **Plastcor**
+    *   **Setor:** Plásticos e Polímeros
+    *   **Site:** [www.plastcor.com.br](https://www.plastcor.com.br)
+    *   **Anos de Atuação:** 25 anos
+    *   **Colaboradores:** +150
+    *   #Plastcor
+
+30. **Infonet**
+    *   **Setor:** Tecnologia e Infraestrutura
+    *   **Site:** [www.infonet.com.br](https://www.infonet.com.br)
+    *   **Anos de Atuação:** 20 anos
+    *   **Colaboradores:** +60
+    *   #Infonet
+
+---
+
+*Disclaimer: Os dados de fundação, sites e quantidade de colaboradores são baseados em informações públicas disponíveis até 2024. Números de funcionários podem oscilar conforme a sazonalidade e contratações recentes.*
