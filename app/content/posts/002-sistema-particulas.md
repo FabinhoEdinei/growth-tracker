@@ -1,5 +1,10 @@
 # As 30 Empresas que Movem Caxias do Sul: História, Gigantes e Inovação
+---
+title: "As 30 Empresas que Movem Caxias do sul"
+slug: "empresas-caxiasdosul"
+date: "2026-02-20"
 
+---
 Caxias do Sul é muito mais que a capital da uva e do vinho. É um dos maiores polos industriais do Brasil, berço de gigantes da metalurgia, automotivo e, mais recentemente, um hub crescente de tecnologia. Nesta matéria, exploramos a trajetória de 30 empresas fundamentais para a economia local, destacando as pioneiras que construíram a base, as gigantes que lideram o mercado e as novas promessas que estão contratando e inovando.
 
 ---
