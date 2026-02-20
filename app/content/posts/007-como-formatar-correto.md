@@ -1,6 +1,7 @@
 ---
 title: "Como formatar seu Markdown para Blog"
-date: 2023-10-27
+date: "2023-10-27"
+slug: "como-formatar-markdown-blog"
 description: "Um guia rápido sobre Front Matter e boas práticas de escrita."
 tags:
   - tutorial
