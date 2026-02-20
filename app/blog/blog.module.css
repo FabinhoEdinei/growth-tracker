@@ -5,6 +5,12 @@
   position: relative;
 }
 
+.blogPageContainer {
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 50%, rgba(10,10,30,1), rgba(0,0,0,1));
+  font-family: 'Inter', sans-serif;
+}
+
 .backButton {
   position: fixed;
   top: 20px;
