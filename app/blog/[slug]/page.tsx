@@ -90,7 +90,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   return (
     <div className={styles.postPageContainer}>
       <Link href="/blog" className={styles.backButton}>
-        ← Voltar ao Blog
+        ↩️ Voltar
       </Link>
 
       <BlogPost 
