@@ -1,6 +1,5 @@
 import { BlogHeader } from '../components/Blog/BlogHeader';
 import { BlogList } from '../components/Blog/BlogList';
-import Link from 'next/link';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
@@ -17,11 +16,6 @@ function getAllPosts() {
 
     const fileNames = fs.readdirSync(postsDirectory);
     const mdFiles = fileNames.filter((name: string) => name.endsWith('.md'));
-
-    if (mdFiles.length === 0) {
-      console.log('No markdown files found');
-      return [];
-    }
 
     const posts = mdFiles.map((fileName: string) => {
       const fullPath = path.join(postsDirectory, fileName);
@@ -53,10 +47,6 @@ export default function BlogPage() {
 
   return (
     <div className={styles.blogPageContainer}>
-      <Link href="/" className={styles.backButton}>
-        ← Voltar ao App
-      </Link>
-
       <BlogHeader />
       <BlogList posts={posts} />
     </div>
