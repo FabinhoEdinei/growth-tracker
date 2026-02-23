@@ -25,6 +25,7 @@ export interface ShadowParticle {
   size: number;
   alpha: number;
   life: number;
+  rotation: number;
 }
 
 export interface Lightning {
