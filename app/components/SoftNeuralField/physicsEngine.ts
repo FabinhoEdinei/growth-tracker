@@ -141,7 +141,9 @@ export const updateDisintegration = (particle: Particle, deltaTime: number): voi
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           size: particle.size * (0.3 + Math.random() * 0.4),
-          rotation: Math.random() * Math.PI * 2, // ← ADICIONADO
+          rotation: Math.random() * Math.PI * 2,
+          alpha: 1,
+          life: 1,
         });
       }
     }
@@ -152,8 +154,13 @@ export const updateDisintegration = (particle: Particle, deltaTime: number): voi
       shadow.y += shadow.vy;
       shadow.vx *= 0.98;
       shadow.vy *= 0.98;
-      shadow.rotation += 0.05; // ← ADICIONADO
+      shadow.rotation += 0.05;
+      shadow.alpha = Math.max(0, shadow.life);
+      shadow.life -= 0.015;
     }
+
+    // Remove dead shadow particles
+    particle.shadowParticles = particle.shadowParticles.filter(s => s.life > 0);
 
     // Fade out
     particle.life = 1 - (particle.disintegrationTimer / 3000);
@@ -180,7 +187,7 @@ export const updateDisintegration = (particle: Particle, deltaTime: number): voi
         shadow.vy += dy * 0.02;
         shadow.x += shadow.vx;
         shadow.y += shadow.vy;
-        shadow.rotation += 0.1; // ← ADICIONADO (rotação mais rápida na reintegração)
+        shadow.rotation += 0.1;
       }
       
       particle.life = reintegrationProgress;
