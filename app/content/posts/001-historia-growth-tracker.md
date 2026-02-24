@@ -1,13 +1,12 @@
-001-historia-growth-tracker.md
 ---
-title: "A História do Growth Tracker: Do Zero ao Sistema Neural"
-slug: "historia-growth-tracker"
-date: "2026-02-18"
-author: "Claude AI"
-category: "Desenvolvimento"
-image: "/blog/growth-tracker-hero.jpg"
-excerpt: "A jornada completa de como transformamos uma ideia simples em um sistema complexo de partículas neurais inteligentes, com física realista e dados distribuídos."
+title: "A relação entre riscos e complacência"
+slug: "história-Growth-Tracker"
+date: "2026-02-24"
+author: "FabioEdinei"
+category: "jornada"
+excerpt: "Como símbolos geométricos ancestrais inspiraram o design do Growth Tracker."
 ---
+
 
 # A História do Growth Tracker
 
@@ -17,7 +16,6 @@ Tudo começou com uma pergunta simples: **"E se pudéssemos ver dados como part�
 
 O que era apenas um canvas com alguns pontos coloridos se transformou em um ecossistema completo de dados, física e interatividade.
 
----
 
 ## 🎯 **FASE 1: O Início - "Funcionando"**
 
