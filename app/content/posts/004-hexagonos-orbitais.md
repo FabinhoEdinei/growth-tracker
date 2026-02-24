@@ -9,7 +9,7 @@ excerpt: "Como símbolos geométricos ancestrais inspiraram o design do Growth T
 # 🪐 Primeiro Pentáculo de Saturno: Invocação e Autoridade
 
 <div style="text-align: center; margin: 30px 0;">
-  <img src="/images/blog/pentaculo_saturno_ouro.svg" 
+  <img src="public/images/blog/pentaculo_saturno_ouro.svg" 
        alt="Pentáculo de Saturno" 
        style="width: 200px; height: 200px; filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));" />
 </div>
