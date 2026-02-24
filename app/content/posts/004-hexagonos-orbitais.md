@@ -10,9 +10,13 @@ tags:
 author: "Fabio Edinei"
 draft: false
 ---
-
 # 🪐 Primeiro Pentáculo de Saturno: Invocação e Autoridade
-![Pentáculo de Saturno](/images/blog/pentaculo_saturno_ouro.svg)
+
+<div style="text-align: center; margin: 30px 0;">
+  <img src="/images/blog/pentaculo_saturno_ouro.svg" 
+       alt="Pentáculo de Saturno" 
+       style="width: 200px; height: 200px; filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));" />
+</div>
 
 Bem-vindo ao **Dia 1** da nossa jornada de 44 dias através dos Pentáculos de Salomão. Hoje, começamos pelo início, sob a regência do planeta mais distante e misterioso da astrologia clássica: **Saturno**.
 
