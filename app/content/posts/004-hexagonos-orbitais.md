@@ -8,10 +8,84 @@ excerpt: "Como símbolos geométricos ancestrais inspiraram o design do Growth T
 ---
 # 🪐 Primeiro Pentáculo de Saturno: Invocação e Autoridade
 
-<div style="text-align: center; margin: 30px 0;">
-  <img src="public/pentaculo_saturno_ouro.svg" 
-       alt="Pentáculo de Saturno" 
-       style="width: 200px; height: 200px; filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));" />
+
+<div style="text-align: center; margin: 40px 0;">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <!-- Gradiente dourado -->
+    <radialGradient id="goldGradient" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#fff6c9"/>
+      <stop offset="40%" stop-color="#f4d03f"/>
+      <stop offset="70%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#a67c00"/>
+    </radialGradient>
+
+    <!-- Gradiente verde esmeralda -->
+    <radialGradient id="emeraldGradient" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#a8ffcf"/>
+      <stop offset="40%" stop-color="#2ecc71"/>
+      <stop offset="70%" stop-color="#1e8449"/>
+      <stop offset="100%" stop-color="#0b5345"/>
+    </radialGradient>
+
+    <!-- Caminhos para texto circular -->
+    <path id="topArc" d="M 100 400 A 300 300 0 0 1 700 400"/>
+    <path id="bottomArc" d="M 700 400 A 300 300 0 0 1 100 400"/>
+  </defs>
+
+  <!-- Fundo dourado -->
+  <rect width="800" height="800" fill="url(#goldGradient)"/>
+
+  <!-- Círculos -->
+  <circle cx="400" cy="400" r="380" stroke="url(#emeraldGradient)" stroke-width="6" fill="none"/>
+  <circle cx="400" cy="400" r="340" stroke="url(#emeraldGradient)" stroke-width="3" fill="none"/>
+
+  <!-- Texto circular superior -->
+  <text font-family="serif" font-size="32" fill="url(#emeraldGradient)" text-anchor="middle">
+    <textPath href="#topArc" startOffset="50%">
+      SENHOR DEUS, EU SOU O QUE SOU
+    </textPath>
+  </text>
+
+  <!-- Texto circular inferior -->
+  <text font-family="serif" font-size="28" fill="url(#emeraldGradient)" text-anchor="middle">
+    <textPath href="#bottomArc" startOffset="50%">
+      YHWH, QUE DOMINA O SÁBADO, SENHOR DA TERRA
+    </textPath>
+  </text>
+
+  <!-- Cruz central -->
+  <rect x="370" y="220" width="60" height="360" fill="url(#emeraldGradient)"/>
+  <rect x="220" y="370" width="360" height="60" fill="url(#emeraldGradient)"/>
+
+  <!-- Lua crescente -->
+  <path d="M400 560 
+           A60 60 0 1 1 399 560
+           A40 40 0 1 0 400 560"
+        fill="url(#emeraldGradient)"/>
+
+  <!-- Símbolos -->
+  <text x="560" y="320" font-size="80" font-family="serif" fill="url(#emeraldGradient)">♄</text>
+  <text x="540" y="520" font-size="70" font-family="serif" fill="url(#emeraldGradient)">♄</text>
+  <text x="200" y="320" font-size="70" font-family="serif" fill="url(#emeraldGradient)">♀</text>
+  <text x="200" y="500" font-size="70" font-family="serif" fill="url(#emeraldGradient)">♀</text>
+
+  <!-- Estrelas -->
+  <text x="400" y="260" font-size="60" text-anchor="middle" fill="url(#emeraldGradient)">★</text>
+  <text x="240" y="330" font-size="50" fill="url(#emeraldGradient)">★</text>
+  <text x="560" y="330" font-size="50" fill="url(#emeraldGradient)">★</text>
+
+  <!-- Nomes -->
+  <text x="280" y="360" font-size="32" font-family="serif" fill="url(#emeraldGradient)">ABIEL</text>
+  <text x="250" y="450" font-size="32" font-family="serif" fill="url(#emeraldGradient)">CANAÏEL</text>
+  <text x="300" y="520" font-size="32" font-family="serif" fill="url(#emeraldGradient)">ANIËL</text>
+  <text x="470" y="360" font-size="32" font-family="serif" fill="url(#emeraldGradient)">HANÏEL</text>
+  <text x="500" y="420" font-size="32" font-family="serif" fill="url(#emeraldGradient)">MICHAËL</text>
+  <text x="500" y="500" font-size="32" font-family="serif" fill="url(#emeraldGradient)">ATERIËL</text>
+
+</svg>
 </div>
 
 Bem-vindo ao **Dia 1** da nossa jornada de 44 dias através dos Pentáculos de Salomão. Hoje, começamos pelo início, sob a regência do planeta mais distante e misterioso da astrologia clássica: **Saturno**.
