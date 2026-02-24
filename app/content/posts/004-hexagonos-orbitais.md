@@ -1,14 +1,10 @@
 ---
-title: "1° Pentaculo Saturno"
+title: "O Pentáculo de Saturno e os Sistemas Neurais"
+slug: "pentaculo-saturno"
 date: "2026-02-24"
-slug: "Invocação-de-espíritos"
-description: "Um breve início sobre o primeiro pentaculo de Salomon."
-tags:
-  - tutorial
-  - markdown
-  - blog
 author: "Fabio Edinei"
-draft: false
+category: "Místico"
+excerpt: "Como símbolos geométricos ancestrais inspiraram o design do Growth Tracker."
 ---
 # 🪐 Primeiro Pentáculo de Saturno: Invocação e Autoridade
 
