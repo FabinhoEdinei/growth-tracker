@@ -12,6 +12,7 @@ draft: false
 ---
 
 # 🪐 Primeiro Pentáculo de Saturno: Invocação e Autoridade
+![Pentáculo de Saturno](/images/blog/pentaculo_saturno_ouro.svg)
 
 Bem-vindo ao **Dia 1** da nossa jornada de 44 dias através dos Pentáculos de Salomão. Hoje, começamos pelo início, sob a regência do planeta mais distante e misterioso da astrologia clássica: **Saturno**.
 
