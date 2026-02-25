@@ -5,6 +5,7 @@ export type ParticleState = 'normal' | 'disintegrating' | 'shadow' | 'attracted'
 export interface ParticleData {
   id: string;
   code: string;
+type: 'agenda' | 'financas' | 'saude' | 'meta' | 'vazio'; 
   references: {
     alpha: string;
     beta: string;
