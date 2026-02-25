@@ -18,6 +18,7 @@ export const generateParticleData = (): ParticleData => {
   return {
     id,
     code,
+    type: 'agenda' | 'financas' | 'saude' | 'meta' | 'vazio',
     references: {
       alpha: `REF-A-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
       beta: `REF-B-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
