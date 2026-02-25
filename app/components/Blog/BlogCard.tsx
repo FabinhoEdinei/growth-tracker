@@ -26,7 +26,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({
       <article className="blog-card">
         {image && (
           <div className="card-image">
-            <img src={image} alt={title} />
+            <image src={image} alt={title} />
           </div>
         )}
         
