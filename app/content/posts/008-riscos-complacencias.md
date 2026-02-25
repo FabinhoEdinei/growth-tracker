@@ -2,7 +2,7 @@
 title: "A relação entre riscos e complacência"
 slug: "riscos-complacencia"
 date: "2026-02-24"
-author: "Growth Team"
+author: "Fabio Edinei"
 category: "Místico"
 excerpt: "Como símbolos geométricos ancestrais inspiraram o design do Growth Tracker."
 ---
