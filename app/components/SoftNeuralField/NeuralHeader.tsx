@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { MenuDropdown } from './MenuDropdown';
 
 interface NeuralHeaderProps {
   onBoundsUpdate: (bounds: { x: number; y: number; width: number; height: number }) => void;
@@ -43,35 +44,31 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
     <>
       {/* Botão flutuante */}
       <button
-        className="header-toggle"
-        onClick={() => setIsVisible(!isVisible)}
-        style={{
-          position: 'fixed',
-          top: isVisible ? '15px' : '15px',
-          right: '20px',
-          zIndex: 1000,
-          padding: '10px 16px',
-          background: 'rgba(0,255,255,0.15)',
-          border: '1px solid rgba(0,255,255,0.4)',
-          borderRadius: '8px',
-          color: '#00ffff',
-          fontFamily: 'Courier New, monospace',
-          fontSize: '11px',
-          cursor: 'pointer',
-          transition: 'all 0.3s',
-          letterSpacing: '1px',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(0,255,255,0.25)';
-          e.currentTarget.style.boxShadow = '0 0 15px rgba(0,255,255,0.4)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(0,255,255,0.15)';
-          e.currentTarget.style.boxShadow = 'none';
-        }}
-      >
-        {isVisible ? '▲ ESCONDER' : '▼ MOSTRAR'}
-      </button>
+  className="header-toggle"
+  onClick={() => setIsVisible(!isVisible)}
+  style={{
+    position: 'fixed',
+    top: '15px',
+    right: '20px',
+    zIndex: 1000,
+    padding: '8px 14px',
+    background: 'rgba(0,255,255,0.15)',
+    border: '1px solid rgba(0,255,255,0.4)',
+    borderRadius: '8px',
+    color: '#00ffff',
+    fontFamily: 'Courier New, monospace',
+    fontSize: '10px',
+    cursor: 'pointer',
+    transition: 'all 0.3s',
+    letterSpacing: '1px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  }}
+>
+  <span style={{ fontSize: '12px' }}>{isVisible ? '▲' : '▼'}</span>
+  <span>{isVisible ? 'ESCONDER' : 'MOSTRAR'}</span>
+</button>
 
       {/* Header */}
       <div 
@@ -90,7 +87,35 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
           
           {/* Conteúdo central compacto */}
           <div className="header-content">
-            <div className="status-indicators">
+  <div className="status-indicators">
+    <span className="indicator active"></span>
+    <span className="indicator"></span>
+    <span className="indicator"></span>
+  </div>
+  
+  <h1 className="title">Growth Tracker</h1>
+  <p className="subtitle">track • grow • evolve</p>
+  
+  {/* Botões lado a lado */}
+  <div className="action-buttons">
+    <a href="/blog" className="blog-button">
+      📰 Blog
+    </a>
+    <MenuDropdown />
+  </div>
+  
+  <div className="tech-details">
+    <span className="detail-item">SYNC: ACTIVE</span>
+    <span className="detail-separator">●</span>
+    <span className="detail-item">PWR: {Math.floor(glow * 100)}%</span>
+  </div>
+
+  <div className="visit-counter-wrapper">
+    <VisitCounter />
+  </div>
+</div>
+
+             className="status-indicators">
               <span className="indicator active"></span>
               <span className="indicator"></span>
               <span className="indicator"></span>
@@ -265,6 +290,20 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             cursor: pointer;
             pointer-events: auto;
           }
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .action-buttons {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+}
 
           .blog-button:hover {
             background: rgba(255, 0, 102, 0.3);
