@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { AlgaeIcon } from './AlgaeIcon';
+
 
 interface MenuItem {
-  icon: string;
+  icon: string | React.ReactNode; // ← Mudar de 'string' para aceitar JSX
   label: string;
   href?: string;
   onClick?: () => void;
@@ -18,13 +20,21 @@ export const MenuDropdown = () => {
 
   const menuItems: MenuItem[] = [
     {
-      icon: '📊',
-      label: 'Dashboard',
-      href: '/dashboard',
-      badge: 'Beta',
-      badgeColor: '#00d4ff',
-      gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
-    },
+      icon: <AlgaeIcon size={22} />, // ← Usar componente
+    label: 'Dashboard Algas',
+    href: '/dashboard-algas',
+    badge: 'New',
+    badgeColor: '#00ff88',
+    gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 168, 107, 0.2))',
+  },
+{
+    icon: '📊',
+    label: 'Dashboard',
+    href: '/dashboard',
+    badge: 'Beta',
+    badgeColor: '#00d4ff',
+    gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
+  },
     {
       icon: '🎯',
       label: 'Metas',
@@ -125,9 +135,11 @@ export const MenuDropdown = () => {
                 }}
               >
                 <div className="item-icon-wrapper">
-                  <span className="item-icon">{item.icon}</span>
-                  <div className="icon-glow"></div>
-                </div>
+  <span className="item-icon">
+    {typeof item.icon === 'string' ? item.icon : item.icon}
+  </span>
+  <div className="icon-glow"></div>
+</div>
                 
                 <span className="item-label">{item.label}</span>
                 
