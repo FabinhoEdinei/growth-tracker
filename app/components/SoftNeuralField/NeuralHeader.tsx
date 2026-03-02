@@ -104,7 +104,7 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             <p className="subtitle">track • grow • evolve</p>
             
             <div className="action-buttons">
-              <a href="/blog" className="blog-button">
+              <a href="/blog" className="botao-blog">
                 📰 Blog
               </a>
               <MenuDropdown />
@@ -268,27 +268,45 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             margin-top: 8px;
           }
 
-          .blog-button {
-            display: inline-block;
-            padding: 6px 16px;
-            background: rgba(255, 0, 102, 0.15);
-            border: 1px solid rgba(255, 0, 102, 0.4);
-            border-radius: 5px;
-            color: #ff0066;
-            font-family: 'Courier New', monospace;
-            font-size: 10px;
-            letter-spacing: 1.5px;
-            text-decoration: none;
-            transition: all 0.3s;
-            cursor: pointer;
-            pointer-events: auto;
-          }
+          .botao-blog {
+  background: linear-gradient(135deg, #00b894, #00cec9, #55a3ff); /* Verde alga para azul marinho */
+  border: none;
+  padding: 12px 24px;
+  border-radius: 20px;
+  color: white;
+  font-weight: bold;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
 
-          .blog-button:hover {
-            background: rgba(255, 0, 102, 0.3);
-            box-shadow: 0 0 15px rgba(255, 0, 102, 0.4);
-            transform: scale(1.05);
-          }
+.botao-blog::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: rotate(45deg);
+  transition: all 0.5s;
+  opacity: 0;
+}
+
+.botao-blog:hover::before {
+  animation: onda-alga 1s ease-in-out;
+  opacity: 1;
+}
+
+@keyframes onda-alga {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.botao-blog:hover {
+  box-shadow: 0 0 30px rgba(0, 184, 148, 0.6); /* Glow alga marinha */
+  transform: scale(1.05) translateY(-2px);
+}
 
           .tech-details {
             display: flex;
