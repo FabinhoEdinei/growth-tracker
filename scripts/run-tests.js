@@ -1,14 +1,26 @@
-import { execSync } from 'child_process';
+import { spawn } from 'child_process';
+import { resolve } from 'path';
 
-try {
-  const result = execSync('npx vitest run --reporter=verbose 2>&1', {
-    cwd: '/vercel/share/v0-project',
-    encoding: 'utf-8',
-    timeout: 120000,
-  });
-  console.log(result);
-} catch (error) {
-  console.log(error.stdout || '');
-  console.log(error.stderr || '');
-  console.log('Exit code:', error.status);
-}
+const projectDir = '/vercel/share/v0-project';
+const vitestBin = resolve(projectDir, 'node_modules', '.bin', 'vitest');
+
+const child = spawn(vitestBin, ['run', '--reporter=verbose'], {
+  cwd: projectDir,
+  stdio: ['ignore', 'pipe', 'pipe'],
+  env: { ...process.env, FORCE_COLOR: '0' },
+});
+
+let output = '';
+
+child.stdout.on('data', (data) => {
+  output += data.toString();
+});
+
+child.stderr.on('data', (data) => {
+  output += data.toString();
+});
+
+child.on('close', (code) => {
+  console.log(output);
+  console.log('Exit code:', code);
+});
