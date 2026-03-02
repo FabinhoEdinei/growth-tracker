@@ -138,7 +138,8 @@ export default function TestesPage() {
           {results.length === 0 && !isRunning && (
             <div className="empty-state">
               <span className="empty-icon">🔬</span>
-              <p>Clique em "Executar Testes" para iniciar</p>
+              <p>Clique em &quot;Executar Testes&quot; para iniciar</p>
+
             </div>
           )}
 
