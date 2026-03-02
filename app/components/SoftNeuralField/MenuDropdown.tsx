@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { AlgaeIcon } from './AlgaeIcon';
+import Link from 'next/link'; // ← ADICIONAR
+import { AlgaeIcon } from '../Blog/AlgaeIcon';
 import { BlogIcon } from '../Blog/BlogIcon';
 
-
-
 interface MenuItem {
-  icon: string | React.ReactNode; // ← Mudar de 'string' para aceitar JSX
+  icon: string | React.ReactNode;
   label: string;
   href?: string;
   onClick?: () => void;
@@ -22,37 +21,29 @@ export const MenuDropdown = () => {
 
   const menuItems: MenuItem[] = [
     {
-      icon: <AlgaeIcon size={22} />, // ← Usar componente
-    label: 'Dashboard Algas',
-    href: '/dashboard-algas',
-    badge: 'New',
-    badgeColor: '#00ff88',
-    gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 168, 107, 0.2))',
-  },
-{
-    icon: '🌿', // Ícone orgânico para blog
-    label: 'Blog',
-    href: '/blog',
-    badge: 'New',
-    badgeColor: '#00ff88',
-    gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(45, 90, 61, 0.2))',
-  },
-{
-    icon: '📊',
-    label: 'Dashboard',
-    href: '/dashboard',
-    badge: 'Beta',
-    badgeColor: '#00d4ff',
-    gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
-  },
-{
-    icon: <BlogIcon size={22} />, // ← Usar ícone SVG customizado
-    label: 'Blog',
-    href: '/blog',
-    badge: 'Hot',
-    badgeColor: '#00ff88',
-    gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(45, 90, 61, 0.2))',
-  },
+      icon: <BlogIcon size={22} />,
+      label: 'Blog',
+      href: '/blog',
+      badge: 'Hot',
+      badgeColor: '#00ff88',
+      gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(45, 90, 61, 0.2))',
+    },
+    {
+      icon: <AlgaeIcon size={22} />,
+      label: 'Dashboard Algas',
+      href: '/dashboard-algas',
+      badge: 'Beta',
+      badgeColor: '#00ff88',
+      gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 168, 107, 0.2))',
+    },
+    {
+      icon: '📊',
+      label: 'Dashboard',
+      href: '/dashboard',
+      badge: 'Beta',
+      badgeColor: '#00d4ff',
+      gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
+    },
     {
       icon: '🎯',
       label: 'Metas',
@@ -88,6 +79,14 @@ export const MenuDropdown = () => {
       badge: 'New',
       badgeColor: '#3b82f6',
       gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))',
+    },
+    {
+      icon: '🧪', // ← NOVO ÍCONE DE TESTES
+      label: 'Testes',
+      href: '/testes',
+      badge: 'Dev',
+      badgeColor: '#ff0066',
+      gradient: 'linear-gradient(135deg, rgba(255, 0, 102, 0.2), rgba(255, 170, 0, 0.2))',
     },
     {
       icon: '⚙️',
@@ -135,45 +134,52 @@ export const MenuDropdown = () => {
           </div>
 
           <div className="menu-items">
-            {menuItems.map((item, index) => (
-              <a
-                key={index}
-                href={item.href}
-                className="menu-item"
-                onClick={(e) => {
-                  if (item.onClick) {
-                    e.preventDefault();
-                    item.onClick();
-                  }
-                  setIsOpen(false);
-                }}
-                style={{
-                  background: item.gradient,
-                  animationDelay: `${index * 0.08}s`,
-                }}
-              >
-                <div className="item-icon-wrapper">
-  <span className="item-icon">
-    {typeof item.icon === 'string' ? item.icon : item.icon}
-  </span>
-  <div className="icon-glow"></div>
-</div>
-                
-                <span className="item-label">{item.label}</span>
-                
-                {item.badge && (
-                  <span 
-                    className="item-badge"
-                    style={{ 
-                      background: item.badgeColor,
-                      boxShadow: `0 0 15px ${item.badgeColor}`,
-                    }}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </a>
-            ))}
+            {menuItems.map((item, index) => {
+              // ← FIX: Usar Link do Next.js
+              const Component = item.onClick ? 'button' : Link;
+              const componentProps = item.onClick
+                ? { onClick: item.onClick, type: 'button' as const }
+                : { href: item.href || '#' };
+
+              return (
+                <Component
+                  key={index}
+                  {...componentProps}
+                  className="menu-item"
+                  onClick={(e: React.MouseEvent) => {
+                    if (item.onClick) {
+                      item.onClick();
+                    }
+                    setIsOpen(false); // ← Fechar menu após clicar
+                  }}
+                  style={{
+                    background: item.gradient,
+                    animationDelay: `${index * 0.08}s`,
+                  }}
+                >
+                  <div className="item-icon-wrapper">
+                    <span className="item-icon">
+                      {typeof item.icon === 'string' ? item.icon : item.icon}
+                    </span>
+                    <div className="icon-glow"></div>
+                  </div>
+                  
+                  <span className="item-label">{item.label}</span>
+                  
+                  {item.badge && (
+                    <span 
+                      className="item-badge"
+                      style={{ 
+                        background: item.badgeColor,
+                        boxShadow: `0 0 15px ${item.badgeColor}`,
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </Component>
+              );
+            })}
           </div>
 
           <div className="dropdown-footer">
@@ -189,6 +195,8 @@ export const MenuDropdown = () => {
           </div>
         </div>
       )}
+
+    
  <style jsx>{`
         .menu-dropdown {
           position: relative;
@@ -575,6 +583,54 @@ export const MenuDropdown = () => {
               transform: translateY(0) scale(1);
             }
           }
+.menu-items {
+          padding: 12px;
+          max-height: 450px;
+          overflow-y: auto;
+          overflow-x: hidden; /* ← ADICIONAR */
+        }
+
+        /* Melhorar scrollbar */
+        .menu-items::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .menu-items::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 10px;
+        }
+
+        .menu-items::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #00d4ff, #ff00ff);
+          border-radius: 10px;
+        }
+
+        .menu-items::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #00ffff, #ff00ff);
+        }
+
+        /* Fix para links não terem estilo de button */
+        .menu-item {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 14px 16px;
+          margin-bottom: 8px;
+          border: 2px solid transparent;
+          border-radius: 12px;
+          color: rgba(255, 255, 255, 0.95);
+          text-decoration: none; /* ← IMPORTANTE */
+          font-family: 'Courier New', monospace;
+          font-size: 14px;
+          font-weight: bold;
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          animation: itemSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+          width: 100%; /* ← ADICIONAR */
+          text-align: left; /* ← ADICIONAR */
+        }
 
           .menu-item {
             font-size: 13px;
@@ -590,6 +646,7 @@ export const MenuDropdown = () => {
             font-size: 20px;
           }
         }
+
       `}</style>
     </div>
   );
