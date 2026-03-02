@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { AlgaeIcon } from './AlgaeIcon';
+import { BlogIcon } from '../Blog/BlogIcon';
+
 
 
 interface MenuItem {
@@ -42,6 +44,14 @@ export const MenuDropdown = () => {
     badge: 'Beta',
     badgeColor: '#00d4ff',
     gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
+  },
+{
+    icon: <BlogIcon size={22} />, // ← Usar ícone SVG customizado
+    label: 'Blog',
+    href: '/blog',
+    badge: 'Hot',
+    badgeColor: '#00ff88',
+    gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(45, 90, 61, 0.2))',
   },
     {
       icon: '🎯',
