@@ -110,7 +110,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({
       {/* Imagem (se existir) */}
       {image && (
         <div className="post-image">
-          <img src={image} alt={title} />
+          <Image src={image} alt={title} />
         </div>
       )}
 
