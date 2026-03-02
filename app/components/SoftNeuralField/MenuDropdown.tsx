@@ -138,8 +138,9 @@ export const MenuDropdown = () => {
               // ← FIX: Usar Link do Next.js
               const Component = item.onClick ? 'button' : Link;
               const componentProps = item.onClick
-                ? { onClick: item.onClick, type: 'button' as const }
-                : { href: item.href || '#' };
+  ? { onClick: item.onClick, type: 'button' as const }
+  : { href: item.href || '/', type: 'link' as const };
+
 
               return (
                 <Component
