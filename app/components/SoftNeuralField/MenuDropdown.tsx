@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link'; // ← ADICIONAR
+import Link from 'next/link';
 import { AlgaeIcon } from '../Blog/AlgaeIcon';
 import { BlogIcon } from '../Blog/BlogIcon';
 
@@ -81,7 +81,7 @@ export const MenuDropdown = () => {
       gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))',
     },
     {
-      icon: '🧪', // ← NOVO ÍCONE DE TESTES
+      icon: '🧪',
       label: 'Testes',
       href: '/testes',
       badge: 'Dev',
@@ -112,6 +112,13 @@ export const MenuDropdown = () => {
     };
   }, [isOpen]);
 
+  const handleItemClick = (item: MenuItem) => {
+    if (item.onClick) {
+      item.onClick();
+    }
+    setIsOpen(false);
+  };
+
   return (
     <div className="menu-dropdown" ref={menuRef}>
       <button
@@ -135,24 +142,51 @@ export const MenuDropdown = () => {
 
           <div className="menu-items">
             {menuItems.map((item, index) => {
-              // ← FIX: Usar Link do Next.js
-              const Component = item.onClick ? 'button' : Link;
-              const componentProps = item.onClick
-  ? { onClick: item.onClick, type: 'button' as const }
-  : { href: item.href || '/', type: 'link' as const };
+              // ✅ FIX: Renderizar condicionalmente com types corretos
+              if (item.onClick) {
+                // Caso tenha onClick, renderizar como button
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    className="menu-item"
+                    onClick={() => handleItemClick(item)}
+                    style={{
+                      background: item.gradient,
+                      animationDelay: `${index * 0.08}s`,
+                    }}
+                  >
+                    <div className="item-icon-wrapper">
+                      <span className="item-icon">
+                        {typeof item.icon === 'string' ? item.icon : item.icon}
+                      </span>
+                      <div className="icon-glow"></div>
+                    </div>
+                    
+                    <span className="item-label">{item.label}</span>
+                    
+                    {item.badge && (
+                      <span 
+                        className="item-badge"
+                        style={{ 
+                          background: item.badgeColor,
+                          boxShadow: `0 0 15px ${item.badgeColor}`,
+                        }}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              }
 
-
+              // Caso contrário, renderizar como Link
               return (
-                <Component
+                <Link
                   key={index}
-                  {...componentProps}
+                  href={item.href || '/'}
                   className="menu-item"
-                  onClick={(e: React.MouseEvent) => {
-                    if (item.onClick) {
-                      item.onClick();
-                    }
-                    setIsOpen(false); // ← Fechar menu após clicar
-                  }}
+                  onClick={() => handleItemClick(item)}
                   style={{
                     background: item.gradient,
                     animationDelay: `${index * 0.08}s`,
@@ -178,7 +212,7 @@ export const MenuDropdown = () => {
                       {item.badge}
                     </span>
                   )}
-                </Component>
+                </Link>
               );
             })}
           </div>
@@ -197,8 +231,7 @@ export const MenuDropdown = () => {
         </div>
       )}
 
-    
- <style jsx>{`
+      <style jsx>{`
         .menu-dropdown {
           position: relative;
           display: inline-block;
@@ -385,6 +418,7 @@ export const MenuDropdown = () => {
           padding: 12px;
           max-height: 450px;
           overflow-y: auto;
+          overflow-x: hidden;
         }
 
         .menu-items::-webkit-scrollbar {
@@ -419,6 +453,8 @@ export const MenuDropdown = () => {
           position: relative;
           overflow: hidden;
           animation: itemSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+          width: 100%;
+          text-align: left;
         }
 
         @keyframes itemSlideIn {
@@ -584,54 +620,6 @@ export const MenuDropdown = () => {
               transform: translateY(0) scale(1);
             }
           }
-.menu-items {
-          padding: 12px;
-          max-height: 450px;
-          overflow-y: auto;
-          overflow-x: hidden; /* ← ADICIONAR */
-        }
-
-        /* Melhorar scrollbar */
-        .menu-items::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .menu-items::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.3);
-          border-radius: 10px;
-        }
-
-        .menu-items::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #00d4ff, #ff00ff);
-          border-radius: 10px;
-        }
-
-        .menu-items::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(180deg, #00ffff, #ff00ff);
-        }
-
-        /* Fix para links não terem estilo de button */
-        .menu-item {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 14px 16px;
-          margin-bottom: 8px;
-          border: 2px solid transparent;
-          border-radius: 12px;
-          color: rgba(255, 255, 255, 0.95);
-          text-decoration: none; /* ← IMPORTANTE */
-          font-family: 'Courier New', monospace;
-          font-size: 14px;
-          font-weight: bold;
-          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-          animation: itemSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
-          width: 100%; /* ← ADICIONAR */
-          text-align: left; /* ← ADICIONAR */
-        }
 
           .menu-item {
             font-size: 13px;
@@ -647,7 +635,6 @@ export const MenuDropdown = () => {
             font-size: 20px;
           }
         }
-
       `}</style>
     </div>
   );
