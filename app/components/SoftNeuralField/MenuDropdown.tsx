@@ -28,6 +28,14 @@ export const MenuDropdown = () => {
     gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 168, 107, 0.2))',
   },
 {
+    icon: '🌿', // Ícone orgânico para blog
+    label: 'Blog',
+    href: '/blog',
+    badge: 'New',
+    badgeColor: '#00ff88',
+    gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(45, 90, 61, 0.2))',
+  },
+{
     icon: '📊',
     label: 'Dashboard',
     href: '/dashboard',
