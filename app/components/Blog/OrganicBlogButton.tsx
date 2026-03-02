@@ -7,6 +7,8 @@ interface OrganicBlogButtonProps {
   onClick?: () => void;
   size?: 'small' | 'medium' | 'large';
   variant?: 'primary' | 'secondary';
+  compact?: boolean;
+  className?: string;
 }
 
 export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
@@ -14,16 +16,20 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
   onClick,
   size = 'medium',
   variant = 'primary',
+  compact = false,
+  className = '',
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const sizeStyles = {
-    small: { padding: '8px 16px', fontSize: '11px', iconSize: '14px' },
-    medium: { padding: '10px 20px', fontSize: '12px', iconSize: '16px' },
-    large: { padding: '14px 28px', fontSize: '14px', iconSize: '18px' },
+    small: { padding: '8px 16px', fontSize: '11px', iconSize: '14px', borderRadius: '16px' },
+    medium: { padding: '12px 24px', fontSize: '13px', iconSize: '16px', borderRadius: '20px' },
+    large: { padding: '16px 32px', fontSize: '15px', iconSize: '20px', borderRadius: '24px' },
   };
 
-  const currentSize = sizeStyles[size];
+  const currentSize = compact 
+    ? { padding: '8px 16px', fontSize: '11px', iconSize: '14px', borderRadius: '16px' }
+    : sizeStyles[size];
 
   const handleClick = (e: React.MouseEvent) => {
     if (onClick) {
@@ -35,63 +41,130 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
   return (
     <a
       href={href}
-      className={`organic-blog-btn ${variant}`}
+      className={`organic-blog-btn ${variant} ${compact ? 'compact' : ''} ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
     >
-      {/* Veias de fundo */}
+      {/* SVG de Veias Orgânicas (Fundo) */}
       <svg className="btn-veins" viewBox="0 0 100 40" preserveAspectRatio="none">
+        {/* Veia central */}
         <path
-          d="M 0 20 Q 25 10, 50 20 T 100 20"
-          stroke="rgba(0, 255, 136, 0.2)"
+          d="M 0 20 Q 25 15, 50 20 T 100 20"
+          stroke="rgba(255, 255, 255, 0.15)"
+          strokeWidth="1.5"
+          fill="none"
+        />
+        
+        {/* Veias laterais superiores */}
+        <path
+          d="M 10 10 Q 30 8, 50 12"
+          stroke="rgba(255, 255, 255, 0.1)"
           strokeWidth="1"
           fill="none"
         />
         <path
-          d="M 10 15 Q 30 10, 50 15"
-          stroke="rgba(0, 255, 136, 0.15)"
+          d="M 50 12 Q 70 8, 90 10"
+          stroke="rgba(255, 255, 255, 0.1)"
+          strokeWidth="1"
+          fill="none"
+        />
+        
+        {/* Veias laterais inferiores */}
+        <path
+          d="M 10 30 Q 30 32, 50 28"
+          stroke="rgba(255, 255, 255, 0.1)"
+          strokeWidth="1"
+          fill="none"
+        />
+        <path
+          d="M 50 28 Q 70 32, 90 30"
+          stroke="rgba(255, 255, 255, 0.1)"
+          strokeWidth="1"
+          fill="none"
+        />
+        
+        {/* Micro-veias decorativas */}
+        <path
+          d="M 25 20 L 25 15"
+          stroke="rgba(255, 255, 255, 0.08)"
           strokeWidth="0.5"
           fill="none"
         />
         <path
-          d="M 50 25 Q 70 30, 90 25"
-          stroke="rgba(0, 255, 136, 0.15)"
+          d="M 50 20 L 50 12"
+          stroke="rgba(255, 255, 255, 0.08)"
+          strokeWidth="0.5"
+          fill="none"
+        />
+        <path
+          d="M 75 20 L 75 15"
+          stroke="rgba(255, 255, 255, 0.08)"
           strokeWidth="0.5"
           fill="none"
         />
       </svg>
 
-      {/* Borda animada */}
-      <div
-        className="border-glow"
-        style={{
-          opacity: isHovered ? 1 : 0.5,
-        }}
-      />
+      {/* Efeito de onda (antes pseudo-elemento) */}
+      <div className={`wave-effect ${isHovered ? 'active' : ''}`} />
+
+      {/* Borda gradiente animada */}
+      <div className="border-shimmer" />
 
       {/* Conteúdo */}
       <div className="btn-content">
-        <span className="btn-icon" style={{ fontSize: currentSize.iconSize }}>
-          🌿
-        </span>
-        <span className="btn-text">Blog</span>
-        <span
-          className="btn-arrow"
-          style={{
-            transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
-          }}
+        {/* Ícone SVG de Folha */}
+        <svg
+          className="btn-icon-svg"
+          width={currentSize.iconSize}
+          height={currentSize.iconSize}
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          →
-        </span>
+          <path
+            d="M 12 2 Q 18 5, 20 12 Q 18 19, 12 22 Q 6 19, 4 12 Q 6 5, 12 2 Z"
+            fill="currentColor"
+            opacity="0.9"
+          />
+          <path
+            d="M 12 2 L 12 22"
+            stroke="rgba(0, 0, 0, 0.3)"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M 12 8 Q 15 10, 17 12"
+            stroke="rgba(0, 0, 0, 0.2)"
+            strokeWidth="1"
+          />
+          <path
+            d="M 12 8 Q 9 10, 7 12"
+            stroke="rgba(0, 0, 0, 0.2)"
+            strokeWidth="1"
+          />
+        </svg>
+
+        <span className="btn-text">Blog</span>
+        
+        {!compact && (
+          <span
+            className="btn-arrow"
+            style={{
+              transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
+            }}
+          >
+            →
+          </span>
+        )}
       </div>
 
-      {/* Partículas de hover */}
+      {/* Partículas de Hover */}
       {isHovered && (
         <>
           <div className="particle p1" />
           <div className="particle p2" />
           <div className="particle p3" />
+          <div className="particle p4" />
         </>
       )}
 
@@ -102,152 +175,224 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           align-items: center;
           justify-content: center;
           padding: ${currentSize.padding};
-          background: linear-gradient(
-            135deg,
-            rgba(0, 255, 136, 0.15),
-            rgba(45, 90, 61, 0.2)
-          );
-          backdrop-filter: blur(10px);
-          border: 1.5px solid rgba(0, 255, 136, 0.4);
-          border-radius: 12px 0 12px 0;
-          color: #00ff88;
+          background: linear-gradient(135deg, #00b894, #00cec9, #55a3ff);
+          border: none;
+          border-radius: ${currentSize.borderRadius};
+          color: white;
           font-family: 'Courier New', monospace;
           font-size: ${currentSize.fontSize};
           font-weight: bold;
           letter-spacing: 1.5px;
           text-decoration: none;
+          text-transform: uppercase;
           cursor: pointer;
           overflow: hidden;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
         }
 
         .organic-blog-btn.secondary {
-          background: linear-gradient(
-            135deg,
-            rgba(0, 212, 255, 0.15),
-            rgba(45, 90, 90, 0.2)
-          );
-          border-color: rgba(0, 212, 255, 0.4);
-          color: #00d4ff;
+          background: linear-gradient(135deg, #00d4ff, #00a8cc, #0077b6);
         }
 
         .organic-blog-btn:hover {
-          transform: translateY(-2px) scale(1.02);
-          border-color: #00ff88;
-          box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3),
-            inset 0 0 20px rgba(0, 255, 136, 0.1);
+          box-shadow: 0 0 30px rgba(0, 184, 148, 0.6);
+          transform: scale(1.05) translateY(-2px);
         }
 
         .organic-blog-btn.secondary:hover {
-          border-color: #00d4ff;
-          box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3),
-            inset 0 0 20px rgba(0, 212, 255, 0.1);
+          box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
         }
 
+        .organic-blog-btn.compact {
+          padding: 8px 16px;
+          font-size: 11px;
+          border-radius: 16px;
+        }
+
+        /* SVG de Veias */
         .btn-veins {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
           pointer-events: none;
-          opacity: 0.5;
-          z-index: 0;
+          opacity: 0.6;
+          z-index: 1;
         }
 
-        .border-glow {
+        /* Efeito de Onda */
+        .wave-effect {
           position: absolute;
-          inset: -2px;
-          border-radius: 12px 0 12px 0;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
           background: linear-gradient(
-            135deg,
-            rgba(0, 255, 136, 0.3),
+            45deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
             transparent
           );
-          filter: blur(4px);
-          transition: opacity 0.3s;
+          transform: translateX(-100%) translateY(-100%) rotate(45deg);
+          opacity: 0;
+          transition: all 0.5s;
+          z-index: 2;
+        }
+
+        .wave-effect.active {
+          animation: onda-alga 1s ease-in-out;
+          opacity: 1;
+        }
+
+        @keyframes onda-alga {
+          0% {
+            transform: translateX(-100%) translateY(-100%) rotate(45deg);
+          }
+          100% {
+            transform: translateX(100%) translateY(100%) rotate(45deg);
+          }
+        }
+
+        /* Borda Brilhante Animada */
+        .border-shimmer {
+          position: absolute;
+          inset: -2px;
+          border-radius: ${currentSize.borderRadius};
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent
+          );
+          opacity: 0;
+          animation: shimmer 3s linear infinite;
           z-index: 0;
         }
 
+        .organic-blog-btn:hover .border-shimmer {
+          opacity: 1;
+        }
+
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+
+        /* Conteúdo */
         .btn-content {
           position: relative;
           display: flex;
           align-items: center;
-          gap: 6px;
-          z-index: 1;
+          gap: 8px;
+          z-index: 3;
         }
 
-        .btn-icon {
-          display: inline-block;
-          filter: drop-shadow(0 0 4px rgba(0, 255, 136, 0.6));
-          animation: iconFloat 3s ease-in-out infinite;
+        .btn-icon-svg {
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+          animation: leafFloat 3s ease-in-out infinite;
         }
 
-        @keyframes iconFloat {
+        @keyframes leafFloat {
           0%,
           100% {
-            transform: translateY(0);
+            transform: translateY(0) rotate(0deg);
           }
           50% {
-            transform: translateY(-2px);
+            transform: translateY(-3px) rotate(2deg);
           }
         }
 
         .btn-text {
-          text-transform: uppercase;
+          position: relative;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .btn-arrow {
-          font-size: 14px;
-          transition: transform 0.3s;
+          font-size: 16px;
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
+        /* Partículas */
         .particle {
           position: absolute;
-          width: 3px;
-          height: 3px;
-          background: #00ff88;
+          width: 4px;
+          height: 4px;
+          background: rgba(255, 255, 255, 0.8);
           border-radius: 50%;
           opacity: 0;
-          animation: particleFloat 1.5s ease-out;
+          animation: particleFloat 1.8s ease-out;
+          z-index: 4;
+          box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
         }
 
         .p1 {
-          top: 20%;
+          top: 15%;
           left: 20%;
           animation-delay: 0s;
         }
 
         .p2 {
           top: 50%;
-          right: 30%;
+          right: 25%;
           animation-delay: 0.2s;
         }
 
         .p3 {
-          bottom: 30%;
+          bottom: 25%;
           left: 60%;
           animation-delay: 0.4s;
+        }
+
+        .p4 {
+          top: 70%;
+          right: 40%;
+          animation-delay: 0.6s;
         }
 
         @keyframes particleFloat {
           0% {
             opacity: 0;
-            transform: translateY(0);
+            transform: translateY(0) scale(0.5);
           }
-          50% {
+          30% {
             opacity: 1;
+            transform: translateY(-8px) scale(1);
           }
           100% {
             opacity: 0;
-            transform: translateY(-20px);
+            transform: translateY(-25px) scale(0.3);
           }
         }
 
+        /* Responsivo */
         @media (max-width: 768px) {
           .organic-blog-btn {
-            padding: 8px 14px;
-            font-size: 11px;
+            padding: 10px 20px;
+            font-size: 12px;
+            border-radius: 18px;
           }
+
+          .btn-arrow {
+            font-size: 14px;
+          }
+        }
+
+        /* Estados Ativos */
+        .organic-blog-btn:active {
+          transform: scale(0.98) translateY(0);
+          box-shadow: 0 2px 10px rgba(0, 184, 148, 0.4);
+        }
+
+        /* Acessibilidade */
+        .organic-blog-btn:focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.8);
+          outline-offset: 3px;
         }
       `}</style>
     </a>
