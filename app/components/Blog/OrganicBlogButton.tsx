@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface OrganicBlogButtonProps {
   href?: string;
@@ -20,6 +21,7 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
   className = '',
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
 
   const sizeStyles = {
     small: { padding: '8px 16px', fontSize: '11px', iconSize: '14px', borderRadius: '16px' },
@@ -31,32 +33,31 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
     ? { padding: '8px 16px', fontSize: '11px', iconSize: '14px', borderRadius: '16px' }
     : sizeStyles[size];
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     if (onClick) {
-      e.preventDefault();
       onClick();
+    } else {
+      // ✅ Navegar para href usando router
+      router.push(href);
     }
   };
 
   return (
-    <a
-      href={href}
+    <button
+      type="button"
       className={`organic-blog-btn ${variant} ${compact ? 'compact' : ''} ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
     >
-      {/* SVG de Veias Orgânicas (Fundo) */}
+      {/* SVG de Veias Orgânicas */}
       <svg className="btn-veins" viewBox="0 0 100 40" preserveAspectRatio="none">
-        {/* Veia central */}
         <path
           d="M 0 20 Q 25 15, 50 20 T 100 20"
           stroke="rgba(255, 255, 255, 0.15)"
           strokeWidth="1.5"
           fill="none"
         />
-        
-        {/* Veias laterais superiores */}
         <path
           d="M 10 10 Q 30 8, 50 12"
           stroke="rgba(255, 255, 255, 0.1)"
@@ -69,8 +70,6 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           strokeWidth="1"
           fill="none"
         />
-        
-        {/* Veias laterais inferiores */}
         <path
           d="M 10 30 Q 30 32, 50 28"
           stroke="rgba(255, 255, 255, 0.1)"
@@ -83,8 +82,6 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           strokeWidth="1"
           fill="none"
         />
-        
-        {/* Micro-veias decorativas */}
         <path
           d="M 25 20 L 25 15"
           stroke="rgba(255, 255, 255, 0.08)"
@@ -105,15 +102,14 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
         />
       </svg>
 
-      {/* Efeito de onda (antes pseudo-elemento) */}
+      {/* Efeito de onda */}
       <div className={`wave-effect ${isHovered ? 'active' : ''}`} />
 
-      {/* Borda gradiente animada */}
+      {/* Borda gradiente */}
       <div className="border-shimmer" />
 
       {/* Conteúdo */}
       <div className="btn-content">
-        {/* Ícone SVG de Folha */}
         <svg
           className="btn-icon-svg"
           width={currentSize.iconSize}
@@ -158,7 +154,7 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
         )}
       </div>
 
-      {/* Partículas de Hover */}
+      {/* Partículas */}
       {isHovered && (
         <>
           <div className="particle p1" />
@@ -210,7 +206,6 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           border-radius: 16px;
         }
 
-        /* SVG de Veias */
         .btn-veins {
           position: absolute;
           inset: 0;
@@ -221,7 +216,6 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           z-index: 1;
         }
 
-        /* Efeito de Onda */
         .wave-effect {
           position: absolute;
           top: -50%;
@@ -238,6 +232,7 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           opacity: 0;
           transition: all 0.5s;
           z-index: 2;
+          pointer-events: none;
         }
 
         .wave-effect.active {
@@ -254,7 +249,6 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           }
         }
 
-        /* Borda Brilhante Animada */
         .border-shimmer {
           position: absolute;
           inset: -2px;
@@ -268,6 +262,7 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           opacity: 0;
           animation: shimmer 3s linear infinite;
           z-index: 0;
+          pointer-events: none;
         }
 
         .organic-blog-btn:hover .border-shimmer {
@@ -283,13 +278,13 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           }
         }
 
-        /* Conteúdo */
         .btn-content {
           position: relative;
           display: flex;
           align-items: center;
           gap: 8px;
           z-index: 3;
+          pointer-events: none;
         }
 
         .btn-icon-svg {
@@ -298,8 +293,7 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
         }
 
         @keyframes leafFloat {
-          0%,
-          100% {
+          0%, 100% {
             transform: translateY(0) rotate(0deg);
           }
           50% {
@@ -318,7 +312,6 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
-        /* Partículas */
         .particle {
           position: absolute;
           width: 4px;
@@ -329,6 +322,7 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           animation: particleFloat 1.8s ease-out;
           z-index: 4;
           box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+          pointer-events: none;
         }
 
         .p1 {
@@ -370,7 +364,6 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           }
         }
 
-        /* Responsivo */
         @media (max-width: 768px) {
           .organic-blog-btn {
             padding: 10px 20px;
@@ -383,18 +376,16 @@ export const OrganicBlogButton: React.FC<OrganicBlogButtonProps> = ({
           }
         }
 
-        /* Estados Ativos */
         .organic-blog-btn:active {
           transform: scale(0.98) translateY(0);
           box-shadow: 0 2px 10px rgba(0, 184, 148, 0.4);
         }
 
-        /* Acessibilidade */
         .organic-blog-btn:focus-visible {
           outline: 2px solid rgba(255, 255, 255, 0.8);
           outline-offset: 3px;
         }
       `}</style>
-    </a>
+    </button>
   );
 };
