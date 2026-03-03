@@ -1,5 +1,5 @@
 ---
-title: "Como formatar seu Markdown para Blog"
+title: "O futuro desse Blog"
 date: "2026-02-20"
 slug: "Esperando-proximo-capitulo"
 description: "Um guia rápido sobre Front Matter e boas práticas de escrita."
