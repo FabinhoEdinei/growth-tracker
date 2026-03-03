@@ -10,7 +10,7 @@ export default function DashboardAlgasPage() {
       color: '#00ff88',
     }}>
       <div style={{ textAlign: 'center' }}>
-        <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>🦠</h1>
+        <h1 style={{ fontSize: '448px', marginBottom: '20px' }}>🦠</h1>
         <h2 style={{ fontSize: '32px', marginBottom: '10px' }}>Dashboard Algas</h2>
         <p style={{ fontSize: '14px', color: 'rgba(0,255,136,0.6)' }}>
           EM CONSTRUÇÃO
