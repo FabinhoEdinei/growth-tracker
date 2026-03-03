@@ -204,6 +204,7 @@ export const MenuDropdown = () => {
         .menu-dropdown {
           position: relative;
           display: inline-block;
+          pointer-events: auto;
         }
 
         .menu-button {
@@ -294,6 +295,7 @@ export const MenuDropdown = () => {
           z-index: 1000;
           animation: dropdownSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           overflow: hidden;
+          pointer-events: auto;
         }
 
         .panel-glow {
@@ -430,6 +432,7 @@ export const MenuDropdown = () => {
           animation: itemSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
           width: 100%;
           text-align: left;
+          pointer-events: auto;
         }
 
         @keyframes itemSlideIn {

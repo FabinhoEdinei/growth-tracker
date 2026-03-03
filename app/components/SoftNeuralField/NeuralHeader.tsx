@@ -161,6 +161,7 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
               0 0 30px rgba(0, 255, 255, calc(0.2 + var(--glow-intensity) * 0.4)),
               0 5px 25px rgba(0, 0, 0, 0.5);
             border: 1.5px solid rgba(0, 255, 255, calc(0.2 + var(--glow-intensity) * 0.3));
+            pointer-events: auto;
           }
 
           .tech-corner {
@@ -266,6 +267,7 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             justify-content: center;
             gap: 8px;
             margin-top: 8px;
+            pointer-events: auto;
           }
 
           .botao-blog {
@@ -278,6 +280,8 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .botao-blog::before {
