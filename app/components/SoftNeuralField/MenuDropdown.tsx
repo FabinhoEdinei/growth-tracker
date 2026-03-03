@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AlgaeIcon } from '../Blog/AlgaeIcon';
 import { BlogIcon } from '../Blog/BlogIcon';
 
 interface MenuItem {
   icon: string | React.ReactNode;
   label: string;
-  href?: string;
+  href: string;
   onClick?: () => void;
   badge?: string;
   badgeColor?: string;
@@ -18,6 +18,7 @@ interface MenuItem {
 export const MenuDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const menuItems: MenuItem[] = [
     {
@@ -112,10 +113,17 @@ export const MenuDropdown = () => {
     };
   }, [isOpen]);
 
-  const handleItemClick = (item: MenuItem) => {
+  const handleItemClick = (item: MenuItem, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (item.onClick) {
       item.onClick();
+    } else {
+      // ✅ Navegar usando router
+      router.push(item.href);
     }
+    
     setIsOpen(false);
   };
 
@@ -125,6 +133,7 @@ export const MenuDropdown = () => {
         className="menu-button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Menu"
+        type="button"
       >
         <span className="menu-icon">🗂️</span>
         <span className="menu-text">Menu</span>
@@ -140,81 +149,41 @@ export const MenuDropdown = () => {
             <span className="header-text">GROWTH MODULES</span>
           </div>
 
+          {/* ✅ SCROLL FUNCIONAL */}
           <div className="menu-items">
-            {menuItems.map((item, index) => {
-              // ✅ FIX: Renderizar condicionalmente com types corretos
-              if (item.onClick) {
-                // Caso tenha onClick, renderizar como button
-                return (
-                  <button
-                    key={index}
-                    type="button"
-                    className="menu-item"
-                    onClick={() => handleItemClick(item)}
-                    style={{
-                      background: item.gradient,
-                      animationDelay: `${index * 0.08}s`,
+            {menuItems.map((item, index) => (
+              <button
+                key={index}
+                type="button"
+                className="menu-item"
+                onClick={(e) => handleItemClick(item, e)}
+                style={{
+                  background: item.gradient,
+                  animationDelay: `${index * 0.08}s`,
+                }}
+              >
+                <div className="item-icon-wrapper">
+                  <span className="item-icon">
+                    {typeof item.icon === 'string' ? item.icon : item.icon}
+                  </span>
+                  <div className="icon-glow"></div>
+                </div>
+                
+                <span className="item-label">{item.label}</span>
+                
+                {item.badge && (
+                  <span 
+                    className="item-badge"
+                    style={{ 
+                      background: item.badgeColor,
+                      boxShadow: `0 0 15px ${item.badgeColor}`,
                     }}
                   >
-                    <div className="item-icon-wrapper">
-                      <span className="item-icon">
-                        {typeof item.icon === 'string' ? item.icon : item.icon}
-                      </span>
-                      <div className="icon-glow"></div>
-                    </div>
-                    
-                    <span className="item-label">{item.label}</span>
-                    
-                    {item.badge && (
-                      <span 
-                        className="item-badge"
-                        style={{ 
-                          background: item.badgeColor,
-                          boxShadow: `0 0 15px ${item.badgeColor}`,
-                        }}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              }
-
-              // Caso contrário, renderizar como Link
-              return (
-                <Link
-                  key={index}
-                  href={item.href || '/'}
-                  className="menu-item"
-                  onClick={() => handleItemClick(item)}
-                  style={{
-                    background: item.gradient,
-                    animationDelay: `${index * 0.08}s`,
-                  }}
-                >
-                  <div className="item-icon-wrapper">
-                    <span className="item-icon">
-                      {typeof item.icon === 'string' ? item.icon : item.icon}
-                    </span>
-                    <div className="icon-glow"></div>
-                  </div>
-                  
-                  <span className="item-label">{item.label}</span>
-                  
-                  {item.badge && (
-                    <span 
-                      className="item-badge"
-                      style={{ 
-                        background: item.badgeColor,
-                        boxShadow: `0 0 15px ${item.badgeColor}`,
-                      }}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
 
           <div className="dropdown-footer">
@@ -303,6 +272,7 @@ export const MenuDropdown = () => {
           left: 50%;
           transform: translateX(-50%);
           min-width: 320px;
+          max-width: 340px;
           background: linear-gradient(
             135deg,
             rgba(10, 5, 30, 0.98),
@@ -324,7 +294,6 @@ export const MenuDropdown = () => {
           z-index: 1000;
           animation: dropdownSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
           overflow: hidden;
-          position: relative;
         }
 
         .panel-glow {
@@ -414,25 +383,32 @@ export const MenuDropdown = () => {
           font-weight: bold;
         }
 
+        /* ✅ SCROLL FUNCIONAL */
         .menu-items {
           padding: 12px;
-          max-height: 450px;
+          max-height: 380px;
           overflow-y: auto;
           overflow-x: hidden;
         }
 
         .menu-items::-webkit-scrollbar {
-          width: 6px;
+          width: 8px;
         }
 
         .menu-items::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.3);
+          background: rgba(0, 0, 0, 0.4);
           border-radius: 10px;
+          margin: 4px;
         }
 
         .menu-items::-webkit-scrollbar-thumb {
           background: linear-gradient(180deg, #00d4ff, #ff00ff);
           border-radius: 10px;
+          border: 2px solid rgba(0, 0, 0, 0.4);
+        }
+
+        .menu-items::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #00ffff, #ff00ff);
         }
 
         .menu-item {
@@ -444,7 +420,6 @@ export const MenuDropdown = () => {
           border: 2px solid transparent;
           border-radius: 12px;
           color: rgba(255, 255, 255, 0.95);
-          text-decoration: none;
           font-family: 'Courier New', monospace;
           font-size: 14px;
           font-weight: bold;
@@ -550,6 +525,7 @@ export const MenuDropdown = () => {
           border-radius: 6px;
           letter-spacing: 1.5px;
           border: 1.5px solid rgba(255, 255, 255, 0.3);
+          flex-shrink: 0;
         }
 
         .dropdown-footer {
@@ -581,7 +557,6 @@ export const MenuDropdown = () => {
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          text-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
         }
 
         .stat-label {
@@ -619,6 +594,10 @@ export const MenuDropdown = () => {
               opacity: 1;
               transform: translateY(0) scale(1);
             }
+          }
+
+          .menu-items {
+            max-height: 320px;
           }
 
           .menu-item {
