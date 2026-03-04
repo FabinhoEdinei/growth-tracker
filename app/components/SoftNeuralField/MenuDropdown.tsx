@@ -48,7 +48,7 @@ export const MenuDropdown = () => {
     {
       icon: '🎯',
       label: 'Metas',
-      href: '/metas',
+      href: '/tv-empresarial',
       gradient: 'linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(138, 43, 226, 0.2))',
     },
     {

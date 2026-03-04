@@ -1,11 +1,11 @@
 "use client"
 
-import MetaCard from "@/components/tv/MetaCard"
-import ProducaoCard from "@/components/tv/ProducaoCard"
-import RankingCard from "@/components/tv/RankingCard"
-import ComunicadoCard from "@/components/tv/ComunicadoCard"
-import ClimaCard from "@/components/tv/ClimaCard"
-import TvFooter from "@/components/tv/TvFooter"
+import MetaCard from "@/app/components/tv/MetaCard"
+import ProducaoCard from "@/app/components/tv/ProducaoCard"
+import RankingCard from "@/app/components/tv/RankingCard"
+import ComunicadoCard from "@/app/components/tv/ComunicadoCard"
+import ClimaCard from "@/app/components/tv/ClimaCard"
+import TvFooter from "@/app/components/tv/TvFooter"
 
 export default function TvEmpresarial() {
   return (
