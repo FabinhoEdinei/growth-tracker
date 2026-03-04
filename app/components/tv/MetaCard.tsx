@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion'; // ✅ Importe Variants
 import { Target, TrendingUp, Users, Zap, Award, Activity, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -12,7 +12,6 @@ export default function MetaCard() {
     return () => clearInterval(timer);
   }, []);
 
-  // Dados simulados
   const metas = [
     { 
       label: 'Meta Diária', 
@@ -47,8 +46,8 @@ export default function MetaCard() {
       bgGradient: 'from-blue-500/10 to-blue-600/5',
       borderColor: 'border-blue-200',
       progress: 100,
-      trend: '+3',      trendColor: 'text-blue-600'
-    },
+      trend: '+3',
+      trendColor: 'text-blue-600'    },
     { 
       label: 'Crescimento', 
       value: '+23%', 
@@ -63,25 +62,29 @@ export default function MetaCard() {
     },
   ];
 
-  // Configurações de animação para o efeito de "construção"
-  const containerVariants = {
+  // ✅ Tipagem explícita com Variants do framer-motion
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15, // Delay entre cada item aparecer
+        staggerChildren: 0.15,
         delayChildren: 0.2
       }
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
     visible: { 
       opacity: 1, 
       y: 0, 
       scale: 1,
-      transition: { type: "spring", stiffness: 100, damping: 15 }
+      transition: { 
+        type: "spring" as const, // ✅ "as const" força o tipo literal
+        stiffness: 100, 
+        damping: 15 
+      }
     }
   };
 
@@ -93,10 +96,10 @@ export default function MetaCard() {
         animate="visible"
         className="max-w-5xl mx-auto bg-white/60 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/80 overflow-hidden relative"
       >
-        {/* Efeito de brilho superior (Porcelana Shine) */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
+        {/* Efeito de brilho superior */}        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
 
-        {/* Header */}        <div className="p-6 md:p-10 border-b border-slate-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+        {/* Header */}
+        <div className="p-6 md:p-10 border-b border-slate-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <motion.div variants={itemVariants} className="flex items-center gap-5">
             <div className="p-4 bg-white rounded-2xl shadow-lg shadow-emerald-500/10 border border-emerald-100">
               <Target className="w-8 h-8 text-emerald-600" />
@@ -127,7 +130,7 @@ export default function MetaCard() {
           </motion.div>
         </div>
 
-        {/* Grid de Metas - Responsivo (1 col mobile, 2 col desktop) */}
+        {/* Grid de Metas */}
         <div className="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
           {metas.map((meta) => (
             <motion.div
@@ -142,10 +145,10 @@ export default function MetaCard() {
                 <div className={`px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-slate-100 shadow-sm`}>
                   <span className={`text-sm font-bold ${meta.trendColor}`}>{meta.trend}</span>
                 </div>
-              </div>
-              
+              </div>              
               <div className="mb-6">
-                <p className="text-slate-500 font-medium text-sm uppercase tracking-wider mb-1">{meta.label}</p>                <div className="flex items-baseline gap-2">
+                <p className="text-slate-500 font-medium text-sm uppercase tracking-wider mb-1">{meta.label}</p>
+                <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-extrabold text-slate-800 tracking-tighter">
                     {meta.value}
                   </span>
@@ -153,7 +156,7 @@ export default function MetaCard() {
                 </div>
               </div>
 
-              {/* Barra de Progresso Estilo "Clean" */}
+              {/* Barra de Progresso */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   <span>Progresso</span>
@@ -180,7 +183,6 @@ export default function MetaCard() {
           className="p-6 md:p-10 pt-0 relative z-10"
         >
           <div className="relative overflow-hidden rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Círculo decorativo de fundo */}
             <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-50 rounded-full blur-2xl" />
             
             <div className="flex items-center gap-5 relative z-10">
@@ -192,9 +194,9 @@ export default function MetaCard() {
                   Meta Semanal 92% Completa!
                 </p>
                 <p className="text-slate-500 font-medium mt-1">
-                  Desempenho excepcional. Mantenha o ritmo! 🚀
-                </p>
-              </div>            </div>
+                  Desempenho excepcional. Mantenha o ritmo! 🚀                </p>
+              </div>
+            </div>
             
             <div className="flex items-center gap-3 px-6 py-3 bg-emerald-50 rounded-xl border border-emerald-100 relative z-10">
               <Activity className="w-5 h-5 text-emerald-600" />
@@ -203,7 +205,7 @@ export default function MetaCard() {
           </div>
         </motion.div>
 
-        {/* Footer Stats - Oculto em mobile muito pequeno se necessário, mas aqui mantido adaptável */}
+        {/* Footer Stats */}
         <motion.div 
           variants={itemVariants}
           className="px-6 md:px-10 pb-10 pt-2 grid grid-cols-2 md:grid-cols-3 gap-4 relative z-10"
