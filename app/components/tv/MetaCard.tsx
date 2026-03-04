@@ -1,7 +1,7 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { Target, TrendingUp, Users, Zap, Award, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Target, TrendingUp, Users, Zap, Award, Activity, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function MetaCard() {
@@ -12,193 +12,214 @@ export default function MetaCard() {
     return () => clearInterval(timer);
   }, []);
 
+  // Dados simulados
   const metas = [
     { 
       label: 'Meta Diária', 
       value: '85%', 
       subvalue: 'atingida',
       icon: Target, 
-      color: 'from-emerald-400 to-emerald-600',
-      bgColor: 'bg-emerald-500/20',
-      borderColor: 'border-emerald-500/30',
+      color: 'text-emerald-600',
+      bgGradient: 'from-emerald-500/10 to-emerald-600/5',
+      borderColor: 'border-emerald-200',
       progress: 85,
-      trend: '+12%'
+      trend: '+12%',
+      trendColor: 'text-emerald-600'
     },
     { 
       label: 'Produção', 
       value: '1.240', 
       subvalue: 'unidades',
       icon: Zap, 
-      color: 'from-amber-400 to-orange-500',
-      bgColor: 'bg-amber-500/20',
-      borderColor: 'border-amber-500/30',
+      color: 'text-amber-600',
+      bgGradient: 'from-amber-500/10 to-amber-600/5',
+      borderColor: 'border-amber-200',
       progress: 72,
-      trend: '+8%'
+      trend: '+8%',
+      trendColor: 'text-amber-600'
     },
     { 
       label: 'Equipe Ativa', 
       value: '42', 
       subvalue: 'colaboradores',
       icon: Users, 
-      color: 'from-blue-400 to-blue-600',
-      bgColor: 'bg-blue-500/20',
-      borderColor: 'border-blue-500/30',
+      color: 'text-blue-600',
+      bgGradient: 'from-blue-500/10 to-blue-600/5',
+      borderColor: 'border-blue-200',
       progress: 100,
-      trend: '+3'
+      trend: '+3',      trendColor: 'text-blue-600'
     },
     { 
-      label: 'Crescimento',       value: '+23%', 
+      label: 'Crescimento', 
+      value: '+23%', 
       subvalue: 'vs mês anterior',
       icon: TrendingUp, 
-      color: 'from-purple-400 to-purple-600',
-      bgColor: 'bg-purple-500/20',
-      borderColor: 'border-purple-500/30',
+      color: 'text-purple-600',
+      bgGradient: 'from-purple-500/10 to-purple-600/5',
+      borderColor: 'border-purple-200',
       progress: 23,
-      trend: '↑'
+      trend: '↑',
+      trendColor: 'text-purple-600'
     },
   ];
 
+  // Configurações de animação para o efeito de "construção"
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15, // Delay entre cada item aparecer
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { type: "spring", stiffness: 100, damping: 15 }
+    }
+  };
+
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-      
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 p-4 md:p-8 font-sans">
       <motion.div 
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-8 relative z-10"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-5xl mx-auto bg-white/60 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/80 overflow-hidden relative"
       >
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl shadow-lg shadow-emerald-500/30">
-            <Target className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="text-4xl font-bold text-white tracking-tight">
-              Metas do Dia
-            </h3>
-            <p className="text-white/50 text-lg">
-              {currentTime.toLocaleDateString('pt-BR', { 
-                weekday: 'long', 
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric' 
-              })}
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-2xl border border-white/10">
-          <Activity className="w-5 h-5 text-emerald-400 animate-pulse" />
-          <span className="text-white/80 text-lg font-medium">Tempo Real</span>
-        </div>
-      </motion.div>
+        {/* Efeito de brilho superior (Porcelana Shine) */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
 
-      {/* Grid de Metas */}
-      <div className="grid grid-cols-2 gap-6 flex-1 relative z-10">        {metas.map((meta, i) => (
-          <motion.div
-            key={meta.label}
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: i * 0.15, type: "spring", stiffness: 100 }}
-            whileHover={{ scale: 1.02, y: -5 }}
-            className={`${meta.bgColor} rounded-2xl p-6 border ${meta.borderColor} backdrop-blur-sm group transition-all duration-300`}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`p-3 rounded-xl bg-gradient-to-br ${meta.color} shadow-lg`}>
-                <meta.icon className="w-6 h-6 text-white" />
-              </div>
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 + i * 0.1 }}
-                className="px-3 py-1 bg-white/10 rounded-full"
-              >
-                <span className="text-white/90 text-sm font-semibold">{meta.trend}</span>
-              </motion.div>
+        {/* Header */}        <div className="p-6 md:p-10 border-b border-slate-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <motion.div variants={itemVariants} className="flex items-center gap-5">
+            <div className="p-4 bg-white rounded-2xl shadow-lg shadow-emerald-500/10 border border-emerald-100">
+              <Target className="w-8 h-8 text-emerald-600" />
             </div>
-            
-            <div className="mb-2">
-              <p className="text-white/60 text-lg mb-1">{meta.label}</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-bold text-white tracking-tight">
-                  {meta.value}
+            <div>
+              <h3 className="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">
+                Metas do Dia
+              </h3>
+              <div className="flex items-center gap-2 mt-1 text-slate-500">
+                <Calendar className="w-4 h-4" />
+                <span className="font-medium text-lg capitalize">
+                  {currentTime.toLocaleDateString('pt-BR', { 
+                    weekday: 'long', 
+                    day: '2-digit', 
+                    month: 'long'
+                  })}
                 </span>
-                <span className="text-white/50 text-xl">{meta.subvalue}</span>
               </div>
             </div>
-
-            {/* Progress Bar */}
-            <div className="mt-4 h-3 bg-white/10 rounded-full overflow-hidden">
-              <motion.div 
-                className={`h-full rounded-full bg-gradient-to-r ${meta.color} relative`}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(meta.progress, 100)}%` }}
-                transition={{ duration: 1.5, delay: 0.5 + i * 0.1, ease: "easeOut" }}
-              >
-                <div className="absolute inset-0 bg-white/20 animate-pulse" />
-              </motion.div>
-            </div>
-            
-            <div className="mt-2 flex justify-between items-center">
-              <span className="text-white/40 text-sm">Progresso</span>
-              <span className="text-white font-semibold">{meta.progress}%</span>
-            </div>
-          </motion.div>        ))}
-      </div>
-
-      {/* Weekly Goal Banner */}
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2, type: "spring" }}
-        className="mt-6 relative z-10"
-      >
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-emerald-500/20 border border-emerald-500/30 p-6">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+          </motion.div>
           
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl shadow-lg">
-                <Award className="w-8 h-8 text-white" />
+          <motion.div variants={itemVariants} className="flex items-center gap-3 px-5 py-3 bg-white rounded-2xl shadow-sm border border-slate-100 self-start md:self-auto">
+            <div className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </div>
+            <span className="text-slate-700 font-bold tracking-wide uppercase text-sm">Tempo Real</span>
+          </motion.div>
+        </div>
+
+        {/* Grid de Metas - Responsivo (1 col mobile, 2 col desktop) */}
+        <div className="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+          {metas.map((meta) => (
+            <motion.div
+              key={meta.label}
+              variants={itemVariants}
+              className={`relative overflow-hidden rounded-3xl p-6 border bg-gradient-to-br ${meta.bgGradient} ${meta.borderColor} shadow-sm hover:shadow-md transition-all duration-300 group`}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className={`p-3 rounded-2xl bg-white shadow-sm border border-slate-100 group-hover:scale-110 transition-transform duration-300`}>
+                  <meta.icon className={`w-6 h-6 ${meta.color}`} />
+                </div>
+                <div className={`px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-slate-100 shadow-sm`}>
+                  <span className={`text-sm font-bold ${meta.trendColor}`}>{meta.trend}</span>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-slate-500 font-medium text-sm uppercase tracking-wider mb-1">{meta.label}</p>                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-extrabold text-slate-800 tracking-tighter">
+                    {meta.value}
+                  </span>
+                  <span className="text-slate-400 font-medium text-lg">{meta.subvalue}</span>
+                </div>
+              </div>
+
+              {/* Barra de Progresso Estilo "Clean" */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  <span>Progresso</span>
+                  <span>{meta.progress}%</span>
+                </div>
+                <div className="h-3 bg-slate-100/80 rounded-full overflow-hidden backdrop-blur-sm">
+                  <motion.div 
+                    className={`h-full rounded-full bg-gradient-to-r ${meta.color.replace('text', 'from').replace('600', '500')} to-${meta.color.replace('text', '').replace('-600', '')}-400 relative`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(meta.progress, 100)}%` }}
+                    transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                  >
+                    <div className="absolute inset-0 bg-white/30" />
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Banner Semanal */}
+        <motion.div 
+          variants={itemVariants}
+          className="p-6 md:p-10 pt-0 relative z-10"
+        >
+          <div className="relative overflow-hidden rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Círculo decorativo de fundo */}
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-emerald-50 rounded-full blur-2xl" />
+            
+            <div className="flex items-center gap-5 relative z-10">
+              <div className="p-4 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl shadow-lg shadow-orange-500/20 text-white">
+                <Award className="w-8 h-8" />
               </div>
               <div>
-                <p className="text-emerald-400 text-2xl font-bold">
+                <p className="text-slate-800 text-xl font-bold">
                   Meta Semanal 92% Completa!
                 </p>
-                <p className="text-white/60 text-lg">
-                  Excelente desempenho! Mantenha o ritmo 🚀
+                <p className="text-slate-500 font-medium mt-1">
+                  Desempenho excepcional. Mantenha o ritmo! 🚀
                 </p>
-              </div>
-            </div>
+              </div>            </div>
             
-            <div className="hidden lg:flex items-center gap-2 px-6 py-3 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
-              <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-emerald-400 font-semibold text-lg">On Track</span>
+            <div className="flex items-center gap-3 px-6 py-3 bg-emerald-50 rounded-xl border border-emerald-100 relative z-10">
+              <Activity className="w-5 h-5 text-emerald-600" />
+              <span className="text-emerald-700 font-bold">On Track</span>
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Footer Stats */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="mt-6 grid grid-cols-3 gap-4 relative z-10"
-      >
-        <div className="text-center p-4 bg-white/5 rounded-xl border border-white/10">
-          <p className="text-white/40 text-sm mb-1">Produtividade</p>
-          <p className="text-2xl font-bold text-white">94%</p>
-        </div>
-        <div className="text-center p-4 bg-white/5 rounded-xl border border-white/10">
-          <p className="text-white/40 text-sm mb-1">Eficiência</p>
-          <p className="text-2xl font-bold text-emerald-400">Alta</p>        </div>
-        <div className="text-center p-4 bg-white/5 rounded-xl border border-white/10">
-          <p className="text-white/40 text-sm mb-1">Tempo Restante</p>
-          <p className="text-2xl font-bold text-amber-400">4h 23m</p>
-        </div>
+        {/* Footer Stats - Oculto em mobile muito pequeno se necessário, mas aqui mantido adaptável */}
+        <motion.div 
+          variants={itemVariants}
+          className="px-6 md:px-10 pb-10 pt-2 grid grid-cols-2 md:grid-cols-3 gap-4 relative z-10"
+        >
+          {[
+            { label: 'Produtividade', value: '94%', color: 'text-slate-800' },
+            { label: 'Eficiência', value: 'Alta', color: 'text-emerald-600' },
+            { label: 'Tempo Restante', value: '4h 23m', color: 'text-amber-600' }
+          ].map((stat, idx) => (
+            <div key={idx} className="text-center md:text-left p-4 rounded-2xl bg-white/40 border border-white/60 backdrop-blur-sm">
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{stat.label}</p>
+              <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+            </div>
+          ))}
+        </motion.div>
+
       </motion.div>
     </div>
   );
