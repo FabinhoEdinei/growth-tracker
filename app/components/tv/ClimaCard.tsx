@@ -19,7 +19,7 @@ export default function ClimaCard() {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border border-white/10">
+    <div className="h-full flex flex-col bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -86,7 +86,7 @@ export default function ClimaCard() {
         className="mt-4 p-4 bg-pink-500/10 rounded-xl border border-pink-500/20"
       >
         <p className="text-pink-400 text-sm text-center">
-          💡 Dica: Reconheça um colega hoje! A gratidão aumenta o engajamento.
+          � Dica: Reconheça um colega hoje! A gratidão aumenta o engajamento.
         </p>
       </motion.div>
     </div>

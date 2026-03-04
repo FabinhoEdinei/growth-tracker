@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlgaeIcon } from '../Blog/AlgaeIcon';
 import { BlogIcon } from '../Blog/BlogIcon';
+import { Tv } from 'lucide-react';
 
 interface MenuItem {
   icon: string | React.ReactNode;
@@ -46,10 +47,10 @@ export const MenuDropdown = () => {
       gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
     },
     {
-      icon: '🎯',
-      label: 'Metas',
+      icon: <Tv className="text-purple-500" size={22} />,
+      label: 'TV Empresarial',
       href: '/tv-empresarial',
-      gradient: 'linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(138, 43, 226, 0.2))',
+      gradient: 'linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(75, 0, 130, 0.2))',
     },
     {
       icon: '💼',

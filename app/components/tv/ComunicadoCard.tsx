@@ -39,7 +39,7 @@ export default function ComunicadoCard() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border border-white/10">
+    <div className="h-full flex flex-col bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

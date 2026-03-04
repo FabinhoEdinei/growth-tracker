@@ -4,7 +4,11 @@ import { motion, Variants } from 'framer-motion'; // ✅ Importe Variants
 import { Target, TrendingUp, Users, Zap, Award, Activity, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-export default function MetaCard() {
+interface MetaCardProps {
+  compact?: boolean;
+}
+
+export default function MetaCard({ compact }: MetaCardProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -88,13 +92,21 @@ export default function MetaCard() {
     }
   };
 
+  const containerClass = compact
+    ? 'h-full flex flex-col bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/20'
+    : 'min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 p-4 md:p-8 font-sans';
+
+  const wrapperClass = compact
+    ? 'max-w-full bg-transparent shadow-none overflow-visible relative'
+    : 'max-w-5xl mx-auto bg-white/60 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/80 overflow-hidden relative';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 p-4 md:p-8 font-sans">
+    <div className={containerClass}>
       <motion.div 
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-5xl mx-auto bg-white/60 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/80 overflow-hidden relative"
+        className={wrapperClass}
       >
         {/* Efeito de brilho superior */}        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
 

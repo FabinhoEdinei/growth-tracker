@@ -3,6 +3,7 @@
 
 import { motion } from 'framer-motion';
 import { Play, Tv, ArrowRight, CheckCircle } from 'lucide-react';
+import AppShowcase from './AppShowcase';
 
 export default function TvFooter() {
   const beneficios = [
@@ -13,7 +14,7 @@ export default function TvFooter() {
   ];
 
   return (
-    <footer className="relative bg-black border-t border-white/10 py-24 overflow-hidden">
+    <footer className="relative bg-[#0A0F1C] border-t border-white/10 py-24 overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-t from-purple-900/10 to-transparent" />
@@ -28,7 +29,7 @@ export default function TvFooter() {
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
               Pronto para transformar sua{' '}
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
                 comunicação interna
               </span>?
             </h2>
@@ -56,7 +57,7 @@ export default function TvFooter() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-semibold text-lg flex items-center gap-2 hover:shadow-lg hover:shadow-purple-500/25 transition-shadow"
+              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-cyan-500 text-white rounded-full font-semibold text-lg flex items-center gap-2 hover:shadow-lg hover:shadow-purple-500/25 transition-shadow"
             >
               Começar agora <ArrowRight className="w-5 h-5" />
             </motion.button>
@@ -74,7 +75,7 @@ export default function TvFooter() {
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mb-6 relative z-10"
+                className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 flex items-center justify-center mb-6 relative z-10"
               >
                 <Play className="w-8 h-8 text-white fill-white ml-1" />
               </motion.div>
@@ -84,6 +85,9 @@ export default function TvFooter() {
             </div>
           </motion.div>
         </div>
+
+        {/* app showcase phones */}
+        <AppShowcase />
 
         <motion.div
           initial={{ opacity: 0 }}
