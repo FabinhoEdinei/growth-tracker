@@ -273,7 +273,7 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
   background: linear-gradient(135deg, #00b894, #00cec9, #55a3ff); /* Verde alga para azul marinho */
   border: none;
   padding: 12px 24px;
-  border-radius: 20px;
+  border-radius: 8px;
   color: white;
   font-weight: bold;
   position: relative;
@@ -343,7 +343,9 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
           .visit-counter-wrapper {
             margin-top: 8px;
             display: flex;
+            flex: 0 1 auto;
             justify-content: center;
+
           }
 
           @media (max-width: 768px) {
