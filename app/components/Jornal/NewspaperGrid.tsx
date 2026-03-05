@@ -2,6 +2,7 @@
 
 import { NewspaperCard } from './NewspaperCard';
 import { JornalCard } from '@/app/types/jornal';
+import styles from './NewspaperGrid.module.css';
 
 interface NewspaperGridProps {
   cards: JornalCard[];
@@ -21,105 +22,36 @@ export const NewspaperGrid: React.FC<NewspaperGridProps> = ({ cards }) => {
     });
   }
 
+  // Mapear grid areas para cada card
+  const gridAreas = [
+    'header',   // Card 0
+    'card-1',   // Card 1
+    'card-2',   // Card 2
+    'card-3',   // Card 3
+    'card-4',   // Card 4
+    'card-5',   // Card 5
+    'card-6',   // Card 6
+    'card-7',   // Card 7
+    'card-8',   // Card 8
+    'card-9',   // Card 9
+    'card-10',  // Card 10
+    'card-11',  // Card 11
+    'card-12',  // Card 12
+  ];
+
   return (
-    <div className="newspaper-grid-container">
-      <div className="newspaper-grid">
-        {/* Card 01 - HEADER (largo no topo) */}
-        {gridCards[0]?.title && (
-          <NewspaperCard {...gridCards[0]} gridArea="header" />
-        )}
-
-        {/* Card 02 - INDEPENDENTE (esquerda superior) */}
-        {gridCards[1]?.title && (
-          <NewspaperCard {...gridCards[1]} gridArea="card-02" />
-        )}
-
-        {/* Cards 03-12 */}
-        {gridCards.slice(2, 12).map((card, index) => (
+    <div className={styles.newspaperGridContainer}>
+      <div className={styles.newspaperGrid}>
+        {gridCards.slice(0, 12).map((card, index) => (
           card.title ? (
             <NewspaperCard
               key={card.slug}
               {...card}
-              gridArea={`card-${index + 3}`}
+              gridArea={gridAreas[index]}
             />
           ) : null
         ))}
       </div>
-
-      <style jsx>{`
-        .newspaper-grid-container {
-          max-width: 1400px;
-          margin: 0 auto;
-          padding: 20px;
-        }
-
-        /* DESKTOP LAYOUT - Como jornal vintage */
-        .newspaper-grid {
-          display: grid;
-          gap: 16px;
-          grid-template-columns: repeat(12, 1fr);
-          grid-template-rows: auto;
-          grid-template-areas:
-            "header header header header header header header header header header header header"
-            "card-02 card-02 card-02 card-02 card-3 card-3 card-3 card-3 card-4 card-4 card-4 card-4"
-            "largo1 largo1 largo1 largo1 largo1 largo1 card-5 card-5 card-5 card-6 card-6 card-6"
-            "card-8 card-8 card-8 card-8 card-8 card-8 card-8 card-8 card-7 card-7 card-7 card-7"
-            "card-8 card-8 card-8 card-8 card-8 card-8 card-8 card-8 card-9 card-9 card-9 card-9"
-            "card-10 card-10 card-10 card-10 card-11 card-11 card-11 card-11 card-12 card-12 card-12 card-12";
-        }
-
-        /* Tablet - 768px a 1024px */
-        @media (max-width: 1024px) {
-          .newspaper-grid {
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-areas:
-              "header header header header header header"
-              "card-02 card-02 card-02 card-3 card-3 card-3"
-              "card-4 card-4 card-4 card-5 card-5 card-5"
-              "largo1 largo1 largo1 largo1 card-6 card-6"
-              "card-8 card-8 card-8 card-7 card-7 card-7"
-              "card-8 card-8 card-8 card-9 card-9 card-9"
-              "card-10 card-10 card-11 card-11 card-12 card-12";
-          }
-        }
-
-        /* Mobile - até 768px (Cards empilhados) */
-        @media (max-width: 768px) {
-          .newspaper-grid-container {
-            padding: 12px;
-          }
-
-          .newspaper-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-            grid-template-areas:
-              "header"
-              "card-02"
-              "card-3"
-              "card-4"
-              "largo1"
-              "card-5"
-              "card-6"
-              "card-7"
-              "card-8"
-              "card-9"
-              "card-10"
-              "card-11"
-              "card-12";
-          }
-        }
-
-        /* Mobile pequeno - até 480px */
-        @media (max-width: 480px) {
-          .newspaper-grid-container {
-            padding: 8px;
-          }
-
-          .newspaper-grid {
-            gap: 10px;
-          }
-        }
-      `}</style>
     </div>
   );
 };
