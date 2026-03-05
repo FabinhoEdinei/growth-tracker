@@ -272,8 +272,8 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
           .botao-blog {
   background: linear-gradient(135deg, #00b894, #00cec9, #55a3ff); /* Verde alga para azul marinho */
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 12px 12px;
+  border-radius: 6px;
   color: white;
   font-weight: bold;
   position: relative;
@@ -345,6 +345,7 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             display: flex;
             flex: 0 1 auto;
             justify-content: center;
+            padding: 6px 8px;
 
           }
 
