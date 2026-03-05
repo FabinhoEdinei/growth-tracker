@@ -10,153 +10,126 @@ export const NewspaperHeader = () => {
   });
 
   return (
-    <header className="newspaper-header">
+    <header className="vintage-header">
       {/* Ornamento superior */}
-      <div className="header-ornament">
-        ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈
+      <div className="top-ornament">
+        ❦ ❦ ❦ ❦ ❦ ❦ ❦ ❦ ❦
       </div>
 
-      {/* Título principal */}
-      <h1 className="newspaper-title">
-        <span className="title-decoration">⚜</span>
-        <span className="title-text">GROWTH TRACKER GAZETTE</span>
-        <span className="title-decoration">⚜</span>
-      </h1>
-
-      {/* Subtítulo */}
-      <div className="newspaper-subtitle">
-        CRÔNICAS DO OESTE DIGITAL
+      {/* Faixa superior escura */}
+      <div className="header-top-band">
+        <span className="top-left">SISTEMA DE CRESCIMENTO</span>
+        <span className="top-right">DIGITAL E DISTINGUIDO</span>
       </div>
 
-      {/* Data e edição */}
-      <div className="newspaper-meta">
-        <span className="meta-date">{formattedDate}</span>
-        <span className="meta-separator">•</span>
-        <span className="meta-edition">EDIÇÃO Nº {Math.floor(Date.now() / 86400000)}</span>
-        <span className="meta-separator">•</span>
-        <span className="meta-price">GRATUITO</span>
+      {/* Faixa central clara com título */}
+      <div className="header-main-band">
+        <span className="main-decoration-left">➤</span>
+        <h1 className="main-title">GROWTH TRACKER GAZETTE</h1>
+        <span className="main-decoration-right">➤</span>
       </div>
 
-      {/* Linha decorativa */}
-      <div className="header-border">
-        <div className="border-line"></div>
-        <div className="border-ornament">❋</div>
-        <div className="border-line"></div>
+      {/* Faixa inferior escura */}
+      <div className="header-bottom-band">
+        <span className="bottom-text">
+          CRÔNICAS DO OESTE DIGITAL • {formattedDate} • EDIÇÃO Nº {Math.floor(Date.now() / 86400000)} • GRATUITO
+        </span>
       </div>
 
-      {/* Slogan */}
-      <div className="newspaper-slogan">
-        "Todas as Notícias Dignas de Código e Café"
+      {/* Linha decorativa inferior */}
+      <div className="bottom-ornament">
+        ◈ ◈ ◈  ◈ ◈ ◈  ◈
       </div>
 
       <style jsx>{`
-        .newspaper-header {
+        .vintage-header {
           text-align: center;
-          padding: 30px 20px;
-          background: linear-gradient(
-            180deg,
-            #f5f0e8 0%,
-            #faf8f0 50%,
-            #f5f0e8 100%
-          );
-          border: 4px double #2a1810;
-          border-bottom: 6px double #2a1810;
-          margin-bottom: 30px;
-          position: relative;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          padding: 25px 20px;
+          background: #f5f0e8;
+          border: 3px double #2a1810;
+          margin-bottom: 30px;          position: relative;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .header-ornament {
+        .top-ornament {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.4);
+          letter-spacing: 10px;
+          margin-bottom: 10px;
+        }
+
+        /* Faixa superior escura */
+        .header-top-band {
+          background: #2a1810;
+          color: #f5f0e8;
+          padding: 6px 15px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-family: 'Georgia', serif;
           font-size: 10px;
-          color: rgba(0, 0, 0, 0.3);
-          letter-spacing: 8px;
-          margin-bottom: 15px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          border: 2px solid #1a0f0a;
         }
 
-        .newspaper-title {
-          font-family: 'Playfair Display', 'Georgia', serif;
-          font-size: 56px;
-          font-weight: 900;
-          margin: 0;
-          color: #2a1810;
-          text-transform: uppercase;
-          letter-spacing: 4px;
-          line-height: 1.1;
+        /* Faixa central clara */
+        .header-main-band {
+          background: #faf8f0;
+          padding: 20px 30px;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 20px;
+          border-left: 3px solid #2a1810;
+          border-right: 3px solid #2a1810;
+          position: relative;
+        }
+
+        .main-title {
+          font-family: 'Playfair Display', 'Georgia', serif;
+          font-size: 48px;
+          font-weight: 900;
+          margin: 0;
+          color: #2a1810;
+          text-transform: uppercase;
+          letter-spacing: 6px;
+          line-height: 1;
           text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
         }
-
-        .title-decoration {
-          font-size: 32px;
+        .main-decoration-left,
+        .main-decoration-right {
+          font-size: 24px;
           color: #8B4513;
+          opacity: 0.7;
         }
 
-        .newspaper-subtitle {
+        /* Faixa inferior escura */
+        .header-bottom-band {
+          background: #2a1810;
+          color: #f5f0e8;
+          padding: 10px 15px;
           font-family: 'Georgia', serif;
-          font-size: 14px;
-          font-weight: bold;
-          letter-spacing: 6px;
-          color: #8B4513;
-          margin: 12px 0;
-          text-transform: uppercase;
-        }
-
-        .newspaper-meta {
-          font-family: 'Courier New', monospace;
           font-size: 11px;
-          color: rgba(0, 0, 0, 0.6);
-          margin: 15px 0;
-          letter-spacing: 1px;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          border: 2px solid #1a0f0a;
+          border-top: none;
         }
 
-        .meta-separator {
-          margin: 0 10px;
+        .bottom-text {
+          display: block;
+        }
+
+        .bottom-ornament {
+          font-size: 10px;
           color: rgba(0, 0, 0, 0.3);
+          letter-spacing: 8px;
+          margin-top: 10px;
         }
 
-        .meta-price {
-          font-weight: bold;
-          color: #c41e3a;
-        }
-
-        .header-border {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 15px;
-          margin: 20px 0 15px;
-        }
-
-        .border-line {
-          flex: 1;
-          height: 2px;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            #2a1810,
-            transparent
-          );
-          max-width: 300px;
-        }
-
-        .border-ornament {
-          font-size: 16px;
-          color: #8B4513;
-        }
-
-        .newspaper-slogan {
-          font-family: 'Georgia', serif;
-          font-size: 12px;
-          font-style: italic;
-          color: rgba(0, 0, 0, 0.5);
-          letter-spacing: 1px;
-        }
-
-        /* Textura de papel vintage */
-        .newspaper-header::before {
+        /* Textura de papel */
+        .vintage-header::before {
           content: '';
           position: absolute;
           inset: 0;
@@ -165,88 +138,82 @@ export const NewspaperHeader = () => {
               0deg,
               transparent,
               transparent 2px,
-              rgba(139, 69, 19, 0.02) 2px,
-              rgba(139, 69, 19, 0.02) 4px
+              rgba(139, 69, 19, 0.03) 2px,
+              rgba(139, 69, 19, 0.03) 4px
             );
           pointer-events: none;
+          opacity: 0.5;
         }
 
-        /* Tablet */
-        @media (max-width: 1024px) {
-          .newspaper-title {
-            font-size: 44px;
-            gap: 15px;
-          }
-
-          .title-decoration {
-            font-size: 28px;
-          }
-
-          .newspaper-subtitle {
-            font-size: 12px;
+        /* Tablet */        @media (max-width: 1024px) {
+          .main-title {
+            font-size: 36px;
             letter-spacing: 4px;
+          }
+
+          .header-top-band,
+          .header-bottom-band {
+            font-size: 9px;
+            padding: 5px 10px;
+          }
+
+          .header-main-band {
+            padding: 15px 20px;
           }
         }
 
         /* Mobile */
         @media (max-width: 768px) {
-          .newspaper-header {
-            padding: 20px 15px;
+          .vintage-header {
+            padding: 15px 10px;
           }
 
-          .newspaper-title {
-            font-size: 32px;
+          .header-top-band {
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
+            padding: 8px;
           }
 
-          .title-decoration {
-            font-size: 20px;
-          }
-
-          .title-text {
-            font-size: 28px;
-          }
-
-          .newspaper-subtitle {
-            font-size: 10px;
+          .main-title {
+            font-size: 24px;
             letter-spacing: 3px;
           }
 
-          .newspaper-meta {
-            font-size: 9px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+          .header-main-band {
+            padding: 15px;
+            gap: 10px;
           }
 
-          .meta-separator {
-            display: none;
+          .main-decoration-left,
+          .main-decoration-right {
+            font-size: 16px;
           }
 
-          .border-line {
-            max-width: 100px;
+          .header-bottom-band {
+            font-size: 8px;
+            letter-spacing: 1px;
+            padding: 8px;
           }
-
-          .newspaper-slogan {
-            font-size: 10px;
+          .top-ornament,
+          .bottom-ornament {
+            font-size: 8px;
+            letter-spacing: 5px;
           }
         }
 
         /* Mobile pequeno */
         @media (max-width: 480px) {
-          .newspaper-title {
-            font-size: 24px;
-          }
-
-          .title-text {
-            font-size: 22px;
+          .main-title {
+            font-size: 18px;
             letter-spacing: 2px;
           }
 
-          .newspaper-subtitle {
-            font-size: 9px;
-            letter-spacing: 2px;
+          .header-top-band {
+            font-size: 8px;
+          }
+
+          .header-bottom-band {
+            font-size: 7px;
           }
         }
       `}</style>
