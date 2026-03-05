@@ -8,7 +8,7 @@ interface NewspaperGridProps {
 }
 
 export const NewspaperGrid: React.FC<NewspaperGridProps> = ({ cards }) => {
-  // Garantir que temos exatamente 12 cards (preencher com vazios se necessário)
+  // Garantir 12 cards
   const gridCards = [...cards];
   while (gridCards.length < 12) {
     gridCards.push({
@@ -21,31 +21,26 @@ export const NewspaperGrid: React.FC<NewspaperGridProps> = ({ cards }) => {
     });
   }
 
-  // Definir áreas do grid (layout vintage tipo jornal)
-  const gridAreas = [
-    'header',      // Card 1 - Header principal (largo)
-    'card-2',      // Card 2
-    'card-3',      // Card 3
-    'card-4',      // Card 4
-    'card-5',      // Card 5
-    'card-6',      // Card 6
-    'card-7',      // Card 7
-    'card-8',      // Card 8
-    'card-9',      // Card 9
-    'card-10',     // Card 10
-    'card-11',     // Card 11
-    'card-12',     // Card 12
-  ];
-
   return (
     <div className="newspaper-grid-container">
       <div className="newspaper-grid">
-        {gridCards.slice(0, 12).map((card, index) => (
+        {/* Card 01 - HEADER (largo no topo) */}
+        {gridCards[0]?.title && (
+          <NewspaperCard {...gridCards[0]} gridArea="header" />
+        )}
+
+        {/* Card 02 - INDEPENDENTE (esquerda superior) */}
+        {gridCards[1]?.title && (
+          <NewspaperCard {...gridCards[1]} gridArea="card-02" />
+        )}
+
+        {/* Cards 03-12 */}
+        {gridCards.slice(2, 12).map((card, index) => (
           card.title ? (
             <NewspaperCard
               key={card.slug}
               {...card}
-              gridArea={gridAreas[index]}
+              gridArea={`card-${index + 3}`}
             />
           ) : null
         ))}
@@ -58,33 +53,37 @@ export const NewspaperGrid: React.FC<NewspaperGridProps> = ({ cards }) => {
           padding: 20px;
         }
 
+        /* DESKTOP LAYOUT - Como jornal vintage */
         .newspaper-grid {
           display: grid;
           gap: 16px;
           grid-template-columns: repeat(12, 1fr);
+          grid-template-rows: auto;
           grid-template-areas:
-            "header header header header header header card-2 card-2 card-2 card-3 card-3 card-3"
-            "card-4 card-4 card-4 card-5 card-5 card-5 card-5 card-6 card-6 card-6 card-6 card-6"
-            "card-7 card-7 card-7 card-7 card-8 card-8 card-8 card-8 card-9 card-9 card-9 card-9"
-            "card-10 card-10 card-10 card-10 card-10 card-11 card-11 card-11 card-12 card-12 card-12";
+            "header header header header header header header header header header header header"
+            "card-02 card-02 card-02 card-02 card-3 card-3 card-3 card-3 card-4 card-4 card-4 card-4"
+            "largo1 largo1 largo1 largo1 largo1 largo1 card-5 card-5 card-5 card-6 card-6 card-6"
+            "card-8 card-8 card-8 card-8 card-8 card-8 card-8 card-8 card-7 card-7 card-7 card-7"
+            "card-8 card-8 card-8 card-8 card-8 card-8 card-8 card-8 card-9 card-9 card-9 card-9"
+            "card-10 card-10 card-10 card-10 card-11 card-11 card-11 card-11 card-12 card-12 card-12 card-12";
         }
 
-        /* Tablet (768px - 1024px) */
+        /* Tablet - 768px a 1024px */
         @media (max-width: 1024px) {
           .newspaper-grid {
             grid-template-columns: repeat(6, 1fr);
             grid-template-areas:
               "header header header header header header"
-              "card-2 card-2 card-2 card-3 card-3 card-3"
+              "card-02 card-02 card-02 card-3 card-3 card-3"
               "card-4 card-4 card-4 card-5 card-5 card-5"
-              "card-6 card-6 card-6 card-6 card-7 card-7"
-              "card-8 card-8 card-9 card-9 card-9 card-9"
-              "card-10 card-10 card-10 card-11 card-11 card-11"
-              "card-12 card-12 card-12 card-12 card-12 card-12";
+              "largo1 largo1 largo1 largo1 card-6 card-6"
+              "card-8 card-8 card-8 card-7 card-7 card-7"
+              "card-8 card-8 card-8 card-9 card-9 card-9"
+              "card-10 card-10 card-11 card-11 card-12 card-12";
           }
         }
 
-        /* Mobile (até 768px) - Cards empilhados */
+        /* Mobile - até 768px (Cards empilhados) */
         @media (max-width: 768px) {
           .newspaper-grid-container {
             padding: 12px;
@@ -95,9 +94,10 @@ export const NewspaperGrid: React.FC<NewspaperGridProps> = ({ cards }) => {
             gap: 12px;
             grid-template-areas:
               "header"
-              "card-2"
+              "card-02"
               "card-3"
               "card-4"
+              "largo1"
               "card-5"
               "card-6"
               "card-7"
@@ -109,7 +109,7 @@ export const NewspaperGrid: React.FC<NewspaperGridProps> = ({ cards }) => {
           }
         }
 
-        /* Mobile pequeno (até 480px) */
+        /* Mobile pequeno - até 480px */
         @media (max-width: 480px) {
           .newspaper-grid-container {
             padding: 8px;
