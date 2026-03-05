@@ -108,16 +108,15 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
                 📰 Blog
               </a>
               <MenuDropdown />
+<div className="visit-counter-wrapper">
+              <VisitCounter />
+            </div>
             </div>
             
             <div className="tech-details">
               <span className="detail-item">SYNC: ACTIVE</span>
               <span className="detail-separator">●</span>
               <span className="detail-item">PWR: {Math.floor(glow * 100)}%</span>
-            </div>
-
-            <div className="visit-counter-wrapper">
-              <VisitCounter />
             </div>
           </div>
         </div>
