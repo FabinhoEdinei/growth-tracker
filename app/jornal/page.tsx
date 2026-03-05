@@ -1,5 +1,6 @@
 import { NewspaperHeader } from '../components/Jornal/NewspaperHeader';
 import { NewspaperGrid } from '../components/Jornal/NewspaperGrid';
+import { JornalPageWrapper } from '../components/Jornal/JornalPageWrapper';
 import { JornalCard } from '../types/jornal';
 import fs from 'fs';
 import path from 'path';
@@ -8,7 +9,6 @@ import matter from 'gray-matter';
 function getAllCards(): JornalCard[] {
   const jornalDirectory = path.join(process.cwd(), 'app/content/jornal');
   
-  // Verificar se diretório existe
   if (!fs.existsSync(jornalDirectory)) {
     return [];
   }
@@ -44,29 +44,9 @@ export default function JornalPage() {
   const cards = getAllCards();
 
   return (
-    <div className="jornal-page">
+    <JornalPageWrapper>
       <NewspaperHeader />
       <NewspaperGrid cards={cards} />
-
-      <style jsx>{`
-        .jornal-page {
-          min-height: 100vh;
-          background: linear-gradient(
-            180deg,
-            #faf8f0 0%,
-            #f5f0e8 50%,
-            #faf8f0 100%
-          );
-          background-image: 
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 2px,
-              rgba(139, 69, 19, 0.01) 2px,
-              rgba(139, 69, 19, 0.01) 4px
-            );
-        }
-      `}</style>
-    </div>
+    </JornalPageWrapper>
   );
 }
