@@ -1,23 +1,72 @@
-'use client';
+import { NewspaperHeader } from '../components/Jornal/NewspaperHeader';
+import { NewspaperGrid } from '../components/Jornal/NewspaperGrid';
+import { JornalCard } from '../types/jornal';
+import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
 
-import { useRouter } from 'next/navigation';
+function getAllCards(): JornalCard[] {
+  const jornalDirectory = path.join(process.cwd(), 'app/content/jornal');
+  
+  // Verificar se diretório existe
+  if (!fs.existsSync(jornalDirectory)) {
+    return [];
+  }
+
+  const filenames = fs.readdirSync(jornalDirectory);
+  
+  const cards = filenames
+    .filter((filename) => filename.endsWith('.md'))
+    .map((filename) => {
+      const filePath = path.join(jornalDirectory, filename);
+      const fileContents = fs.readFileSync(filePath, 'utf8');
+      const { data, content } = matter(fileContents);
+
+      return {
+        slug: data.slug || filename.replace('.md', ''),
+        title: data.title || '',
+        type: data.type || 'fatos',
+        date: data.date || new Date().toISOString(),
+        excerpt: data.excerpt || '',
+        character: data.character,
+        location: data.location,
+        image: data.image,
+        content,
+        cardStyle: data.cardStyle,
+      } as JornalCard;
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  return cards;
+}
 
 export default function JornalPage() {
-  const router = useRouter();
+  const cards = getAllCards();
 
   return (
-    <div className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center p-8">
-      <div className="text-center">
-        <div className="text-6xl mb-8">📰</div>
-        <h1 className="text-4xl font-mono mb-4">Jornal</h1>
-        <p className="text-xl mb-8">Notícias e atualizações do sistema</p>
-        <button
-          onClick={() => router.push('/')}
-          className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-black font-mono rounded-lg transition-colors"
-        >
-          ← Voltar à Tela Principal
-        </button>
-      </div>
+    <div className="jornal-page">
+      <NewspaperHeader />
+      <NewspaperGrid cards={cards} />
+
+      <style jsx>{`
+        .jornal-page {
+          min-height: 100vh;
+          background: linear-gradient(
+            180deg,
+            #faf8f0 0%,
+            #f5f0e8 50%,
+            #faf8f0 100%
+          );
+          background-image: 
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(139, 69, 19, 0.01) 2px,
+              rgba(139, 69, 19, 0.01) 4px
+            );
+        }
+      `}</style>
     </div>
   );
 }
