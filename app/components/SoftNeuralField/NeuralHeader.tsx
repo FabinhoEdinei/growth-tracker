@@ -268,6 +268,32 @@ export const NeuralHeader: React.FC<NeuralHeaderProps> = ({ onBoundsUpdate, glow
             margin-top: 8px;
             pointer-events: auto;
           }
+           @media (max-width: 768px) {
+  .action-buttons {
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+  }
+  
+  .botao-blog,
+  .menu-dropdown,
+  .visit-counter-wrapper {
+    flex: 1 !important;
+    min-width: auto !important;
+    max-width: 33% !important; /* Cada um ocupa 1/3 */
+  }
+  
+  /* Reduzir padding e fonte */
+  .botao-blog,
+  .menu-dropdown {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+  }
+  
+  .visit-counter-wrapper {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+  }
+}
 
           .botao-blog {
   background: linear-gradient(135deg, #00b894, #00cec9, #55a3ff); /* Verde alga para azul marinho */
