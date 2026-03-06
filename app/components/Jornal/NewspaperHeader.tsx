@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-
 export const NewspaperHeader = () => {
   const today = new Date();
   const formattedDate = today.toLocaleDateString('pt-BR', {
@@ -12,283 +10,216 @@ export const NewspaperHeader = () => {
   });
 
   return (
-    <header className="vintage-header">
-      {/* Botão de voltar */}
-      <Link href="/" className="back-button">
-        <span className="back-icon">←</span>
-        <span className="back-text">VOLTAR</span>
-      </Link>
-      {/* Ornamento superior */}
-      <div className="top-ornament">
-        ❦ ❦ ❦ ❦ ❦ ❦ ❦ ❦ ❦
+    <header className="newspaper-header">
+      {/* Ornamento superior minimalista */}
+      <div className="header-ornament">
+        ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈
       </div>
 
-      {/* Faixa superior escura */}
-      <div className="header-top-band">
-        <span className="top-left">SISTEMA DE CRESCIMENTO</span>
-        <span className="top-right">DIGITAL E DISTINGUIDO</span>
+      {/* Bandeira superior */}
+      <div className="header-banner">
+        SISTEMA DE CRESCIMENTO DIGITAL E DISTINGUIDO
       </div>
 
-      {/* Faixa central clara com título */}
-      <div className="header-main-band">
-        <span className="main-decoration-left">➤</span>
-        <h1 className="main-title">GROWTH TRACKER GAZETTE</h1>
-        <span className="main-decoration-right">➤</span>
+      {/* Título principal compacto */}
+      <h1 className="newspaper-title">
+        <span className="title-decoration">▸</span>
+        <span className="title-text">GROWTH TRACKER GAZETTE</span>
+        <span className="title-decoration">◂</span>
+      </h1>
+
+      {/* Meta informações compactas */}
+      <div className="newspaper-meta">
+        <span className="meta-item">CRÔNICAS DO OESTE DIGITAL</span>
+        <span className="meta-separator">•</span>
+        <span className="meta-item">{formattedDate}</span>
+        <span className="meta-separator">•</span>
+        <span className="meta-edition">EDIÇÃO Nº {Math.floor(Date.now() / 86400000)}</span>
+        <span className="meta-separator">•</span>
+        <span className="meta-price">GRATUITO</span>
       </div>
 
-      {/* Faixa inferior escura */}
-      <div className="header-bottom-band">
-        <span className="bottom-text">
-          CRÔNICAS DO OESTE DIGITAL • {formattedDate} • EDIÇÃO Nº {Math.floor(Date.now() / 86400000)} • GRATUITO
-        </span>
-      </div>
-
-      {/* Linha decorativa inferior */}
-      <div className="bottom-ornament">
-        ◈ ◈ ◈  ◈ ◈ ◈  ◈
+      {/* Linha decorativa minimalista */}
+      <div className="header-border">
+        <div className="border-ornament">◆ ◆ ◆ ◆ ◆ ◆ ◆</div>
       </div>
 
       <style jsx>{`
-        /* Botão de voltar */
-        .back-button {
-          position: absolute;
-          top: 15px;
-          left: 15px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 16px;
-          background: linear-gradient(135deg, #5a4a3a, #3a2a1a);
-          border: 2px solid #8B7355;
-          border-radius: 6px;
-          color: #f5e6d3;
-          text-decoration: none;
-          font-family: 'Courier New', monospace;
-          font-size: 11px;
-          font-weight: bold;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          box-shadow: 
-            0 4px 12px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          cursor: pointer;
-          z-index: 50;
-        }
-
-        .back-button:hover {
-          transform: translateY(-2px);
-          border-color: #DAA520;
-          box-shadow: 
-            0 6px 20px rgba(218, 165, 32, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
-          background: linear-gradient(135deg, #6b5344, #4a3a2a);
-        }
-
-        .back-button:active {
-          transform: translateY(0);
-        }
-
-        .back-icon {
-          font-size: 14px;
-          filter: drop-shadow(0 0 3px rgba(218, 165, 32, 0.5));
-        }
-
-        .back-text {
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .vintage-header {
+        .newspaper-header {
           text-align: center;
-          padding: 25px 20px;
-          background: #f5f0e8;
-          border: 3px double #2a1810;
-          margin-bottom: 30px;          position: relative;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          padding: 20px 15px;
+          background: linear-gradient(
+            180deg,
+            #2a1810 0%,
+            #1a1410 100%
+          );
+          border: 3px double #8B7355;
+          margin-bottom: 25px;
+          position: relative;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        .top-ornament {
-          font-size: 12px;
-          color: rgba(0, 0, 0, 0.4);
-          letter-spacing: 10px;
-          margin-bottom: 10px;
+        .header-ornament {
+          font-size: 8px;
+          color: rgba(218, 165, 32, 0.4);
+          letter-spacing: 6px;
+          margin-bottom: 8px;
         }
 
-        /* Faixa superior escura */
-        .header-top-band {
-          background: #2a1810;
-          color: #f5f0e8;
-          padding: 6px 15px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-family: 'Georgia', serif;
-          font-size: 10px;
-          letter-spacing: 2px;
+        .header-banner {
+          font-family: 'Courier New', monospace;
+          font-size: 9px;
+          font-weight: bold;
+          letter-spacing: 3px;
+          color: rgba(245, 230, 211, 0.6);
+          background: rgba(139, 115, 85, 0.2);
+          padding: 5px 15px;
+          border-top: 1px solid rgba(139, 115, 85, 0.3);
+          border-bottom: 1px solid rgba(139, 115, 85, 0.3);
+          margin: 0 auto 12px;
+          max-width: fit-content;
+        }
+
+        .newspaper-title {
+          font-family: 'Playfair Display', 'Georgia', serif;
+          font-size: 38px;
+          font-weight: 900;
+          margin: 0;
+          color: #f5e6d3;
           text-transform: uppercase;
-          border: 2px solid #1a0f0a;
-        }
-
-        /* Faixa central clara */
-        .header-main-band {
-          background: #faf8f0;
-          padding: 20px 30px;
+          letter-spacing: 3px;
+          line-height: 1.1;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 20px;
-          border-left: 3px solid #2a1810;
-          border-right: 3px solid #2a1810;
-          position: relative;
+          gap: 15px;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
-        .main-title {
-          font-family: 'Playfair Display', 'Georgia', serif;
-          font-size: 48px;
-          font-weight: 900;
-          margin: 0;
-          color: #2a1810;
-          text-transform: uppercase;
-          letter-spacing: 6px;
-          line-height: 1;
-          text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
-        }
-        .main-decoration-left,
-        .main-decoration-right {
+        .title-decoration {
           font-size: 24px;
-          color: #8B4513;
-          opacity: 0.7;
+          color: #DAA520;
+          filter: drop-shadow(0 0 8px rgba(218, 165, 32, 0.5));
         }
 
-        /* Faixa inferior escura */
-        .header-bottom-band {
-          background: #2a1810;
-          color: #f5f0e8;
-          padding: 10px 15px;
-          font-family: 'Georgia', serif;
-          font-size: 11px;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          border: 2px solid #1a0f0a;
-          border-top: none;
+        .newspaper-meta {
+          font-family: 'Courier New', monospace;
+          font-size: 9px;
+          color: rgba(245, 230, 211, 0.5);
+          margin: 12px 0 8px;
+          letter-spacing: 1px;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 8px;
         }
 
-        .bottom-text {
-          display: block;
+        .meta-item {
+          color: rgba(245, 230, 211, 0.6);
         }
 
-        .bottom-ornament {
+        .meta-separator {
+          color: rgba(218, 165, 32, 0.4);
+        }
+
+        .meta-edition {
+          color: rgba(218, 165, 32, 0.7);
+        }
+
+        .meta-price {
+          font-weight: bold;
+          color: #DAA520;
+        }
+
+        .header-border {
+          margin-top: 12px;
+        }
+
+        .border-ornament {
           font-size: 10px;
-          color: rgba(0, 0, 0, 0.3);
+          color: rgba(139, 115, 85, 0.5);
           letter-spacing: 8px;
-          margin-top: 10px;
         }
 
-        /* Textura de papel */
-        .vintage-header::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background-image: 
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 2px,
-              rgba(139, 69, 19, 0.03) 2px,
-              rgba(139, 69, 19, 0.03) 4px
-            );
-          pointer-events: none;
-          opacity: 0.5;
-        }
-
-        /* Tablet */        @media (max-width: 1024px) {
-          .back-button {
-            padding: 8px 14px;
-            font-size: 10px;
-            top: 12px;
-            left: 12px;
+        /* Tablet */
+        @media (max-width: 1024px) {
+          .newspaper-header {
+            padding: 18px 12px;
           }
 
-          .main-title {
-            font-size: 36px;
-            letter-spacing: 4px;
+          .newspaper-title {
+            font-size: 32px;
+            gap: 12px;
           }
 
-          .header-top-band,
-          .header-bottom-band {
-            font-size: 9px;
-            padding: 5px 10px;
+          .title-decoration {
+            font-size: 20px;
           }
 
-          .header-main-band {
-            padding: 15px 20px;
+          .header-banner {
+            font-size: 8px;
+            letter-spacing: 2px;
           }
         }
 
         /* Mobile */
         @media (max-width: 768px) {
-          .vintage-header {
+          .newspaper-header {
             padding: 15px 10px;
-            padding-left: 70px;
           }
 
-          .back-button {
-            padding: 8px 12px;
-            font-size: 9px;
-            top: 10px;
-            left: 10px;
+          .header-banner {
+            font-size: 7px;
+            letter-spacing: 1px;
+            padding: 4px 10px;
           }
 
-          .back-icon {
-            font-size: 12px;
+          .newspaper-title {
+            font-size: 24px;
+            flex-direction: column;
+            gap: 6px;
           }
 
-          .header-top-band {
+          .title-decoration {
+            font-size: 16px;
+            transform: rotate(90deg);
+          }
+
+          .title-text {
+            font-size: 22px;
+            letter-spacing: 2px;
+          }
+
+          .newspaper-meta {
+            font-size: 8px;
             flex-direction: column;
             gap: 4px;
-            padding: 8px;
           }
 
-          .main-title {
-            font-size: 24px;
-            letter-spacing: 3px;
+          .meta-separator {
+            display: none;
           }
 
-          .header-main-band {
-            padding: 15px;
-            gap: 10px;
-          }
-
-          .main-decoration-left,
-          .main-decoration-right {
-            font-size: 16px;
-          }
-
-          .header-bottom-band {
-            font-size: 8px;
-            letter-spacing: 1px;
-            padding: 8px;
-          }
-          .top-ornament,
-          .bottom-ornament {
-            font-size: 8px;
-            letter-spacing: 5px;
+          .header-ornament,
+          .border-ornament {
+            font-size: 7px;
+            letter-spacing: 4px;
           }
         }
 
         /* Mobile pequeno */
         @media (max-width: 480px) {
-          .main-title {
+          .newspaper-title {
+            font-size: 20px;
+          }
+
+          .title-text {
             font-size: 18px;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
           }
 
-          .header-top-band {
-            font-size: 8px;
-          }
-
-          .header-bottom-band {
-            font-size: 7px;
+          .header-banner {
+            font-size: 6px;
           }
         }
       `}</style>
