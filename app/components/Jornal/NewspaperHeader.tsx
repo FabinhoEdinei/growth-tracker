@@ -122,7 +122,7 @@ export const NewspaperHeader = () => {
 
       {/* Meta informações */}
       <div className="newspaper-meta">
-        <span>CRÔNICAS DO OESTE DIGITAL</span>
+        <span>CRÔNICAS DO SUL DIGITAL</span>
         <span>{formattedDate}</span>
         <span className="edition">EDIÇÃO Nº. {Math.floor(Date.now() / 86400000)}</span>
         <span className="price">GRATUITO</span>
