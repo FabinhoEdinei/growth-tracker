@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import './testes.css';
 
@@ -10,6 +10,12 @@ interface TestResult {
   statusCode?: number;
   time?: number;
   error?: string;
+}
+
+interface CodeStats {
+  totalFiles: number;
+  totalLines: number;
+  byExtension: Record<string, { files: number; lines: number }>;
 }
 
 const routes = [
@@ -24,6 +30,28 @@ export default function TestesPage() {
   const [results, setResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [currentTest, setCurrentTest] = useState(0);
+  const [codeStats, setCodeStats] = useState<CodeStats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  useEffect(() => {
+    // Carregar stats de código ao montar
+    fetchCodeStats();
+  }, []);
+
+  const fetchCodeStats = async () => {
+    setLoadingStats(true);
+    try {
+      const response = await fetch('/api/code-stats');
+      if (response.ok) {
+        const data = await response.json();
+        setCodeStats(data);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar stats de código:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   const runTests = async () => {
     setIsRunning(true);
@@ -168,6 +196,52 @@ export default function TestesPage() {
             )}
           </div>
         ))}
+      </div>
+
+      <div className="code-stats-section">
+        <div className="stats-header">
+          <h2>📊 Estatísticas de Código</h2>
+          <button 
+            onClick={fetchCodeStats} 
+            disabled={loadingStats}
+            className="refresh-button"
+            title="Atualizar contagem"
+          >
+            {loadingStats ? '⏳ Carregando...' : '🔄 Atualizar'}
+          </button>
+        </div>
+
+        {codeStats ? (
+          <div className="stats-content">
+            <div className="stats-summary">
+              <div className="stat-box">
+                <span className="stat-label">Arquivos</span>
+                <span className="stat-value">{codeStats.totalFiles}</span>
+              </div>
+              <div className="stat-box highlight">
+                <span className="stat-label">Linhas de Código</span>
+                <span className="stat-value">{codeStats.totalLines.toLocaleString('pt-BR')}</span>
+              </div>
+            </div>
+
+            <div className="stats-by-extension">
+              <h3>Por Extensão</h3>
+              <div className="extension-grid">
+                {Object.entries(codeStats.byExtension).map(([ext, data]) => (
+                  <div key={ext} className="extension-card">
+                    <div className="ext-name">{ext}</div>
+                    <div className="ext-files">{data.files} arquivo{data.files > 1 ? 's' : ''}</div>
+                    <div className="ext-lines">{data.lines.toLocaleString('pt-BR')} linhas</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="stats-loading">
+            <span>⏳ Carregando estatísticas...</span>
+          </div>
+        )}
       </div>
     </div>
   );

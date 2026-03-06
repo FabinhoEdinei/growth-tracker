@@ -1,3 +1,155 @@
 body{
 background: #033400;
 }
+
+.code-stats-section {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(0, 255, 100, 0.05), rgba(0, 150, 255, 0.05));
+  border-left: 4px solid #00ff64;
+  border-radius: 0.5rem;
+  animation: slideUp 0.5s ease-out;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.stats-header h2 {
+  margin: 0;
+  color: #00ff64;
+  font-size: 1.5rem;
+}
+
+.refresh-button {
+  padding: 0.5rem 1rem;
+  background: #00ff64;
+  color: #033400;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(0, 255, 100, 0.5);
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stats-content {
+  display: grid;
+  gap: 2rem;
+}
+
+.stats-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.stat-box {
+  background: rgba(0, 255, 100, 0.1);
+  border: 1px solid rgba(0, 255, 100, 0.3);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stat-box.highlight {
+  background: rgba(0, 255, 100, 0.2);
+  border-color: #00ff64;
+  box-shadow: 0 0 10px rgba(0, 255, 100, 0.2);
+}
+
+.stat-label {
+  display: block;
+  color: #999;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  display: block;
+  color: #00ff64;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.stats-by-extension {
+  margin-top: 1rem;
+}
+
+.stats-by-extension h3 {
+  color: #00ff64;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+}
+
+.extension-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.extension-card {
+  background: rgba(0, 100, 200, 0.1);
+  border: 1px solid rgba(0, 150, 255, 0.3);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.extension-card:hover {
+  border-color: #0096ff;
+  box-shadow: 0 0 8px rgba(0, 150, 255, 0.3);
+}
+
+.ext-name {
+  font-weight: bold;
+  color: #0096ff;
+  margin-bottom: 0.5rem;
+  font-family: monospace;
+}
+
+.ext-files {
+  color: #88ff00;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.ext-lines {
+  color: #00ff64;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.stats-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #00ff64;
+  font-style: italic;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

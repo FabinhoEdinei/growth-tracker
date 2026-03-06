@@ -46,7 +46,7 @@ export default function SoftNeuralField({
     setHeaderBounds(bounds);
   }, []);
 
-  const handleCanvasClick = (event: MouseEvent) => {
+  const handleCanvasClick = useCallback((event: MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -81,7 +81,7 @@ export default function SoftNeuralField({
         zone: closestParticle.currentZone,
       });
     }
-  };
+  }, []);
 
   const handleCloseModal = () => {
     setModalInfo({ ...modalInfo, visible: false });
@@ -107,7 +107,7 @@ export default function SoftNeuralField({
     };
     resize();
     window.addEventListener('resize', resize);
-    canvas.addEventListener('click', handleCanvasClick as any);
+    canvas.addEventListener('click', handleCanvasClick);
 
     particleManager.current.initialize(particleCount, canvas.width, canvas.height);
     
@@ -152,9 +152,9 @@ export default function SoftNeuralField({
 
     return () => {
       window.removeEventListener('resize', resize);
-      canvas.removeEventListener('click', handleCanvasClick as any);
+      canvas.removeEventListener('click', handleCanvasClick);
     };
-  }, [particleCount, fps, headerBounds]);
+  }, [particleCount, fps, headerBounds, handleCanvasClick]);
 
   return (
     <>

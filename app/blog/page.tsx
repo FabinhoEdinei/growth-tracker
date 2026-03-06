@@ -33,7 +33,7 @@ function getAllPosts() {
       };
     });
 
-    return posts.sort((a: any, b: any) => {
+    return posts.sort((a, b) => {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
   } catch (error) {
