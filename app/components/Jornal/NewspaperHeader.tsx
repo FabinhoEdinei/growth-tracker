@@ -11,215 +11,197 @@ export const NewspaperHeader = () => {
 
   return (
     <header className="newspaper-header">
-      {/* Ornamento superior minimalista */}
-      <div className="header-ornament">
-        ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈
-      </div>
+      {/* Ornamento superior */}
+      <div className="top-ornament">• • • • • • • • • • • • •</div>
 
-      {/* Bandeira superior */}
+      {/* Banner */}
       <div className="header-banner">
         SISTEMA DE CRESCIMENTO DIGITAL E DISTINGUIDO
       </div>
 
-      {/* Título principal compacto */}
-      <h1 className="newspaper-title">
-        <span className="title-decoration">▸</span>
-        <span className="title-text">GROWTH TRACKER GAZETTE</span>
-        <span className="title-decoration">◂</span>
-      </h1>
+      {/* Título */}
+      <h1 className="newspaper-title">GROWTH TRACKER GAZETTE</h1>
 
-      {/* Meta informações compactas */}
+      {/* Meta informações */}
       <div className="newspaper-meta">
-        <span className="meta-item">CRÔNICAS DO OESTE DIGITAL</span>
-        <span className="meta-separator">•</span>
-        <span className="meta-item">{formattedDate}</span>
-        <span className="meta-separator">•</span>
-        <span className="meta-edition">EDIÇÃO Nº {Math.floor(Date.now() / 86400000)}</span>
-        <span className="meta-separator">•</span>
-        <span className="meta-price">GRATUITO</span>
-      </div>
-
-      {/* Linha decorativa minimalista */}
-      <div className="header-border">
-        <div className="border-ornament">◆ ◆ ◆ ◆ ◆ ◆ ◆</div>
+        <span>CRÔNICAS DO OESTE DIGITAL</span>
+        <span className="separator">—</span>
+        <span>{formattedDate}</span>
+        <span className="separator">—</span>
+        <span className="edition">EDIÇÃO Nº {Math.floor(Date.now() / 86400000)}</span>
+        <span className="separator">—</span>
+        <span className="price">GRATUITO</span>
       </div>
 
       <style jsx>{`
         .newspaper-header {
           text-align: center;
-          padding: 20px 15px;
+          padding: 18px 20px;
           background: linear-gradient(
             180deg,
             #2a1810 0%,
-            #1a1410 100%
+            #1f120d 50%,
+            #1a0f0a 100%
           );
-          border: 3px double #8B7355;
-          margin-bottom: 25px;
+          border: 2px solid #8B7355;
           position: relative;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          margin: 0 10px 20px;
+          box-shadow: 
+            0 4px 15px rgba(0, 0, 0, 0.4),            inset 0 1px 0 rgba(218, 165, 32, 0.1);
         }
 
-        .header-ornament {
-          font-size: 8px;
-          color: rgba(218, 165, 32, 0.4);
-          letter-spacing: 6px;
-          margin-bottom: 8px;
+        /* Cantos decorativos */
+        .newspaper-header::before,
+        .newspaper-header::after {
+          content: '';
+          position: absolute;
+          width: 20px;
+          height: 20px;
+          border: 2px solid #DAA520;
+          opacity: 0.5;
+        }
+
+        .newspaper-header::before {
+          top: 8px;
+          left: 8px;
+          border-right: none;
+          border-bottom: none;
+        }
+
+        .newspaper-header::after {
+          top: 8px;
+          right: 8px;
+          border-left: none;
+          border-bottom: none;
+        }
+
+        .top-ornament {
+          font-size: 10px;
+          color: rgba(218, 165, 32, 0.5);
+          letter-spacing: 8px;
+          margin-bottom: 10px;
+          font-family: 'Courier New', monospace;
         }
 
         .header-banner {
           font-family: 'Courier New', monospace;
-          font-size: 9px;
-          font-weight: bold;
-          letter-spacing: 3px;
-          color: rgba(245, 230, 211, 0.6);
-          background: rgba(139, 115, 85, 0.2);
-          padding: 5px 15px;
-          border-top: 1px solid rgba(139, 115, 85, 0.3);
-          border-bottom: 1px solid rgba(139, 115, 85, 0.3);
-          margin: 0 auto 12px;
-          max-width: fit-content;
+          font-size: 8px;
+          font-weight: 600;
+          letter-spacing: 2.5px;
+          color: rgba(245, 230, 211, 0.7);
+          margin-bottom: 12px;
+          text-transform: uppercase;
         }
 
         .newspaper-title {
           font-family: 'Playfair Display', 'Georgia', serif;
-          font-size: 38px;
-          font-weight: 900;
-          margin: 0;
+          font-size: 32px;
+          font-weight: 700;          margin: 0 0 10px 0;
           color: #f5e6d3;
           text-transform: uppercase;
-          letter-spacing: 3px;
-          line-height: 1.1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 15px;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .title-decoration {
-          font-size: 24px;
-          color: #DAA520;
-          filter: drop-shadow(0 0 8px rgba(218, 165, 32, 0.5));
+          letter-spacing: 4px;
+          line-height: 1;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
         }
 
         .newspaper-meta {
           font-family: 'Courier New', monospace;
-          font-size: 9px;
-          color: rgba(245, 230, 211, 0.5);
-          margin: 12px 0 8px;
+          font-size: 8px;
+          color: rgba(245, 230, 211, 0.6);
           letter-spacing: 1px;
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
-          gap: 8px;
+          align-items: center;
+          gap: 6px;
+          margin-top: 8px;
         }
 
-        .meta-item {
-          color: rgba(245, 230, 211, 0.6);
-        }
-
-        .meta-separator {
-          color: rgba(218, 165, 32, 0.4);
-        }
-
-        .meta-edition {
-          color: rgba(218, 165, 32, 0.7);
-        }
-
-        .meta-price {
-          font-weight: bold;
-          color: #DAA520;
-        }
-
-        .header-border {
-          margin-top: 12px;
-        }
-
-        .border-ornament {
+        .separator {
+          color: rgba(139, 115, 85, 0.6);
           font-size: 10px;
-          color: rgba(139, 115, 85, 0.5);
-          letter-spacing: 8px;
+        }
+
+        .edition {
+          color: rgba(218, 165, 32, 0.8);
+          font-weight: 600;
+        }
+
+        .price {
+          color: #DAA520;
+          font-weight: 700;
+          letter-spacing: 1.5px;
         }
 
         /* Tablet */
         @media (max-width: 1024px) {
           .newspaper-header {
-            padding: 18px 12px;
+            padding: 16px 15px;
+            margin: 0 8px 18px;
           }
 
           .newspaper-title {
-            font-size: 32px;
-            gap: 12px;
+            font-size: 28px;
+            letter-spacing: 3px;
           }
 
-          .title-decoration {
-            font-size: 20px;
-          }
-
-          .header-banner {
-            font-size: 8px;
-            letter-spacing: 2px;
+          .top-ornament {            font-size: 9px;
+            letter-spacing: 6px;
           }
         }
 
         /* Mobile */
         @media (max-width: 768px) {
           .newspaper-header {
-            padding: 15px 10px;
+            padding: 14px 12px;
+            margin: 0 5px 15px;
+          }
+
+          .top-ornament {
+            font-size: 8px;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
           }
 
           .header-banner {
             font-size: 7px;
-            letter-spacing: 1px;
-            padding: 4px 10px;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
           }
 
           .newspaper-title {
-            font-size: 24px;
-            flex-direction: column;
-            gap: 6px;
-          }
-
-          .title-decoration {
-            font-size: 16px;
-            transform: rotate(90deg);
-          }
-
-          .title-text {
             font-size: 22px;
             letter-spacing: 2px;
+            margin-bottom: 8px;
           }
 
           .newspaper-meta {
-            font-size: 8px;
+            font-size: 7px;
             flex-direction: column;
             gap: 4px;
           }
 
-          .meta-separator {
+          .separator {
             display: none;
-          }
-
-          .header-ornament,
-          .border-ornament {
-            font-size: 7px;
-            letter-spacing: 4px;
           }
         }
 
         /* Mobile pequeno */
         @media (max-width: 480px) {
-          .newspaper-title {
-            font-size: 20px;
+          .newspaper-header {
+            padding: 12px 10px;
           }
 
-          .title-text {
+          .newspaper-title {
             font-size: 18px;
-            letter-spacing: 1px;
-          }
+            letter-spacing: 1.5px;          }
 
           .header-banner {
             font-size: 6px;
+          }
+
+          .top-ornament {
+            font-size: 7px;
           }
         }
       `}</style>
