@@ -1,10 +1,162 @@
-import { RoteiroGenerator } from '../utils/roteiro-generator';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { TVPlayer } from './components/TVPlayer';
 import Link from 'next/link';
+import { RoteiroTV } from '../utils/roteiro-generator';
 
 export default function TVPage() {
-  const generator = new RoteiroGenerator();
-  const roteiro = generator.gerarRoteiroDoDia();
+  const [roteiro, setRoteiro] = useState<RoteiroTV | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRoteiro = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/roteiro');
+        if (!response.ok) {
+          throw new Error('Erro ao carregar roteiro');
+        }
+        const data = await response.json();
+        setRoteiro(data);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro desconhecido');
+        console.error('Erro ao buscar roteiro:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoteiro();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="tv-page loading-state">
+        <div className="loading-content">
+          <span className="loading-icon">📺</span>
+          <p>Carregando programação...</p>
+        </div>
+        <style jsx>{`
+          .tv-page.loading-state {
+            min-height: 100vh;
+            background: radial-gradient(
+              circle at 50% 50%,
+              rgba(26, 10, 15, 1),
+              rgba(10, 5, 8, 1)
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .loading-content {
+            text-align: center;
+          }
+
+          .loading-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+            animation: spin 2s linear infinite;
+          }
+
+          @keyframes spin {
+            from {
+              transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
+
+          p {
+            color: #ff0066;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            letter-spacing: 2px;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (error || !roteiro) {
+    return (
+      <div className="tv-page error-state">
+        <div className="error-content">
+          <span className="error-icon">❌</span>
+          <h2>Erro ao Carregar</h2>
+          <p>{error || 'Não foi possível carregar o roteiro'}</p>
+          <Link href="/" className="error-link">
+            ← Voltar ao início
+          </Link>
+        </div>
+        <style jsx>{`
+          .tv-page.error-state {
+            min-height: 100vh;
+            background: radial-gradient(
+              circle at 50% 50%,
+              rgba(26, 10, 15, 1),
+              rgba(10, 5, 8, 1)
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+          }
+
+          .error-content {
+            text-align: center;
+            background: rgba(255, 0, 102, 0.1);
+            border: 2px solid rgba(255, 0, 102, 0.3);
+            padding: 40px;
+            border-radius: 16px;
+          }
+
+          .error-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+          }
+
+          h2 {
+            color: #ff0066;
+            font-family: 'Courier New', monospace;
+            font-size: 28px;
+            margin: 0 0 10px 0;
+            letter-spacing: 2px;
+          }
+
+          p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            margin: 0 0 20px 0;
+          }
+
+          .error-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255, 0, 102, 0.2);
+            border: 2px solid #ff0066;
+            color: #ff0066;
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s;
+          }
+
+          .error-link:hover {
+            background: rgba(255, 0, 102, 0.3);
+            transform: translateX(-4px);
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="tv-page">
