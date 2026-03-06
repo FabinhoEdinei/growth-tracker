@@ -117,11 +117,6 @@ export const NewspaperHeader = () => {
         <circle cx="95" cy="75" r="1" fill="url(#goldGradientBR)"/>
       </svg>
 
-      {/* Banner */}
-      <div className="header-banner">
-        SISTEMA DE CRESCIMENTO DIGITAL E DISTINGUIDO
-      </div>
-
       {/* Título */}
       <h1 className="newspaper-title">GROWTH TRACKER GAZETTE</h1>
 
@@ -290,11 +285,6 @@ export const NewspaperHeader = () => {
           .corner-ornament {
             width: 60px;
             height: 60px;
-          }
-
-          .header-banner {            font-size: 6px;
-            letter-spacing: 2px;
-            margin-bottom: 6px;
           }
 
           .newspaper-title {
