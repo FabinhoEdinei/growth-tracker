@@ -211,6 +211,7 @@ export const NewspaperHeader = () => {
           font-family: 'Playfair Display', 'Georgia', serif;
           font-size: 28px;
           font-weight: 700;
+          padding: 3px;
           margin: 8px 0;
           color: #f5e6d3;
           text-transform: uppercase;
