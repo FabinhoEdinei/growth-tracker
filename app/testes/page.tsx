@@ -1,519 +1,549 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import './testes.css';
+
+// ─── Tipos ───────────────────────────────────────────────────────────────────
+
+type RouteStatus = 'idle' | 'running' | 'pass' | 'fail' | 'warn' | 'skip';
+
+interface RouteTest {
+  id: string;
+  label: string;
+  path: string;
+  method?: string;
+  expectedStatus?: number; // se não informado, qualquer 2xx passa
+  expectRedirect?: boolean;
+  tags: string[];
+}
 
 interface TestResult {
   id: string;
-  name: string;
-  category: 'pages' | 'api' | 'components' | 'performance';
-  status: 'success' | 'error' | 'pending' | 'warning';
-  statusCode?: number;
-  time?: number;
-  error?: string;
-  details?: string;
-  metrics?: {
-    responseTime: number;
-    contentLength?: number;
-  };
-}
-
-interface TestSession {
+  label: string;
+  path: string;
+  tags: string[];
+  status: RouteStatus;
+  httpCode?: number;
+  expectedCode?: number;
+  latencyMs?: number;
+  retries: number;
+  headers?: Record<string, string>;
+  errorSnippet?: string; // primeiros 300 chars do body em caso de erro
+  redirectTo?: string;
   timestamp: number;
-  totalTests: number;
-  passed: number;
-  failed: number;
-  avgTime: number;
 }
 
-interface CodeStats {
-  totalFiles: number;
-  totalLines: number;
-  byExtension: Record<string, { files: number; lines: number }>;
+interface LogLine {
+  t: number;
+  text: string;
+  kind: 'info' | 'pass' | 'fail' | 'warn' | 'head';
 }
 
-interface TestCategory {
-  name: string;
-  category: 'pages' | 'api' | 'components' | 'performance';
-  tests: Array<{ id: string; name: string; path: string; method?: string }>;
-}
+// ─── Rotas a testar ───────────────────────────────────────────────────────────
 
-const testCategories: TestCategory[] = [
-  {
-    name: '📄 Páginas',
-    category: 'pages',
-    tests: [
-      { id: 'home', name: 'Página Inicial', path: '/' },
-      { id: 'dashboard', name: 'Dashboard', path: '/dashboard' },
-      { id: 'blog', name: 'Blog', path: '/blog' },
-      { id: 'jornal', name: 'Jornal', path: '/jornal' },
-      { id: 'tv', name: 'TV Empresarial', path: '/tv-empresarial' },
-    ],
-  },
-  {
-    name: '🔌 APIs',
-    category: 'api',
-    tests: [
-      { id: 'code-stats', name: 'Code Stats API', path: '/api/code-stats', method: 'GET' },
-    ],
-  },
-  {
-    name: '⚡ Performance',
-    category: 'performance',
-    tests: [
-      { id: 'paint', name: 'First Paint', path: '/' },
-      { id: 'contentful', name: 'First Contentful Paint', path: '/' },
-    ],
-  },
+const ROUTE_TESTS: RouteTest[] = [
+  // Páginas
+  { id: 'home',      label: 'Home',           path: '/',                expectedStatus: 200, tags: ['page'] },
+  { id: 'dashboard', label: 'Dashboard',      path: '/dashboard',       expectedStatus: 200, tags: ['page'] },
+  { id: 'blog',      label: 'Blog (listagem)',path: '/blog',            expectedStatus: 200, tags: ['page'] },
+  { id: 'jornal',    label: 'Jornal',         path: '/jornal',          expectedStatus: 200, tags: ['page'] },
+  { id: 'tv',        label: 'TV Empresarial', path: '/tv-empresarial',  expectedStatus: 200, tags: ['page'] },
+  { id: 'testes',    label: 'Testes (self)',  path: '/testes',          expectedStatus: 200, tags: ['page'] },
+  // APIs
+  { id: 'api-code',  label: 'API /code-stats',path: '/api/code-stats',  expectedStatus: 200, method: 'GET', tags: ['api'] },
+  // 404 esperado (valida que a página de erro existe e retorna 404 correto)
+  { id: 'slug-404',  label: 'Blog slug inexistente', path: '/blog/__teste_404__', expectedStatus: 404, tags: ['page', '404'] },
 ];
 
-export default function TestesPage() {
-  const [results, setResults] = useState<TestResult[]>([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [currentTest, setCurrentTest] = useState(0);
-  const [totalTests, setTotalTests] = useState(0);
-  const [codeStats, setCodeStats] = useState<CodeStats | null>(null);
-  const [loadingStats, setLoadingStats] = useState(false);
-  const [testHistory, setTestHistory] = useState<TestSession[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<'pages' | 'api' | 'components' | 'performance' | 'all'>('all');
-  const [expandedResult, setExpandedResult] = useState<string | null>(null);
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    fetchCodeStats();
-    loadTestHistory();
+const RETRY_LIMIT = 2;
+const TIMEOUT_MS  = 8000;
+
+async function probeRoute(test: RouteTest): Promise<Omit<TestResult, 'timestamp'>> {
+  let lastError = '';
+  let retries   = 0;
+
+  for (let attempt = 0; attempt <= RETRY_LIMIT; attempt++) {
+    const t0 = Date.now();
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+
+      const res = await fetch(test.path, {
+        method: test.method || 'GET',
+        redirect: 'manual',
+        cache: 'no-store',
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+
+      const latencyMs = Date.now() - t0;
+      const code       = res.status;
+      const expected   = test.expectedStatus;
+
+      // Captura headers relevantes
+      const headers: Record<string, string> = {};
+      ['content-type', 'cache-control', 'x-powered-by', 'location', 'x-deny-reason'].forEach(h => {
+        const v = res.headers.get(h);
+        if (v) headers[h] = v;
+      });
+
+      const redirectTo = headers['location'];
+
+      // Captura snippet do body só em casos de erro
+      let errorSnippet: string | undefined;
+      if (code >= 400) {
+        try {
+          const text = await res.text();
+          // Remove tags HTML, pega texto puro
+          errorSnippet = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+        } catch { /* ignore */ }
+      }
+
+      // Determina pass/fail/warn
+      let status: RouteStatus;
+      if (expected !== undefined) {
+        status = code === expected ? 'pass' : 'fail';
+      } else if (code >= 200 && code < 300) {
+        status = 'pass';
+      } else if (code >= 300 && code < 400) {
+        status = 'warn';
+      } else {
+        status = 'fail';
+      }
+
+      return {
+        id: test.id, label: test.label, path: test.path, tags: test.tags,
+        status, httpCode: code, expectedCode: expected,
+        latencyMs, retries, headers, errorSnippet, redirectTo,
+      };
+
+    } catch (e: any) {
+      lastError = e?.name === 'AbortError' ? `Timeout (>${TIMEOUT_MS}ms)` : String(e?.message ?? e);
+      retries   = attempt;
+      if (attempt < RETRY_LIMIT) await new Promise(r => setTimeout(r, 500));
+    }
+  }
+
+  return {
+    id: test.id, label: test.label, path: test.path, tags: test.tags,
+    status: 'fail', retries,
+    errorSnippet: lastError,
+  };
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function Badge({ status }: { status: RouteStatus }) {
+  const map: Record<RouteStatus, [string, string]> = {
+    idle:    ['#1e2235', '#4b5563'],
+    running: ['#0c1a2e', '#60a5fa'],
+    pass:    ['#052e16', '#4ade80'],
+    fail:    ['#2d0a0a', '#f87171'],
+    warn:    ['#1c1700', '#fbbf24'],
+    skip:    ['#1a1a1a', '#6b7280'],
+  };
+  const labels: Record<RouteStatus, string> = {
+    idle: '—', running: 'RUN', pass: 'PASS', fail: 'FAIL', warn: 'WARN', skip: 'SKIP',
+  };
+  const [bg, fg] = map[status];
+  return (
+    <span style={{
+      background: bg, color: fg, border: `1px solid ${fg}44`,
+      borderRadius: 5, padding: '2px 9px',
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+      fontSize: 11, fontWeight: 700, letterSpacing: 1,
+      display: 'inline-block', minWidth: 46, textAlign: 'center',
+    }}>
+      {labels[status]}
+    </span>
+  );
+}
+
+function HttpCode({ code, expected }: { code?: number; expected?: number }) {
+  if (!code) return null;
+  const match    = expected === undefined || code === expected;
+  const color    = match ? '#4ade80' : '#f87171';
+  return (
+    <span style={{
+      fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
+      color, fontWeight: 700,
+    }}>
+      {code}{expected !== undefined && code !== expected && (
+        <span style={{ color: '#6b7280', fontWeight: 400 }}> (esperado {expected})</span>
+      )}
+    </span>
+  );
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
+export default function TestesPage() {
+  const [results,   setResults]   = useState<TestResult[]>([]);
+  const [log,       setLog]       = useState<LogLine[]>([]);
+  const [running,   setRunning]   = useState(false);
+  const [progress,  setProgress]  = useState({ current: 0, total: 0 });
+  const [expanded,  setExpanded]  = useState<string | null>(null);
+  const [filter,    setFilter]    = useState<'all' | 'fail' | 'pass' | 'warn'>('all');
+  const logRef = useRef<HTMLDivElement>(null);
+
+  const pushLog = useCallback((text: string, kind: LogLine['kind'] = 'info') => {
+    const line: LogLine = { t: Date.now(), text, kind };
+    setLog(prev => {
+      const next = [...prev, line];
+      setTimeout(() => logRef.current?.scrollTo({ top: 99999, behavior: 'smooth' }), 30);
+      return next;
+    });
   }, []);
 
-  const fetchCodeStats = async () => {
-    setLoadingStats(true);
-    try {
-      const response = await fetch('/api/code-stats');
-      if (response.ok) {
-        const data = await response.json();
-        setCodeStats(data);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar stats de código:', error);
-    } finally {
-      setLoadingStats(false);
-    }
-  };
-
-  const loadTestHistory = () => {
-    try {
-      const history = localStorage.getItem('testHistory');
-      if (history) {
-        setTestHistory(JSON.parse(history).slice(0, 5)); // Últimas 5 sessões
-      }
-    } catch {
-      // Ignorar erros ao carregar histórico
-    }
-  };
-
-  const saveTestSession = (totalTests: number, passed: number, failed: number, avgTime: number) => {
-    const session: TestSession = {
-      timestamp: Date.now(),
-      totalTests,
-      passed,
-      failed,
-      avgTime,
-    };
-
-    const history = [session, ...testHistory].slice(0, 5);
-    setTestHistory(history);
-    localStorage.setItem('testHistory', JSON.stringify(history));
-  };
-
-  const runTests = async () => {
-    setIsRunning(true);
+  const runAll = async () => {
+    setRunning(true);
     setResults([]);
-    setCurrentTest(0);
+    setLog([]);
+    setProgress({ current: 0, total: ROUTE_TESTS.length });
 
-    const allTests = testCategories
-      .filter((cat) => selectedCategory === 'all' || cat.category === selectedCategory)
-      .flatMap((cat) => cat.tests);
+    pushLog('══════════════════════════════════════', 'head');
+    pushLog(` GROWTH TRACKER — ROUTE TEST SUITE`, 'head');
+    pushLog(` ${new Date().toLocaleString('pt-BR')}`, 'head');
+    pushLog('══════════════════════════════════════', 'head');
+    pushLog(`${ROUTE_TESTS.length} testes enfileirados`, 'info');
+    pushLog('', 'info');
 
-    setTotalTests(allTests.length);
+    const session: TestResult[] = [];
 
-    const testResults: TestResult[] = [];
-    let totalTime = 0;
+    for (let i = 0; i < ROUTE_TESTS.length; i++) {
+      const test = ROUTE_TESTS[i];
+      setProgress({ current: i + 1, total: ROUTE_TESTS.length });
 
-    for (let i = 0; i < allTests.length; i++) {
-      const test = allTests[i];
-      const category =
-        testCategories.find((cat) => cat.tests.find((t) => t.id === test.id))?.category || 'pages';
+      // Marca como running
+      const pending: TestResult = {
+        ...test, status: 'running', retries: 0, timestamp: Date.now(),
+        expectedCode: test.expectedStatus,
+      };
+      setResults(prev => {
+        const exists = prev.find(r => r.id === test.id);
+        return exists ? prev.map(r => r.id === test.id ? pending : r) : [...prev, pending];
+      });
 
-      setCurrentTest(i + 1);
+      pushLog(`→ [${i + 1}/${ROUTE_TESTS.length}] ${test.label} (${test.path})`, 'info');
 
-      const startTime = Date.now();
+      const raw    = await probeRoute(test);
+      const result: TestResult = { ...raw, timestamp: Date.now() };
 
-      try {
-        const response = await fetch(test.path, { method: test.method || 'GET' });
-        const endTime = Date.now();
-        const responseTime = endTime - startTime;
-        totalTime += responseTime;
+      session.push(result);
+      setResults(prev => prev.map(r => r.id === result.id ? result : r));
 
-        const contentLength = response.headers.get('content-length');
-
-        testResults.push({
-          id: test.id,
-          name: test.name,
-          category: category as 'pages' | 'api' | 'components' | 'performance',
-          status: response.ok ? 'success' : response.status === 404 ? 'error' : 'warning',
-          statusCode: response.status,
-          time: responseTime,
-          metrics: {
-            responseTime,
-            contentLength: contentLength ? parseInt(contentLength) : undefined,
-          },
-        });
-      } catch (error) {
-        testResults.push({
-          id: test.id,
-          name: test.name,
-          category: category as 'pages' | 'api' | 'components' | 'performance',
-          status: 'error',
-          error: error instanceof Error ? error.message : 'Erro desconhecido',
-        });
+      if (result.status === 'pass') {
+        pushLog(`  ✓ PASS ${result.httpCode} — ${result.latencyMs}ms${result.retries ? ` (retry ×${result.retries})` : ''}`, 'pass');
+      } else if (result.status === 'warn') {
+        pushLog(`  ⚠ WARN ${result.httpCode}${result.redirectTo ? ` → ${result.redirectTo}` : ''}`, 'warn');
+      } else {
+        pushLog(`  ✗ FAIL ${result.httpCode ?? 'NETWORK'} (esperado ${result.expectedCode ?? '2xx'})`, 'fail');
+        if (result.errorSnippet) {
+          pushLog(`    └ ${result.errorSnippet.slice(0, 120)}`, 'fail');
+        }
       }
-
-      await new Promise((resolve) => setTimeout(resolve, 300));
     }
 
-    setResults(testResults);
+    // Sumário
+    const passed  = session.filter(r => r.status === 'pass').length;
+    const failed  = session.filter(r => r.status === 'fail').length;
+    const warned  = session.filter(r => r.status === 'warn').length;
+    const avgMs   = Math.round(session.reduce((s, r) => s + (r.latencyMs ?? 0), 0) / session.length);
 
-    const passed = testResults.filter((r) => r.status === 'success').length;
-    const failed = testResults.filter((r) => r.status !== 'success').length;
-    const avgTime = Math.round(totalTime / allTests.length);
+    pushLog('', 'info');
+    pushLog('──────────────────────────────────────', 'head');
+    pushLog(` ✓ ${passed} passed   ✗ ${failed} failed   ⚠ ${warned} warn`, failed > 0 ? 'fail' : 'pass');
+    pushLog(` latência média: ${avgMs}ms`, 'info');
+    pushLog('──────────────────────────────────────', 'head');
 
-    saveTestSession(allTests.length, passed, failed, avgTime);
-    setIsRunning(false);
+    setRunning(false);
   };
 
-  const getStatusIcon = (status: TestResult['status']) => {
-    switch (status) {
-      case 'success':
-        return '✅';
-      case 'error':
-        return '❌';
-      case 'warning':
-        return '⚠️';
-      case 'pending':
-        return '⏳';
-      default:
-        return '❓';
-    }
-  };
-
-  const getStatusLabel = (status: TestResult['status']) => {
-    switch (status) {
-      case 'success':
-        return 'Sucesso';
-      case 'error':
-        return 'Erro';
-      case 'warning':
-        return 'Aviso';
-      case 'pending':
-        return 'Pendente';
-      default:
-        return 'Desconhecido';
-    }
-  };
-
-  const getStatusColor = (status: TestResult['status']) => {
-    switch (status) {
-      case 'success':
-        return '#00ff88';
-      case 'error':
-        return '#ff0066';
-      case 'warning':
-        return '#ffaa00';
-      case 'pending':
-        return '#0099ff';
-      default:
-        return '#666';
-    }
-  };
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'pages':
-        return '#00ff64';
-      case 'api':
-        return '#0096ff';
-      case 'components':
-        return '#ff00c8';
-      case 'performance':
-        return '#ffaa00';
-      default:
-        return '#666';
-    }
-  };
-
-  const filteredResults = results.filter(
-    (r) => selectedCategory === 'all' || r.category === selectedCategory,
+  const shown = results.filter(r =>
+    filter === 'all' ? true :
+    filter === 'fail' ? r.status === 'fail' :
+    filter === 'pass' ? r.status === 'pass' :
+    r.status === 'warn'
   );
 
-  const stats = {
-    total: results.length,
-    success: results.filter((r) => r.status === 'success').length,
-    error: results.filter((r) => r.status === 'error').length,
-    warning: results.filter((r) => r.status === 'warning').length,
-    avgTime: Math.round(
-      results.reduce((sum, r) => sum + (r.time || 0), 0) / (results.length || 1),
-    ),
+  const passed  = results.filter(r => r.status === 'pass').length;
+  const failed  = results.filter(r => r.status === 'fail').length;
+  const warned  = results.filter(r => r.status === 'warn').length;
+  const pct     = results.length > 0 ? Math.round((passed / results.length) * 100) : null;
+
+  const S = {
+    page: {
+      minHeight: '100vh', background: '#080b12',
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      color: '#e2e8f0',
+      display: 'grid', gridTemplateColumns: '1fr',
+    } as React.CSSProperties,
+    wrap: {
+      maxWidth: 820, margin: '0 auto', padding: '32px 20px',
+    } as React.CSSProperties,
+    topBar: {
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      marginBottom: 32,
+    } as React.CSSProperties,
+    title: {
+      margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: -0.5,
+      display: 'flex', alignItems: 'center', gap: 10,
+    } as React.CSSProperties,
+    back: {
+      color: '#4b5563', fontSize: 13, textDecoration: 'none',
+      padding: '6px 14px', border: '1px solid #1e2235', borderRadius: 8,
+    } as React.CSSProperties,
   };
 
-  const successRate = results.length > 0 ? Math.round((stats.success / results.length) * 100) : 0;
-
   return (
-    <div className="testes-page">
-      <aside className="testes-sidebar">
-        <div className="sidebar-header">
-          <h2>🧪 Testes</h2>
-          <Link href="/" className="close-sidebar">
-            ✕
-          </Link>
+    <div style={S.page}>
+      <div style={S.wrap}>
+
+        {/* Top bar */}
+        <div style={S.topBar}>
+          <h1 style={S.title}>
+            <span style={{ fontSize: 18 }}>🛰️</span> Route Test Suite
+          </h1>
+          <Link href="/" style={S.back}>← Voltar</Link>
         </div>
 
-        <nav className="sidebar-nav">
+        {/* Scoreboard */}
+        {results.length > 0 && (
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: 10, marginBottom: 20,
+          }}>
+            {[
+              { label: 'Passed',  val: passed,  color: '#4ade80' },
+              { label: 'Failed',  val: failed,  color: '#f87171' },
+              { label: 'Warned',  val: warned,  color: '#fbbf24' },
+              { label: 'Taxa',    val: pct !== null ? `${pct}%` : '—', color: pct === 100 ? '#4ade80' : pct !== null && pct < 70 ? '#f87171' : '#fbbf24' },
+            ].map(s => (
+              <div key={s.label} style={{
+                background: '#0d1117', border: '1px solid #1e2235',
+                borderRadius: 10, padding: '14px 18px', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: 'monospace' }}>{s.val}</div>
+                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Progress bar */}
+        {running && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{
+              height: 3, background: '#1e2235', borderRadius: 99, overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%', borderRadius: 99,
+                background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                width: `${(progress.current / progress.total) * 100}%`,
+                transition: 'width .3s ease',
+              }} />
+            </div>
+            <div style={{ fontSize: 12, color: '#4b5563', marginTop: 6, fontFamily: 'monospace' }}>
+              {progress.current}/{progress.total} — testando rotas...
+            </div>
+          </div>
+        )}
+
+        {/* Controls */}
+        <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
           <button
-            className={`nav-item ${selectedCategory === 'all' ? 'active' : ''}`}
-            onClick={() => setSelectedCategory('all')}
+            onClick={runAll}
+            disabled={running}
+            style={{
+              background: running ? '#1e2235' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+              color: running ? '#4b5563' : '#fff',
+              border: 'none', borderRadius: 10,
+              padding: '11px 24px', fontWeight: 700, fontSize: 14,
+              cursor: running ? 'not-allowed' : 'pointer',
+              letterSpacing: 0.3,
+            }}
           >
-            📋 Todos
+            {running ? `⏳ Executando ${progress.current}/${progress.total}...` : '▶ Executar Todos os Testes'}
           </button>
-          {testCategories.map((cat) => (
-            <button
-              key={cat.category}
-              className={`nav-item ${selectedCategory === cat.category ? 'active' : ''}`}
-              onClick={() => setSelectedCategory(cat.category)}
-            >
-              {cat.name}
+
+          {results.length > 0 && (['all', 'pass', 'fail', 'warn'] as const).map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={{
+              background: filter === f ? '#1e2235' : 'transparent',
+              color: filter === f ? '#e2e8f0' : '#4b5563',
+              border: `1px solid ${filter === f ? '#374151' : '#1e2235'}`,
+              borderRadius: 8, padding: '8px 16px', fontSize: 12,
+              cursor: 'pointer', fontWeight: 600, textTransform: 'uppercase',
+              letterSpacing: 0.8,
+            }}>
+              {f === 'all' ? `Todos (${results.length})` :
+               f === 'pass' ? `✓ ${passed}` :
+               f === 'fail' ? `✗ ${failed}` : `⚠ ${warned}`}
             </button>
           ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <p>Sistema de testes automáticos para verificação de rotas e performance</p>
-        </div>
-      </aside>
-
-      <main className="testes-main">
-        <div className="testes-header">
-          <div>
-            <h1>🧪 Sistema de Testes</h1>
-            <p>Verificação automática de rotas e funcionalidades da aplicação</p>
-          </div>
-          <Link href="/" className="back-link">
-            ← Voltar
-          </Link>
         </div>
 
-        {results.length > 0 && (
-          <div className="stats-grid">
-            <div className="stat-item success">
-              <span className="stat-icon">✅</span>
-              <div className="stat-content">
-                <span className="stat-label">Sucessos</span>
-                <span className="stat-value">{stats.success}</span>
-              </div>
-            </div>
-            <div className="stat-item error">
-              <span className="stat-icon">❌</span>
-              <div className="stat-content">
-                <span className="stat-label">Erros</span>
-                <span className="stat-value">{stats.error}</span>
-              </div>
-            </div>
-            <div className="stat-item warning">
-              <span className="stat-icon">⚠️</span>
-              <div className="stat-content">
-                <span className="stat-label">Avisos</span>
-                <span className="stat-value">{stats.warning}</span>
-              </div>
-            </div>
-            <div className="stat-item time">
-              <span className="stat-icon">⏱️</span>
-              <div className="stat-content">
-                <span className="stat-label">Tempo Médio</span>
-                <span className="stat-value">{stats.avgTime}ms</span>
-              </div>
-            </div>
-            <div className="stat-item rate">
-              <span className="stat-icon">📊</span>
-              <div className="stat-content">
-                <span className="stat-label">Taxa Sucesso</span>
-                <span className="stat-value">{successRate}%</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Results list */}
+        {shown.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+            {shown.map(r => (
+              <div
+                key={r.id}
+                onClick={() => setExpanded(expanded === r.id ? null : r.id)}
+                style={{
+                  background: '#0d1117',
+                  border: `1px solid ${r.status === 'fail' ? '#f8717133' : r.status === 'pass' ? '#4ade8022' : r.status === 'warn' ? '#fbbf2422' : '#1e2235'}`,
+                  borderRadius: 10, padding: '14px 18px',
+                  cursor: 'pointer', transition: 'border .15s',
+                }}
+              >
+                {/* Row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                    <Badge status={r.status} />
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{r.label}</div>
+                      <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#4b5563', marginTop: 1 }}>{r.path}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+                    <HttpCode code={r.httpCode} expected={r.expectedCode} />
+                    {r.latencyMs !== undefined && (
+                      <span style={{ fontFamily: 'monospace', fontSize: 12, color: r.latencyMs > 2000 ? '#fbbf24' : '#6b7280' }}>
+                        {r.latencyMs}ms
+                      </span>
+                    )}
+                    {r.retries > 0 && (
+                      <span style={{ fontSize: 11, color: '#fbbf24' }}>retry ×{r.retries}</span>
+                    )}
+                    <span style={{ color: '#374151', fontSize: 12 }}>{expanded === r.id ? '▲' : '▼'}</span>
+                  </div>
+                </div>
 
-        <div className="testes-controls">
-          <button
-            onClick={runTests}
-            disabled={isRunning}
-            className={`run-button ${isRunning ? 'running' : ''}`}
-          >
-            {isRunning
-              ? `⏳ Executando ${currentTest}/${totalTests}...`
-              : '▶️ Executar Testes'}
-          </button>
-        </div>
+                {/* Expanded details */}
+                {expanded === r.id && (
+                  <div style={{
+                    marginTop: 14, paddingTop: 14,
+                    borderTop: '1px solid #1e2235',
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}>
+                    {/* Tags */}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {r.tags.map(t => (
+                        <span key={t} style={{
+                          background: '#1e2235', color: '#6b7280',
+                          borderRadius: 4, padding: '2px 8px', fontSize: 11,
+                          fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: 0.8,
+                        }}>{t}</span>
+                      ))}
+                    </div>
 
-        <div className="results-container">
-          {results.length === 0 && !isRunning && (
-            <div className="empty-state">
-              <span className="empty-icon">🔬</span>
-              <h3>Nenhum teste executado</h3>
-              <p>Clique em &quot;Executar Testes&quot; para iniciar a verificação</p>
-            </div>
-          )}
-
-          {isRunning && results.length === 0 && (
-            <div className="loading-state">
-              <span className="loading-spinner">🔄</span>
-              <h3>Executando testes...</h3>
-              <p>Teste {currentTest} de {totalTests}</p>
-            </div>
-          )}
-
-          {filteredResults.length > 0 && (
-            <div className="results-list">
-              {filteredResults.map((result) => (
-                <div
-                  key={result.id}
-                  className={`result-card result-${result.status}`}
-                  onClick={() =>
-                    setExpandedResult(expandedResult === result.id ? null : result.id)
-                  }
-                >
-                  <div className="result-header">
-                    <div className="result-title">
-                      <span className="result-icon">{getStatusIcon(result.status)}</span>
-                      <div className="result-info">
-                        <h4>{result.name}</h4>
-                        <span className="result-category" style={{ color: getCategoryColor(result.category) }}>
-                          {result.category === 'pages' && '📄 Página'}
-                          {result.category === 'api' && '🔌 API'}
-                          {result.category === 'components' && '⚙️ Componente'}
-                          {result.category === 'performance' && '⚡ Performance'}
-                        </span>
+                    {/* Headers */}
+                    {r.headers && Object.keys(r.headers).length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Headers</div>
+                        {Object.entries(r.headers).map(([k, v]) => (
+                          <div key={k} style={{ fontFamily: 'monospace', fontSize: 12, color: '#9ca3af' }}>
+                            <span style={{ color: '#6366f1' }}>{k}:</span> {v}
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                    <div className="result-meta">
-                      {result.time && (
-                        <span className="result-time">
-                          ⏱️ {result.time}ms
-                        </span>
-                      )}
-                      <span className="result-status">{getStatusLabel(result.status)}</span>
+                    )}
+
+                    {/* Redirect */}
+                    {r.redirectTo && (
+                      <div style={{ fontFamily: 'monospace', fontSize: 12 }}>
+                        <span style={{ color: '#fbbf24' }}>→ Redireciona para: </span>
+                        <span style={{ color: '#e2e8f0' }}>{r.redirectTo}</span>
+                      </div>
+                    )}
+
+                    {/* Error body snippet */}
+                    {r.errorSnippet && (
+                      <div>
+                        <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Resposta / Erro</div>
+                        <div style={{
+                          background: '#140a0a', border: '1px solid #f8717122',
+                          borderRadius: 6, padding: '10px 12px',
+                          fontFamily: 'monospace', fontSize: 12, color: '#fca5a5',
+                          whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                          maxHeight: 120, overflowY: 'auto',
+                        }}>
+                          {r.errorSnippet}
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#374151' }}>
+                      {new Date(r.timestamp).toLocaleTimeString('pt-BR')}
                     </div>
                   </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
-                  {expandedResult === result.id && (
-                    <div className="result-details">
-                      {result.statusCode && (
-                        <div className="detail-row">
-                          <span className="detail-label">Status HTTP:</span>
-                          <span className="detail-value">{result.statusCode}</span>
-                        </div>
-                      )}
-                      {result.metrics?.contentLength && (
-                        <div className="detail-row">
-                          <span className="detail-label">Tamanho:</span>
-                          <span className="detail-value">
-                            {(result.metrics.contentLength / 1024).toFixed(2)} KB
-                          </span>
-                        </div>
-                      )}
-                      {result.error && (
-                        <div className="detail-row error">
-                          <span className="detail-label">Erro:</span>
-                          <span className="detail-value">{result.error}</span>
-                        </div>
-                      )}
-                      {result.details && (
-                        <div className="detail-row">
-                          <span className="detail-label">Detalhes:</span>
-                          <span className="detail-value">{result.details}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {testHistory.length > 0 && (
-          <div className="history-section">
-            <h3>📜 Histórico de Testes</h3>
-            <div className="history-grid">
-              {testHistory.map((session, idx) => (
-                <div key={idx} className="history-item">
-                  <span className="history-time">
-                    {new Date(session.timestamp).toLocaleTimeString('pt-BR')}
-                  </span>
-                  <div className="history-stats">
-                    <span className="history-stat pass">✅ {session.passed}</span>
-                    <span className="history-stat fail">❌ {session.failed}</span>
-                    <span className="history-stat time">⏱️ {session.avgTime}ms</span>
-                  </div>
-                </div>
-              ))}
+        {/* Empty state */}
+        {results.length === 0 && !running && (
+          <div style={{
+            background: '#0d1117', border: '1px dashed #1e2235',
+            borderRadius: 12, padding: '48px 24px', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>🔬</div>
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>Nenhum teste executado</div>
+            <div style={{ color: '#4b5563', fontSize: 13 }}>
+              Clique em <strong style={{ color: '#6366f1' }}>▶ Executar</strong> para verificar todas as rotas
             </div>
           </div>
         )}
 
-        <div className="code-stats-section">
-          <div className="stats-header">
-            <h2>📊 Estatísticas de Código</h2>
-            <button
-              onClick={fetchCodeStats}
-              disabled={loadingStats}
-              className="refresh-button"
-              title="Atualizar contagem"
+        {/* Terminal log */}
+        {log.length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{
+              fontSize: 11, color: '#4b5563', textTransform: 'uppercase',
+              letterSpacing: 1, marginBottom: 8,
+            }}>Log de execução</div>
+            <div
+              ref={logRef}
+              style={{
+                background: '#050709', border: '1px solid #1e2235',
+                borderRadius: 10, padding: '14px 16px',
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                fontSize: 12, lineHeight: 1.7,
+                maxHeight: 300, overflowY: 'auto',
+              }}
             >
-              {loadingStats ? '⏳ Carregando...' : '🔄 Atualizar'}
-            </button>
+              {log.map((l, i) => (
+                <div key={i} style={{
+                  color: l.kind === 'pass' ? '#4ade80' :
+                         l.kind === 'fail' ? '#f87171' :
+                         l.kind === 'warn' ? '#fbbf24' :
+                         l.kind === 'head' ? '#6366f1' : '#6b7280',
+                }}>
+                  {l.text || '\u00a0'}
+                </div>
+              ))}
+              {running && (
+                <div style={{ color: '#60a5fa', animation: 'pulse 1s infinite' }}>▌</div>
+              )}
+            </div>
           </div>
+        )}
 
-          {codeStats ? (
-            <div className="stats-content">
-              <div className="stats-summary">
-                <div className="stat-box">
-                  <span className="stat-label">Arquivos</span>
-                  <span className="stat-value">{codeStats.totalFiles}</span>
-                </div>
-                <div className="stat-box highlight">
-                  <span className="stat-label">Linhas de Código</span>
-                  <span className="stat-value">{codeStats.totalLines.toLocaleString('pt-BR')}</span>
-                </div>
-              </div>
-
-              <div className="stats-by-extension">
-                <h3>Por Extensão</h3>
-                <div className="extension-grid">
-                  {Object.entries(codeStats.byExtension).map(([ext, data]) => (
-                    <div key={ext} className="extension-card">
-                      <div className="ext-name">{ext}</div>
-                      <div className="ext-files">{data.files} arquivo{data.files > 1 ? 's' : ''}</div>
-                      <div className="ext-lines">{data.lines.toLocaleString('pt-BR')} linhas</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="stats-loading">
-              <span>⏳ Carregando estatísticas...</span>
-            </div>
-          )}
+        {/* Add routes hint */}
+        <div style={{
+          marginTop: 28, padding: '12px 16px',
+          background: '#0d1117', border: '1px solid #1e2235',
+          borderRadius: 8, fontSize: 12, color: '#4b5563',
+        }}>
+          💡 Para adicionar rotas, edite o array <code style={{ color: '#6366f1', background: '#12162a', padding: '1px 6px', borderRadius: 4 }}>ROUTE_TESTS</code> no topo deste arquivo.
+          Cada teste aceita <code style={{ color: '#6366f1', background: '#12162a', padding: '1px 6px', borderRadius: 4 }}>expectedStatus</code> para validar o código HTTP exato.
         </div>
-      </main>
+
+      </div>
     </div>
   );
 }
