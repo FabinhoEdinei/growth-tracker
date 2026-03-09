@@ -1,3 +1,5 @@
+'use client';
+
 import { notFound } from 'next/navigation';
 import fs from 'fs';
 import path from 'path';
