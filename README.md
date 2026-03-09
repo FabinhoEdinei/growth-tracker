@@ -1,6 +1,6 @@
 # 🧠 Neural Growth System
 
-> **Um sistema visual interativo de rastreamento de crescimento neural.**
+> **Um sistema visual impresso com interativo de rastreamento de crescimento neural.**
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 ![Next.js](https://img.shields.io/badge/Next.js-13.5-black?logo=next.js)
