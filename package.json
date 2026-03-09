@@ -6,14 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "framer-motion": "^12.34.5",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.576.0",
     "marked": "^17.0.3",
-    "next": "13.5.11",
+    "next": "^16.1.6",
     "react": "^18",
     "react-dom": "^18"
   },
@@ -22,6 +23,8 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@sentry/nextjs": "^10.42.0",
+    "@next/bundle-analyzer": "^13.5.0",
     "autoprefixer": "^10",
     "eslint": "^8",
     "eslint-config-next": "13.5.11",

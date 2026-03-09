@@ -14,8 +14,8 @@ interface JornalPost {
   content: string;
 }
 
-export async function GET(request: Request, { params }: { params: { slug: string } }) {
-  const { slug } = params;
+export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
 
   try {
     const jornalDirectory = path.join(process.cwd(), 'app/content/jornal');

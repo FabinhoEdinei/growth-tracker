@@ -45,19 +45,57 @@ Siga os passos abaixo para rodar o projeto na sua máquina:
     cd growth-tracker
 ```
 
-2.  **Instale as dependências:**
+2.  **Copie o exemplo de variáveis de ambiente** e preencha com seus valores:
+```bash
+    cp .env.example .env
+    # edite o .env conforme necessário
+```
+
+3.  **Instale as dependências:**
 ```bash
     npm install
     # ou
     yarn install
 ```
 
-3.  **Inicie o servidor de desenvolvimento:**
+4.  **Inicie o servidor de desenvolvimento:**
 ```bash
     npm run dev
 ```
 
-4.  Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+5.  Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+
+
+### 🚨 Variáveis importantes
+- `NEXT_PUBLIC_API_URL` – url da API usada pelo front‑end
+- `SENTRY_DSN` – DSN do Sentry para captura de erros (opcional)
+- `NEXT_PUBLIC_SENTRY_ENABLED` – habilita captura no cliente
+
+
+### 📊 Inspeção de bundle
+Para gerar um relatório de tamanho dos bundles instale as dev‑dependencies e execute com:
+```bash
+ANALYZE=true npm run build
+```
+Isso abrirá automaticamente o analisador de pacotes.
+
+
+### 🔐 Cabeçalhos de segurança
+A aplicação já injeta alguns headers HTTP de proteção via `next.config.js`. Ajuste
+`Content-Security-Policy` de acordo com seus recursos externos.
+
+
+### 🧵 Middleware e rate limiting
+O projeto conta com middleware para limitar requisições (ex: usando Upstash).
+Veja `app/api` e a pasta `middleware.ts` para customizar os limites, e configure
+o `REDIS_URL`/`UPSTASH_URL` na `.env`.
+
+
+### 📨 Error tracking com Sentry
+As configurações base estão em `sentry.client.config.js` e
+`sentry.server.config.js`. Instale `@sentry/nextjs` e garanta que `SENTRY_DSN`
+está definido. O plugin do Next ajusta automaticamente os endpoints.
+
 
 ## 📂 Estrutura do Projeto
 

@@ -9,6 +9,7 @@ export const CustomCursor = () => {
   useEffect(() => {
     let mouseX = 0, mouseY = 0;
     let cursorX = 0, cursorY = 0;
+    const animationRef = { current: 0 } as { current: number };
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -19,11 +20,11 @@ export const CustomCursor = () => {
       cursorX += (mouseX - cursorX) * 0.1;
       cursorY += (mouseY - cursorY) * 0.1;
       setPosition({ x: cursorX, y: cursorY });
-      requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animate);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
-    animate();
+    animationRef.current = requestAnimationFrame(animate);
 
     // Detectar hover em elementos interativos
     const interactiveElements = document.querySelectorAll('a, button, .blog-card');
@@ -34,6 +35,11 @@ export const CustomCursor = () => {
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      interactiveElements.forEach(el => {
+        el.removeEventListener('mouseenter', () => setIsHovering(true));
+        el.removeEventListener('mouseleave', () => setIsHovering(false));
+      });
     };
   }, []);
 
