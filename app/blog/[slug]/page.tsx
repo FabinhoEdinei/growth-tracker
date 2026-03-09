@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react'; // Importamos o 'use' do React
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './blog.module.css';
@@ -17,7 +17,6 @@ interface Post {
   image?: string;
 }
 
-// No Next.js 15/16, params é recebido como uma Promise
 interface PageProps {
   params: Promise<{
     slug: string;
@@ -25,7 +24,6 @@ interface PageProps {
 }
 
 export default function BlogPostPage({ params: paramsPromise }: PageProps) {
-  // Desembrulha os parâmetros de forma segura para o Next.js 16
   const params = use(paramsPromise);
   const slug = params.slug;
 
@@ -34,15 +32,11 @@ export default function BlogPostPage({ params: paramsPromise }: PageProps) {
   const router = useRouter();
 
   useEffect(() => {
-    // PROTEÇÃO: Impede que o fetch rode se o slug for undefined ou a string "undefined"
-    if (!slug || slug === 'undefined') {
-      console.warn("Slug inválido detectado no carregamento.");
-      return;
-    }
+    if (!slug || slug === 'undefined') return;
 
     fetch(`/api/blog/${slug}`)
       .then((res) => {
-        if (!res.ok) throw new Error('Post não encontrado');
+        if (!res.ok) throw new Error('Post not found');
         return res.json();
       })
       .then((data) => {
@@ -50,55 +44,33 @@ export default function BlogPostPage({ params: paramsPromise }: PageProps) {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Erro ao buscar post:', error);
+        console.error('Erro:', error);
         setLoading(false);
-        // Opcional: Redirecionar se o post realmente não existir
-        // router.push('/blog');
       });
-  }, [slug]); // Depende apenas do slug extraído
+  }, [slug]);
 
   const formatDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString('pt-BR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
+        day: 'numeric', month: 'long', year: 'numeric',
       });
-    } catch (e) {
+    } catch {
       return dateStr;
     }
   };
 
-  if (loading) {
-    return (
-      <div className={styles.blogPostPage} style={{ textAlign: 'center', color: '#00ff88', paddingTop: '100px' }}>
-        Carregando...
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className={styles.blogPostPage} style={{ textAlign: 'center', color: '#ff4444', paddingTop: '100px' }}>
-        Post não encontrado.
-        <br />
-        <Link href="/blog" style={{ color: '#00ff88', textDecoration: 'underline' }}>Voltar ao blog</Link>
-      </div>
-    );
-  }
+  if (loading) return <div className={styles.loading}>Carregando...</div>;
+  if (!post) return null;
 
   return (
     <div className={styles.blogPostPage}>
       <nav className={styles.postNav}>
-        <Link href="/blog" className={styles.backLink}>
-          ← Voltar ao Blog
-        </Link>
+        <Link href="/blog" className={styles.backLink}>← Voltar ao Blog</Link>
       </nav>
 
       <header className={styles.postHeader}>
         <div className={styles.postCategory}>{post.category}</div>
         <h1 className={styles.postTitle}>{post.title}</h1>
-        
         <div className={styles.postMeta}>
           <span>📅 {formatDate(post.date)}</span>
           <span className={styles.metaSeparator}>•</span>
@@ -106,10 +78,6 @@ export default function BlogPostPage({ params: paramsPromise }: PageProps) {
           <span className={styles.metaSeparator}>•</span>
           <span>✍️ {post.author}</span>
         </div>
-
-        {post.excerpt && (
-          <p className={styles.postExcerpt}>{post.excerpt}</p>
-        )}
       </header>
 
       {post.image && (
@@ -124,9 +92,7 @@ export default function BlogPostPage({ params: paramsPromise }: PageProps) {
       />
 
       <footer className={styles.postFooter}>
-        <Link href="/blog" className={styles.backToBlog}>
-          ← Voltar ao Blog
-        </Link>
+        <Link href="/blog" className={styles.backToBlog}>← Voltar ao Blog</Link>
       </footer>
     </div>
   );
