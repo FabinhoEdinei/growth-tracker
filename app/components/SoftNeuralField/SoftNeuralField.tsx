@@ -19,9 +19,11 @@ export default function SoftNeuralField({
   particleCount?: number;
   fps?: number;
 }) {
+  console.log('[SoftNeuralField] render start');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particleManager = useRef(new ParticleManager());
   const particleRenderer = useRef(new ParticleRenderer());
+  const animationRef = useRef<number>();
   
   const [headerBounds, setHeaderBounds] = useState<HeaderBounds | null>(null);
   const [headerGlow, setHeaderGlow] = useState(0);
@@ -92,6 +94,7 @@ export default function SoftNeuralField({
   };
 
   useEffect(() => {
+    console.log('[SoftNeuralField] useEffect start');
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -127,7 +130,6 @@ export default function SoftNeuralField({
     let lastTime = 0;
     const interval = 1000 / fps;
     let frameCount = 0;
-    const animationRef = useRef<number>();
 
     // tracking recent frame durations to compute FPS
     let frameTimes: number[] = [];
@@ -211,7 +213,6 @@ export default function SoftNeuralField({
   role="img"
   aria-label="Campo neural animado interativo"
   className={`fixed inset-0 w-full h-full z-0 cursor-crosshair ${styles.field}`}
-  style={{ height: '200vh' }} // ← Canvas com 2x altura da viewport
 />
       
       <NeuralHeader onBoundsUpdate={handleHeaderBoundsUpdate} glow={headerGlow} />

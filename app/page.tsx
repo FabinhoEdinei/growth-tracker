@@ -3,7 +3,10 @@
 import dynamic from 'next/dynamic';
 
 const SoftNeuralField = dynamic(
-  () => import('./components/SoftNeuralField/SoftNeuralField'),
+  () => import('./components/SoftNeuralField/SoftNeuralField').catch(err => {
+    console.error('Failed to load SoftNeuralField:', err);
+    throw err;
+  }),
   { 
     ssr: false,
     loading: () => (
