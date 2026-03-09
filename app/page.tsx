@@ -1,8 +1,10 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 
 const SoftNeuralField = dynamic(
   () => import('./components/SoftNeuralField/SoftNeuralField'),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-screen bg-black">
