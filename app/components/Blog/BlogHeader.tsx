@@ -44,11 +44,17 @@ export const BlogHeader = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const resize = () => {
+    // debounce resize events so we don't thrash the canvas
+    let resizeTimeout: number | null = null;
+    const doResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = 80;
     };
-    resize();
+    const resize = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = window.setTimeout(doResize, 100);
+    };
+    doResize();
     window.addEventListener('resize', resize);
 
     spawnIntervalRef.current = setInterval(() => {

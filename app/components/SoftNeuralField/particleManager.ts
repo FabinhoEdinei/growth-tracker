@@ -218,6 +218,13 @@ export class ParticleManager {
     return this.lightningEffect;
   }
   
+  setDeviceTier(tier: DeviceTier): void {
+    if (this.deviceTier !== tier) {
+      console.log(`Device tier changed from ${this.deviceTier} to ${tier}`);
+      this.deviceTier = tier;
+    }
+  }
+
   getDeviceTier(): DeviceTier {
     return this.deviceTier;
   }
