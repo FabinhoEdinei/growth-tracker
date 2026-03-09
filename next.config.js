@@ -23,7 +23,7 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
 
-  // Security headers added for better protection
+  // Security headers - CORRIGIDOS PARA NEXT.JS + PWA
   async headers() {
     return [
       {
@@ -33,19 +33,56 @@ const nextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'no-referrer-when-downgrade' },
-          // content-security-policy should be specific to your app; tweak as needed
+          
+          // CSP CORRIGIDO - Permite Next.js, PWA e Google Fonts
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // Next.js precisa de unsafe-eval e unsafe-inline
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // Estilos inline + Google Fonts
+              "img-src 'self' data: blob: https:", // Imagens locais, data URIs, blobs e https
+              "font-src 'self' data: https://fonts.gstatic.com", // Fontes locais e Google Fonts
+              "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com", // APIs e fontes
+              "media-src 'self'", // Áudio/vídeo
+              "object-src 'none'", // Sem plugins
+              "frame-src 'self'", // iframes só do mesmo domínio
+              "base-uri 'self'", // Base URL
+              "form-action 'self'", // Forms só para mesmo domínio
+              "frame-ancestors 'none'", // Não pode ser iframe
+              "upgrade-insecure-requests", // HTTPS automático
+            ].join('; '),
           },
+        ],
+      },
+      
+      // Headers específicos para Service Worker
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
+      
+      // Headers específicos para manifest
+      {
+        source: '/manifest.json',
+        headers: [
+          { key: 'Content-Type', value: 'application/manifest+json' },
+          { key: 'Cache-Control', value: 'public, max-age=3600' },
+        ],
+      },
+      
+      // Headers para ícones PWA
+      {
+        source: '/icons/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
     ];
   },
-  
-  // IMPORTANTE: API Routes não funcionam com 'export'
-  // Então vamos usar uma abordagem diferente
 };
 
 module.exports = withSentry(withBundleAnalyzer(nextConfig));
-
