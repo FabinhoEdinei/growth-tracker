@@ -13,7 +13,7 @@ try {
 }
 
 const nextConfig = {
-  output: 'export', // Mantém static export
+  // output: 'export', // Removido para permitir API routes
   images: {
     unoptimized: true,
   },
