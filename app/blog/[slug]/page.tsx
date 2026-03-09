@@ -22,7 +22,6 @@ function getPostBySlug(slug: string) {
 
     const filenames = fs.readdirSync(postsDirectory);
     
-    // Procurar arquivo que corresponde ao slug
     const mdFile = filenames.find(
       (filename) => {
         const fileSlug = filename.replace('.md', '');
@@ -32,7 +31,6 @@ function getPostBySlug(slug: string) {
 
     if (!mdFile) {
       console.error('Post not found:', slug);
-      console.log('Available files:', filenames);
       return null;
     }
 
@@ -57,7 +55,6 @@ function getPostBySlug(slug: string) {
   }
 }
 
-// Gerar static params (importante para build)
 export async function generateStaticParams() {
   try {
     const postsDirectory = path.join(process.cwd(), 'app/content/posts');
@@ -97,30 +94,22 @@ export default function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="blog-post-page">
-      {/* Navegação */}
       <nav className="post-nav">
         <Link href="/blog" className="back-link">
           ← Voltar ao Blog
         </Link>
       </nav>
 
-      {/* Cabeçalho do Post */}
       <header className="post-header">
         <div className="post-category">{post.category}</div>
         <h1 className="post-title">{post.title}</h1>
         
         <div className="post-meta">
-          <span className="meta-item">
-            📅 {formatDate(post.date)}
-          </span>
+          <span className="meta-item">📅 {formatDate(post.date)}</span>
           <span className="meta-separator">•</span>
-          <span className="meta-item">
-            ⏱️ {post.readTime}
-          </span>
+          <span className="meta-item">⏱️ {post.readTime}</span>
           <span className="meta-separator">•</span>
-          <span className="meta-item">
-            ✍️ {post.author}
-          </span>
+          <span className="meta-item">✍️ {post.author}</span>
         </div>
 
         {post.excerpt && (
@@ -128,20 +117,17 @@ export default function BlogPostPage({ params }: PageProps) {
         )}
       </header>
 
-      {/* Imagem destaque (se houver) */}
       {post.image && (
         <div className="post-image">
           <img src={post.image} alt={post.title} />
         </div>
       )}
 
-      {/* Conteúdo do Post */}
       <article 
         className="post-content"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
 
-      {/* Footer */}
       <footer className="post-footer">
         <Link href="/blog" className="back-to-blog">
           ← Voltar ao Blog
@@ -278,85 +264,6 @@ export default function BlogPostPage({ params }: PageProps) {
           color: rgba(230, 230, 240, 0.95);
         }
 
-        .post-content :global(h1),
-        .post-content :global(h2),
-        .post-content :global(h3),
-        .post-content :global(h4) {
-          font-family: 'Playfair Display', 'Georgia', serif;
-          color: #00ff88;
-          margin: 40px 0 20px;
-          line-height: 1.3;
-        }
-
-        .post-content :global(h1) { font-size: 36px; }
-        .post-content :global(h2) { font-size: 30px; }
-        .post-content :global(h3) { font-size: 24px; }
-        .post-content :global(h4) { font-size: 20px; }
-
-        .post-content :global(p) {
-          margin-bottom: 24px;
-        }
-
-        .post-content :global(strong) {
-          color: #00d4ff;
-          font-weight: 600;
-        }
-
-        .post-content :global(em) {
-          color: #a855f7;
-        }
-
-        .post-content :global(a) {
-          color: #00ff88;
-          text-decoration: underline;
-          transition: color 0.3s;
-        }
-
-        .post-content :global(a:hover) {
-          color: #00ffaa;
-        }
-
-        .post-content :global(blockquote) {
-          border-left: 4px solid #ffd700;
-          padding-left: 24px;
-          margin: 30px 0;
-          font-style: italic;
-          color: rgba(255, 215, 0, 0.9);
-        }
-
-        .post-content :global(code) {
-          background: rgba(0, 0, 0, 0.4);
-          padding: 3px 8px;
-          border-radius: 4px;
-          font-family: 'Courier New', monospace;
-          font-size: 16px;
-          color: #00ffaa;
-        }
-
-        .post-content :global(pre) {
-          background: rgba(0, 0, 0, 0.6);
-          padding: 20px;
-          border-radius: 8px;
-          border-left: 4px solid #00ff88;
-          overflow-x: auto;
-          margin: 30px 0;
-        }
-
-        .post-content :global(pre code) {
-          background: none;
-          padding: 0;
-        }
-
-        .post-content :global(ul),
-        .post-content :global(ol) {
-          margin: 20px 0;
-          padding-left: 30px;
-        }
-
-        .post-content :global(li) {
-          margin-bottom: 12px;
-        }
-
         .post-footer {
           max-width: 900px;
           margin: 40px auto 0;
@@ -401,10 +308,94 @@ export default function BlogPostPage({ params }: PageProps) {
             padding: 40px 25px;
             font-size: 16px;
           }
+        }
+      `}</style>
 
-          .post-content :global(h1) { font-size: 28px; }
-          .post-content :global(h2) { font-size: 24px; }
-          .post-content :global(h3) { font-size: 20px; }
+      {/* Estilos globais para o conteúdo markdown */}
+      <style jsx global>{`
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+          font-family: 'Playfair Display', 'Georgia', serif;
+          color: #00ff88;
+          margin: 40px 0 20px;
+          line-height: 1.3;
+        }
+
+        .post-content h1 { font-size: 36px; }
+        .post-content h2 { font-size: 30px; }
+        .post-content h3 { font-size: 24px; }
+        .post-content h4 { font-size: 20px; }
+
+        .post-content p {
+          margin-bottom: 24px;
+        }
+
+        .post-content strong {
+          color: #00d4ff;
+          font-weight: 600;
+        }
+
+        .post-content em {
+          color: #a855f7;
+        }
+
+        .post-content a {
+          color: #00ff88;
+          text-decoration: underline;
+          transition: color 0.3s;
+        }
+
+        .post-content a:hover {
+          color: #00ffaa;
+        }
+
+        .post-content blockquote {
+          border-left: 4px solid #ffd700;
+          padding-left: 24px;
+          margin: 30px 0;
+          font-style: italic;
+          color: rgba(255, 215, 0, 0.9);
+        }
+
+        .post-content code {
+          background: rgba(0, 0, 0, 0.4);
+          padding: 3px 8px;
+          border-radius: 4px;
+          font-family: 'Courier New', monospace;
+          font-size: 16px;
+          color: #00ffaa;
+        }
+
+        .post-content pre {
+          background: rgba(0, 0, 0, 0.6);
+          padding: 20px;
+          border-radius: 8px;
+          border-left: 4px solid #00ff88;
+          overflow-x: auto;
+          margin: 30px 0;
+        }
+
+        .post-content pre code {
+          background: none;
+          padding: 0;
+        }
+
+        .post-content ul,
+        .post-content ol {
+          margin: 20px 0;
+          padding-left: 30px;
+        }
+
+        .post-content li {
+          margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+          .post-content h1 { font-size: 28px; }
+          .post-content h2 { font-size: 24px; }
+          .post-content h3 { font-size: 20px; }
         }
       `}</style>
     </div>
