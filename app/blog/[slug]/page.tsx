@@ -1,11 +1,20 @@
-'use client';
+'use client'; // ← ADICIONAR ESTA LINHA NO TOPO
 
-import { notFound } from 'next/navigation';
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-import { marked } from 'marked';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+
+interface Post {
+  slug: string;
+  title: string;
+  category: string;
+  date: string;
+  excerpt: string;
+  author: string;
+  readTime: string;
+  content: string;
+  image?: string;
+}
 
 interface PageProps {
   params: {
@@ -13,76 +22,65 @@ interface PageProps {
   };
 }
 
-function getPostBySlug(slug: string) {
-  try {
-    const postsDirectory = path.join(process.cwd(), 'app/content/posts');
-    
-    if (!fs.existsSync(postsDirectory)) {
-      console.error('Posts directory not found:', postsDirectory);
-      return null;
-    }
-
-    const filenames = fs.readdirSync(postsDirectory);
-    
-    const mdFile = filenames.find(
-      (filename) => {
-        const fileSlug = filename.replace('.md', '');
-        return fileSlug === slug || fileSlug.toLowerCase() === slug.toLowerCase();
-      }
-    );
-
-    if (!mdFile) {
-      console.error('Post not found:', slug);
-      return null;
-    }
-
-    const filePath = path.join(postsDirectory, mdFile);
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-    const { data, content } = matter(fileContents);
-
-    return {
-      slug: data.slug || slug,
-      title: data.title || '',
-      category: data.category || 'Místico',
-      date: data.date || new Date().toISOString(),
-      excerpt: data.excerpt || '',
-      author: data.author || 'Fabio Edinei',
-      readTime: data.readTime || '1 min',
-      content: marked(content),
-      image: data.image,
-    };
-  } catch (error) {
-    console.error('Error loading post:', error);
-    return null;
-  }
-}
-
-export async function generateStaticParams() {
-  try {
-    const postsDirectory = path.join(process.cwd(), 'app/content/posts');
-    
-    if (!fs.existsSync(postsDirectory)) {
-      return [];
-    }
-
-    const filenames = fs.readdirSync(postsDirectory);
-    
-    return filenames
-      .filter((filename) => filename.endsWith('.md'))
-      .map((filename) => ({
-        slug: filename.replace('.md', ''),
-      }));
-  } catch (error) {
-    console.error('Error generating static params:', error);
-    return [];
-  }
-}
-
 export default function BlogPostPage({ params }: PageProps) {
-  const post = getPostBySlug(params.slug);
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Buscar post via API route
+    fetch(`/api/blog/${params.slug}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Post not found');
+        return res.json();
+      })
+      .then((data) => {
+        setPost(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error loading post:', error);
+        setLoading(false);
+        router.push('/blog');
+      });
+  }, [params.slug, router]);
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner">Carregando...</div>
+        
+        <style jsx>{`
+          .loading-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(
+              circle at 50% 50%,
+              rgba(26, 20, 30, 1),
+              rgba(10, 8, 15, 1)
+            );
+          }
+
+          .loading-spinner {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #00ff88;
+            animation: pulse 1.5s infinite;
+          }
+
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   if (!post) {
-    notFound();
+    return null;
   }
 
   const formatDate = (dateStr: string) => {
@@ -218,12 +216,6 @@ export default function BlogPostPage({ params }: PageProps) {
           color: rgba(200, 200, 220, 0.7);
         }
 
-        .meta-item {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-
         .meta-separator {
           color: rgba(200, 200, 220, 0.3);
         }
@@ -313,7 +305,6 @@ export default function BlogPostPage({ params }: PageProps) {
         }
       `}</style>
 
-      {/* Estilos globais para o conteúdo markdown */}
       <style jsx global>{`
         .post-content h1,
         .post-content h2,
@@ -346,11 +337,6 @@ export default function BlogPostPage({ params }: PageProps) {
         .post-content a {
           color: #00ff88;
           text-decoration: underline;
-          transition: color 0.3s;
-        }
-
-        .post-content a:hover {
-          color: #00ffaa;
         }
 
         .post-content blockquote {
@@ -377,11 +363,6 @@ export default function BlogPostPage({ params }: PageProps) {
           border-left: 4px solid #00ff88;
           overflow-x: auto;
           margin: 30px 0;
-        }
-
-        .post-content pre code {
-          background: none;
-          padding: 0;
         }
 
         .post-content ul,
