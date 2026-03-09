@@ -1,0 +1,83 @@
+.blogPost {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.postHeader {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid rgba(0,255,255,0.2);
+}
+
+.postCategory {
+  display: inline-block;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  color: #ff0066;
+  background: rgba(255,0,102,0.15);
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,0,102,0.3);
+  margin-bottom: 20px;
+}
+
+.postTitle {
+  font-family: 'Orbitron', monospace;
+  font-size: 36px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.95);
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+  text-shadow: 0 0 20px rgba(0,255,255,0.3);
+}
+
+.postMeta {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 1px;
+}
+
+.postAuthor {
+  color: rgba(0,255,255,0.7);
+}
+
+.postSeparator {
+  margin: 0 10px;
+  opacity: 0.3;
+}
+
+.postContent {
+  color: rgba(255,255,255,0.85);
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+/* Estilos para o conteúdo HTML injetado */
+.postContent :global(h1) {
+  font-family: 'Orbitron', monospace;
+  font-size: 32px;
+  color: #00ffff;
+  margin: 40px 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(0,255,255,0.2);
+}
+
+.postContent :global(h2) {
+  font-family: 'Orbitron', monospace;
+  font-size: 26px;
+  color: rgba(255,255,255,0.95);
+  margin: 32px 0 16px;
+}
+
+.postContent :global(a) {
+  color: #00ffff;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .postTitle { font-size: 26px; }
+}
