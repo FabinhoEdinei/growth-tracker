@@ -1,6 +1,7 @@
-import { PostContent } from './PostContent';
+import BlogClient from './BlogClient';
 
-// Este é um Server Component (padrão do Next.js 16)
+// No Next 16, este arquivo é um Server Component por padrão.
+// Ele apenas repassa a Promise do params para o componente de cliente.
 export default function Page({ params }: { params: Promise<{ slug: string }> }) {
-  return <PostContent paramsPromise={params} />;
+  return <BlogClient paramsPromise={params} />;
 }
