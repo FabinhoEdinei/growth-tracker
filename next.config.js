@@ -19,15 +19,6 @@ const nextConfig = {
     // REMOVA ou comente qualquer menção a styledComponents: true ou styledJsx: true aqui
   },
   
-  // ADICIONE ESTE BLOCO PARA O NEXT 16
-  experimental: {
-    turbo: {
-      // Isso ajuda o Turbopack a ignorar problemas de styled-jsx se você não o usa mais
-      rules: {
-        '*.jsx': ['@swc/helpers'],
-      },
-    },
-  },
 
   compress: true,
   poweredByHeader: false,
