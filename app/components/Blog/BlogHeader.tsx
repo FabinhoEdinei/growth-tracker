@@ -105,7 +105,15 @@ export const BlogHeader = () => {
 
       animationFrameRef.current = requestAnimationFrame(animate);
     };
-    animate();
+    // respect prefers-reduced-motion to avoid animation for users who opt out
+    let shouldAnimate = true;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      shouldAnimate = false;
+    }
+
+    if (shouldAnimate) {
+      animate();
+    }
 
     return () => {
       if (spawnIntervalRef.current) clearInterval(spawnIntervalRef.current);
@@ -123,7 +131,12 @@ export const BlogHeader = () => {
         <h1 className="blog-title">Growth Tracker Blog</h1>
       </div>
       
-      <canvas ref={canvasRef} className="lightning-canvas" />
+      <canvas
+        ref={canvasRef}
+        className="lightning-canvas"
+        role="img"
+        aria-label="Fundo com relâmpagos animados"
+      />
 
       <style jsx>{`
         .compact-header {
