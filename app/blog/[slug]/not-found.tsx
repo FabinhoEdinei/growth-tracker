@@ -1,3 +1,5 @@
+'use client'; // ← ADICIONE ISSO!
+
 import Link from 'next/link';
 
 export default function NotFound() {
