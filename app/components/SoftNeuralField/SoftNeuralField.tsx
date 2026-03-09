@@ -119,6 +119,13 @@ export default function SoftNeuralField({
     const interval = 1000 / fps;
     let frameCount = 0;
     const skipFrames = deviceTier === 'low' ? 2 : 1;
+    const animationRef = useRef<number>();
+
+    // respect reduced motion preference
+    let shouldAnimate = true;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      shouldAnimate = false;
+    }
 
     const animate = (time: number) => {
       frameCount++;
@@ -146,13 +153,16 @@ export default function SoftNeuralField({
           setHeaderGlow(lightningEffect.getHeaderGlow());
         }
       }
-      requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animate);
     };
-    requestAnimationFrame(animate);
+    if (shouldAnimate) {
+      animationRef.current = requestAnimationFrame(animate);
+    }
 
     return () => {
       window.removeEventListener('resize', resize);
       canvas.removeEventListener('click', handleCanvasClick);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, [particleCount, fps, headerBounds, handleCanvasClick]);
 
