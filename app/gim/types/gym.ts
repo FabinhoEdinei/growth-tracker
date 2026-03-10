@@ -1,62 +1,62 @@
-// ─── Tipos do Gym Tracker ────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// types/gym.ts — Todos os tipos do Gym Tracker
+// ─────────────────────────────────────────────────────────────────────────────
 
-export type Equipment = 'barbell' | 'bodyweight' | 'both';
-export type MuscleGroup =
-  | 'chest' | 'back' | 'shoulders' | 'biceps' | 'triceps'
-  | 'legs' | 'glutes' | 'core' | 'fullbody';
+export type Equipment    = 'barbell' | 'bodyweight' | 'both';
+export type MuscleGroup  = 'chest' | 'back' | 'shoulders' | 'biceps' | 'triceps' | 'legs' | 'glutes' | 'core' | 'fullbody';
+export type WorkoutPhase = 'idle' | 'exercise' | 'rest' | 'finished';
 
-export type WorkoutPhase = 'idle' | 'warmup' | 'exercise' | 'rest' | 'finished';
+// ── Estrutura estática do treino ──────────────────────────────────────────────
 
 export interface Set {
-  reps: number;
-  weight?: string; // ex: "12-15kg" ou "corporal"
-  done: boolean;
-  timeMs?: number; // tempo real gasto na série (registrado ao completar)
+  reps:    number;
+  done:    boolean;
+  timeMs?: number; // timestamp ao concluir
 }
 
 export interface Exercise {
-  id: string;
-  name: string;
-  equipment: Equipment;
+  id:          string;
+  name:        string;
+  equipment:   Equipment;
   muscleGroup: MuscleGroup;
-  sets: number;           // número de séries
-  reps: string;           // ex: "12-15" ou "30s"
-  restSeconds: number;    // descanso entre séries (segundos)
-  weight?: string;        // sugestão de carga
-  cues: string[];         // dicas de execução
-  emoji: string;
+  sets:        number;
+  reps:        string;      // ex: "12-15" | "45s" | "10 (cada lado)"
+  restSeconds: number;
+  weight?:     string;      // sugestão de carga
+  cues:        string[];    // dicas de execução (máx 4)
+  emoji:       string;
 }
 
 export interface WorkoutBlock {
-  id: string;
-  name: string;
+  id:          string;
+  name:        string;
   description: string;
-  exercises: Exercise[];
+  exercises:   Exercise[];
 }
 
 export interface Workout {
-  id: string;
-  name: string;
+  id:           string;
+  name:         string;
   totalMinutes: number;
-  blocks: WorkoutBlock[];
+  blocks:       WorkoutBlock[];
 }
 
-// ── Estado em runtime ────────────────────────────────────────────────────────
+// ── Estado em runtime ─────────────────────────────────────────────────────────
 
 export interface ExerciseProgress {
-  exerciseId: string;
+  exerciseId:    string;
   completedSets: number;
-  sets: Set[];
+  sets:          Set[];
 }
 
 export interface WorkoutState {
-  phase: WorkoutPhase;
-  currentBlockIndex: number;
+  phase:                WorkoutPhase;
+  currentBlockIndex:    number;
   currentExerciseIndex: number;
-  currentSetIndex: number;
-  elapsedSeconds: number;       // tempo total do treino
-  restSecondsLeft: number;      // countdown do descanso
-  progress: Record<string, ExerciseProgress>;
-  startedAt: number | null;     // timestamp
-  finishedAt: number | null;
+  currentSetIndex:      number;
+  elapsedSeconds:       number;      // tempo total do treino (segundos)
+  restSecondsLeft:      number;      // countdown descanso
+  progress:             Record<string, ExerciseProgress>;
+  startedAt:            number | null;
+  finishedAt:           number | null;
 }
