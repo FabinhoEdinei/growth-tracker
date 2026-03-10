@@ -1,324 +1,362 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { getJornalPost } from '@/app/lib/content-loader';
-import { JornalPageWrapper } from '@/app/components/Jornal/JornalPageWrapper';
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { getJornalPost } from '@/app/lib/content-loader'
+import { JornalPageWrapper } from '@/app/components/Jornal/JornalPageWrapper'
 
 const typeConfig: Record<string, { label: string; icon: string; accent: string }> = {
-  fabio:       { label: 'AVENTURAS DE FABIO', icon: '🤠', accent: '#8B4513' },
-  claudia:     { label: 'DIÁRIO DE CLÁUDIA',  icon: '🌸', accent: '#9B7B2B' },
-  publicidade: { label: 'ANÚNCIO ESPECIAL',   icon: '✨', accent: '#8B2020' },
-  fatos:       { label: 'FATOS DO DIA',        icon: '📰', accent: '#3B5050' },
-  lugares:     { label: 'TERRAS EXPLORADAS',   icon: '🗺️', accent: '#4B5E2A' },
-};
+  fabio: { label: 'AVENTURAS DE FABIO', icon: '🤠', accent: '#8B4513' },
+  claudia: { label: 'DIÁRIO DE CLÁUDIA', icon: '🌸', accent: '#9B7B2B' },
+  publicidade: { label: 'ANÚNCIO ESPECIAL', icon: '✨', accent: '#8B2020' },
+  fatos: { label: 'FATOS DO DIA', icon: '📰', accent: '#3B5050' },
+  lugares: { label: 'TERRAS EXPLORADAS', icon: '🗺️', accent: '#4B5E2A' },
+}
 
-// ── SVG: Ornamento de canto refinado ────────────────────────────────
+/* ───────── CANTOS BARROCOS ───────── */
+
 const CornerOrnament = ({ rotate = 0 }: { rotate?: number }) => (
-  <svg viewBox="0 0 100 100" width="100" height="100" style={{ transform: `rotate(${rotate}deg)` }}>
+  <svg viewBox="0 0 120 120" width="120" height="120" style={{ transform: `rotate(${rotate}deg)` }}>
     <defs>
       <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#F4E8C1"/>
-        <stop offset="30%" stopColor="#DAA520"/>
-        <stop offset="60%" stopColor="#B8860B"/>
-        <stop offset="100%" stopColor="#8B6914"/>
-      </linearGradient>
-      <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#6B4423"/>
-        <stop offset="50%" stopColor="#4A3728"/>
-        <stop offset="100%" stopColor="#3E2723"/>
+        <stop offset="40%" stopColor="#DAA520"/>
+        <stop offset="70%" stopColor="#B8860B"/>
+        <stop offset="100%" stopColor="#6E4F1F"/>
       </linearGradient>
     </defs>
-    {/* Base floral */}
-    <path d="M 50 15 Q 65 35 85 50 Q 65 65 50 85 Q 35 65 15 50 Q 35 35 50 15" 
-          fill="url(#goldGrad)" opacity="0.9" stroke="#8B6914" strokeWidth="0.5"/>
-    {/* Centro */}
-    <circle cx="50" cy="50" r="8" fill="url(#goldGrad)" stroke="#5D4E37" strokeWidth="1"/>
-    <circle cx="50" cy="50" r="4" fill="#3E2723"/>
-    {/* Pétalas */}
-    {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => (
-      <ellipse key={i} cx={50 + Math.cos(deg * Math.PI / 180) * 22} 
-               cy={50 + Math.sin(deg * Math.PI / 180) * 22}
-               rx="6" ry="3.5" transform={`rotate(${deg + 90} ${50 + Math.cos(deg * Math.PI / 180) * 22} ${50 + Math.sin(deg * Math.PI / 180) * 22})`}
-               fill="url(#goldGrad)" opacity="0.85"/>
-    ))}
-    {/* Folhagens */}
-    <path d="M 20 20 Q 35 30 50 50" stroke="url(#woodGrad)" strokeWidth="2" fill="none" opacity="0.6"/>
-    <path d="M 80 20 Q 65 30 50 50" stroke="url(#woodGrad)" strokeWidth="2" fill="none" opacity="0.6"/>
+
+    <path
+      d="M10 10 C40 -10 90 10 110 40
+         C95 50 80 70 60 95
+         C40 80 20 70 10 40 Z"
+      fill="url(#goldGrad)"
+      stroke="#5D4E37"
+      strokeWidth="1"
+    />
+
+    <circle cx="65" cy="60" r="8" fill="#8B6914"/>
+    <circle cx="65" cy="60" r="3" fill="#3E2723"/>
+
+    <path
+      d="M40 30 C60 20 90 40 80 60"
+      stroke="#5D4E37"
+      strokeWidth="2"
+      fill="none"
+    />
+
+    <path
+      d="M25 55 C40 45 50 65 40 80"
+      stroke="#5D4E37"
+      strokeWidth="2"
+      fill="none"
+    />
   </svg>
-);
+)
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;  if (!slug || slug === 'undefined') notFound();
 
-  const post = await getJornalPost(slug);
-  if (!post) notFound();
+  const { slug } = await params
+  if (!slug || slug === 'undefined') notFound()
 
-  const cfg = typeConfig[post.type] ?? typeConfig['fatos'];
+  const post = await getJornalPost(slug)
+  if (!post) notFound()
+
+  const cfg = typeConfig[post.type] ?? typeConfig['fatos']
+
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    new Date(d).toLocaleDateString('pt-BR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
 
   return (
     <JornalPageWrapper>
-      {/* Fundo com textura suave */}
-      <div style={{ 
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #E8DCC4 0%, #D4C4A8 50%, #C9B896 100%)',
-        padding: '20px 16px 40px',
-      }}>
-        
-        {/* Botão Voltar - Estilo Placa Vintage */}
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Link href="/jornal" style={{
-            display: 'inline-block',
-            padding: '10px 32px',
-            background: 'linear-gradient(180deg, #8B6914 0%, #6B4423 50%, #4A3728 100%)',
-            border: '2px solid #3E2723',
-            borderRadius: '4px',
-            boxShadow: '0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-            color: '#F4E8C1',
-            fontFamily: "'Georgia', serif",
-            fontSize: 12,
-            fontWeight: 'bold',
-            letterSpacing: 3,
-            textDecoration: 'none',
-            textTransform: 'uppercase',
-            textShadow: '0 1px 2px rgba(0,0,0,0.6)',
-            position: 'relative',
-          }}>
-            <span style={{ marginRight: 8 }}>←</span>
-            Voltar ao Jornal
-            {/* Detalhe decorativo */}
-            <div style={{
-              position: 'absolute',
-              bottom: '3px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '60%',
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(244,232,193,0.4), transparent)',
-            }}/>
-          </Link>        </div>
 
-        {/* Moldura Principal */}
-        <div style={{ 
-          maxWidth: 750, 
-          margin: '0 auto',
-          position: 'relative',
-          background: 'linear-gradient(135deg, #6B4423 0%, #4A3728 50%, #3E2723 100%)',
-          padding: '18px',
-          borderRadius: '3px',
-          boxShadow: `
-            0 10px 40px rgba(0,0,0,0.5),
-            0 4px 12px rgba(0,0,0,0.3),
-            inset 0 1px 0 rgba(255,255,255,0.1)
-          `,
-        }}>
-          {/* Cantos ornamentais */}
-          <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 10 }}>
-            <CornerOrnament />
-          </div>
-          <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
-            <CornerOrnament rotate={90} />
-          </div>
-          <div style={{ position: 'absolute', bottom: 8, left: 8, zIndex: 10 }}>
-            <CornerOrnament rotate={-90} />
-          </div>
-          <div style={{ position: 'absolute', bottom: 8, right: 8, zIndex: 10 }}>
-            <CornerOrnament rotate={180} />
-          </div>
+      <div className="page-bg">
 
-          {/* Papel Interno */}
-          <div style={{
-            background: 'linear-gradient(160deg, #FAF6EC 0%, #F5EFDD 50%, #F0E8D0 100%)',
-            padding: '48px 42px 56px',
-            position: 'relative',
-            boxShadow: 'inset 0 0 60px rgba(139,105,20,0.08)',
-          }}>
-            {/* Linhas de textura do papel */}
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(139,105,20,0.03) 24px, rgba(139,105,20,0.03) 25px)',
-              pointerEvents: 'none',
-            }}/>
+        {/* BOTÃO SUPERIOR */}
 
-            {/* Conteúdo */}
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              {/* Cabeçalho */}
-              <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                <div style={{                   fontSize: 10, 
-                  letterSpacing: 8, 
-                  color: 'rgba(139,105,20,0.4)', 
-                  marginBottom: 16,
-                  fontWeight: 'bold',
-                }}>
-                  ◆  ◆  ◆
-                </div>
-                
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  gap: 10, 
-                  marginBottom: 16,
-                }}>
-                  <span style={{ fontSize: 22 }}>{cfg.icon}</span>
-                  <span style={{ 
-                    fontFamily: "'Georgia', serif",
-                    fontSize: 9, 
-                    fontWeight: 'bold', 
-                    letterSpacing: 3, 
-                    color: cfg.accent,
-                    textTransform: 'uppercase',
-                    borderBottom: `1.5px solid ${cfg.accent}`,
-                    paddingBottom: 3,
-                  }}>
-                    {cfg.label}
-                  </span>
+        <div className="top-btn">
+          <Link href="/jornal" className="btn-wood">
+            ← Voltar ao Jornal
+          </Link>
+        </div>
+
+        {/* MOLDURA */}
+
+        <div className="frame">
+
+          <div className="corner tl"><CornerOrnament/></div>
+          <div className="corner tr"><CornerOrnament rotate={90}/></div>
+          <div className="corner bl"><CornerOrnament rotate={-90}/></div>
+          <div className="corner br"><CornerOrnament rotate={180}/></div>
+
+          {/* PAPEL */}
+
+          <div className="paper">
+
+            <div className="paper-texture"/>
+
+            <div className="content">
+
+              <div className="header">
+
+                <div className="ornament">◆ ◆ ◆</div>
+
+                <div className="label">
+                  <span className="icon">{cfg.icon}</span>
+                  <span className="type">{cfg.label}</span>
                 </div>
 
-                <h1 style={{ 
-                  fontFamily: "'Georgia', serif", 
-                  fontSize: 'clamp(22px, 4vw, 28px)', 
-                  fontWeight: 'bold', 
-                  lineHeight: 1.3, 
-                  color: '#2C1810',
-                  margin: '20px 0 12px',
-                  textAlign: 'center',
-                }}>
-                  {post.title}
-                </h1>
+                <h1>{post.title}</h1>
 
-                <div style={{ 
-                  fontFamily: "'Georgia', serif",
-                  fontSize: 12, 
-                  fontStyle: 'italic', 
-                  color: 'rgba(62,39,35,0.6)',
-                }}>
-                  {formatDate(post.date)}                  {post.character && <span style={{ marginLeft: 12 }}>— {post.character}</span>}
+                <div className="date">
+                  {formatDate(post.date)}
+                  {post.character && <span> — {post.character}</span>}
                 </div>
+
               </div>
 
-              {/* Separador */}
-              <div style={{ 
-                height: '1px', 
-                background: `linear-gradient(90deg, transparent, ${cfg.accent}40, transparent)`,
-                margin: '24px 0 28px',
-              }}/>
+              <div className="divider"/>
 
-              {/* Excerpt */}
               {post.excerpt && (
-                <div style={{
-                  borderLeft: `3px solid ${cfg.accent}`,
-                  paddingLeft: 16,
-                  marginBottom: 28,
-                  fontStyle: 'italic',
-                  color: 'rgba(62,39,35,0.7)',
-                  lineHeight: 1.7,
-                  fontSize: 14,
-                }}>
+                <div className="excerpt">
                   {post.excerpt}
                 </div>
               )}
 
-              {/* Conteúdo principal */}
-              <div className="jornal-content" dangerouslySetInnerHTML={{ __html: post.content }}/>
+              <div
+                className="jornal-content"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
 
-              {/* Ornamento final */}
-              <div style={{ 
-                textAlign: 'center', 
-                marginTop: 48, 
-                fontSize: 10, 
-                letterSpacing: 8, 
-                color: 'rgba(139,105,20,0.3)',
-              }}>
-                ❖  ❖  ❖
-              </div>
+              <div className="footer-orn">❖ ❖ ❖</div>
+
             </div>
+
           </div>
 
-          {/* Sombra inferior da moldura */}
-          <div style={{
-            position: 'absolute',
-            bottom: '-8px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '80%',
-            height: '16px',            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, transparent 70%)',
-            filter: 'blur(4px)',
-            zIndex: -1,
-          }}/>
         </div>
 
-        {/* Botão inferior */}
-        <div style={{ textAlign: 'center', marginTop: 28 }}>
-          <Link href="/jornal" style={{
-            fontFamily: "'Georgia', serif",
-            fontSize: 11, 
-            letterSpacing: 2, 
-            color: '#6B4423', 
-            textDecoration: 'none',
-            opacity: 0.7,
-            borderBottom: '1px solid transparent',
-            transition: 'border-color 0.2s',
-          }}>
-            ← Voltar ao Jornal
-          </Link>
+        {/* BOTÃO INFERIOR */}
+
+        <div className="bottom-btn">
+          <Link href="/jornal">← Voltar ao Jornal</Link>
         </div>
+
       </div>
 
-      <style>{`
-        .jornal-content { 
-          font-family: 'Georgia', serif; 
-          font-size: 15px; 
-          line-height: 1.85; 
-          color: #3E2723;
-        }
-        .jornal-content p { 
-          margin-bottom: 18px; 
-          text-align: justify;
-        }
-        .jornal-content h2 { 
-          font-size: 20px; 
-          color: '#2C1810'; 
-          margin: 32px 0 14px; 
-          fontWeight: 'bold';
-          fontFamily: "'Georgia', serif";
-        }
-        .jornal-content h3 { 
-          font-size: 16px; 
-          color: '#4A3728'; 
-          margin: 24px 0 10px;
-          fontFamily: "'Georgia', serif";
-        }
-        .jornal-content strong { 
-          color: '#2C1810'; 
-          fontWeight: bold;        }
-        .jornal-content em { 
-          font-style: italic; 
-          color: '#5D4E37';
-        }
-        .jornal-content ul, 
-        .jornal-content ol { 
-          padding-left: 24px; 
-          margin-bottom: 18px; 
-        }
-        .jornal-content li { 
-          margin-bottom: 8px; 
-        }
-        .jornal-content blockquote {
-          border-left: 3px solid #8B6914;
-          padding: 12px 16px;
-          margin: 24px 0;
-          font-style: italic;
-          color: 'rgba(62,39,35,0.7)';
-          background: 'rgba(139,105,20,0.05)';
-        }
-        .jornal-content hr { 
-          border: none; 
-          border-top: 1px solid rgba(139,105,20,0.2); 
-          margin: 28px 0; 
-        }
-      `}</style>
+<style>{`
+
+.page-bg{
+min-height:100vh;
+background:linear-gradient(135deg,#E8DCC4,#D4C4A8,#C9B896);
+padding:20px 16px 40px;
+}
+
+/* BOTÃO */
+
+.btn-wood{
+display:inline-block;
+padding:10px 32px;
+background:linear-gradient(180deg,#8B6914,#6B4423,#4A3728);
+border:2px solid #3E2723;
+border-radius:4px;
+color:#F4E8C1;
+font-family:Georgia,serif;
+font-size:12px;
+font-weight:bold;
+letter-spacing:3px;
+text-decoration:none;
+text-transform:uppercase;
+box-shadow:
+0 3px 8px rgba(0,0,0,0.4),
+inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.top-btn{text-align:center;margin-bottom:24px}
+.bottom-btn{text-align:center;margin-top:28px}
+
+/* MOLDURA */
+
+.frame{
+max-width:760px;
+margin:auto;
+position:relative;
+padding:26px;
+
+background:
+linear-gradient(145deg,#7a5230,#5b3a22 40%,#3a2315);
+
+border:16px solid #5a3a23;
+
+box-shadow:
+0 20px 50px rgba(0,0,0,0.6),
+inset 0 2px 4px rgba(255,255,255,0.15),
+inset 0 -8px 16px rgba(0,0,0,0.6);
+
+}
+
+/* TEXTURA MADEIRA */
+
+.frame::before{
+content:"";
+position:absolute;
+inset:0;
+
+background:
+repeating-linear-gradient(
+90deg,
+rgba(255,255,255,0.04),
+rgba(255,255,255,0.04) 2px,
+transparent 2px,
+transparent 6px
+);
+
+pointer-events:none;
+}
+
+/* ENTALHE INTERNO */
+
+.frame::after{
+content:"";
+position:absolute;
+inset:14px;
+border:5px solid #3a2416;
+
+box-shadow:
+inset 0 0 15px rgba(0,0,0,0.6),
+inset 0 0 35px rgba(0,0,0,0.4);
+
+pointer-events:none;
+}
+
+/* CANTOS */
+
+.corner{
+position:absolute;
+z-index:10;
+}
+
+.tl{top:-10px;left:-10px}
+.tr{top:-10px;right:-10px}
+.bl{bottom:-10px;left:-10px}
+.br{bottom:-10px;right:-10px}
+
+/* PAPEL */
+
+.paper{
+background:
+linear-gradient(160deg,#FAF6EC,#F5EFDD,#F0E8D0);
+padding:48px 42px 56px;
+position:relative;
+
+box-shadow:
+inset 0 0 60px rgba(139,105,20,0.08);
+}
+
+.paper-texture{
+position:absolute;
+inset:0;
+
+background-image:
+repeating-linear-gradient(
+0deg,
+transparent,
+transparent 24px,
+rgba(139,105,20,0.03) 24px,
+rgba(139,105,20,0.03) 25px
+);
+
+pointer-events:none;
+}
+
+.content{position:relative;z-index:2}
+
+/* HEADER */
+
+.header{text-align:center;margin-bottom:32px}
+
+.ornament{
+font-size:10px;
+letter-spacing:8px;
+color:rgba(139,105,20,0.4);
+margin-bottom:16px;
+}
+
+.label{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+margin-bottom:16px;
+}
+
+.type{
+font-family:Georgia,serif;
+font-size:9px;
+font-weight:bold;
+letter-spacing:3px;
+text-transform:uppercase;
+}
+
+.header h1{
+font-family:Georgia,serif;
+font-size:clamp(22px,4vw,28px);
+color:#2C1810;
+margin:20px 0 12px;
+}
+
+.date{
+font-family:Georgia,serif;
+font-size:12px;
+font-style:italic;
+color:rgba(62,39,35,0.6);
+}
+
+/* DIVIDER */
+
+.divider{
+height:1px;
+background:linear-gradient(90deg,transparent,#8B691450,transparent);
+margin:24px 0 28px;
+}
+
+.excerpt{
+border-left:3px solid #8B6914;
+padding-left:16px;
+margin-bottom:28px;
+font-style:italic;
+color:rgba(62,39,35,0.7);
+line-height:1.7;
+}
+
+/* FOOTER */
+
+.footer-orn{
+text-align:center;
+margin-top:48px;
+font-size:10px;
+letter-spacing:8px;
+color:rgba(139,105,20,0.3);
+}
+
+/* TEXTO */
+
+.jornal-content{
+font-family:Georgia,serif;
+font-size:15px;
+line-height:1.85;
+color:#3E2723;
+}
+
+.jornal-content p{
+margin-bottom:18px;
+text-align:justify;
+}
+
+`}</style>
+
     </JornalPageWrapper>
-  );
+  )
 }
