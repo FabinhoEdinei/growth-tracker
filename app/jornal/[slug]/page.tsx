@@ -4,266 +4,126 @@ import { getJornalPost } from '@/app/lib/content-loader';
 import { JornalPageWrapper } from '@/app/components/Jornal/JornalPageWrapper';
 
 const typeConfig: Record<string, { label: string; icon: string; accent: string }> = {
-  fabio:       { label: 'AVENTURAS DE FABIO', icon: '🤠', accent: '#5D2E0A' },
-  claudia:     { label: 'DIÁRIO DE CLÁUDIA',  icon: '🌸', accent: '#6B4423' },
-  publicidade: { label: 'ANÚNCIO ESPECIAL',   icon: '✨', accent: '#4A1D1D' },
-  fatos:       { label: 'FATOS DO DIA',        icon: '📰', accent: '#2C3E50' },
-  lugares:     { label: 'TERRAS EXPLORADAS',   icon: '🗺️', accent: '#3E4A1D' },
+  fabio:       { label: 'AVENTURAS DE FABIO', icon: '🤠', accent: '#8B4513' },
+  claudia:     { label: 'DIÁRIO DE CLÁUDIA',  icon: '🌸', accent: '#9B7B2B' },
+  publicidade: { label: 'ANÚNCIO ESPECIAL',   icon: '✨', accent: '#8B2020' },
+  fatos:       { label: 'FATOS DO DIA',        icon: '📰', accent: '#3B5050' },
+  lugares:     { label: 'TERRAS EXPLORADAS',   icon: '🗺️', accent: '#4B5E2A' },
 };
 
-// ── SVG: Ornamento Barroco 3D Detalhado ──────────────────
-const OrnateCorner3D = ({ flipped = false }: { flipped?: boolean }) => {
-  const transform = flipped ? 'scale(-1, 1)' : '';
-  
-  return (
-    <svg 
-      viewBox="0 0 200 200" 
-      width="180" 
-      height="180" 
-      style={{ transform }}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        {/* Gradiente principal da madeira */}
-        <linearGradient id="woodGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8B6914" />
-          <stop offset="25%" stopColor="#6B4423" />
-          <stop offset="50%" stopColor="#4A3728" />
-          <stop offset="75%" stopColor="#5D4E37" />
-          <stop offset="100%" stopColor="#3E2723" />
-        </linearGradient>
-
-        {/* Gradiente dourado para detalhes */}
-        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#D4AF37" />
-          <stop offset="50%" stopColor="#B8941F" />
-          <stop offset="100%" stopColor="#8B6914" />
-        </linearGradient>
-
-        {/* Gradiente para efeito 3D */}
-        <radialGradient id="depthGradient" cx="30%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#A67B5B" />
-          <stop offset="40%" stopColor="#6B4423" />
-          <stop offset="100%" stopColor="#2C1810" />
-        </radialGradient>
-
-        {/* Filtro de sombra */}        <filter id="deepShadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="3" dy="3" stdDeviation="3" floodOpacity="0.6" />
-          <feDropShadow dx="1" dy="1" stdDeviation="1" floodOpacity="0.3" />
-        </filter>
-
-        {/* Filtro de iluminação 3D */}
-        <filter id="bevel3D" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur" />
-          <feSpecularLighting 
-            in="blur" 
-            surfaceScale="6" 
-            specularConstant="0.9" 
-            specularExponent="25" 
-            lightingColor="#FFE4B5" 
-            result="spec"
-          >
-            <fePointLight x="100" y="50" z="300" />
-          </feSpecularLighting>
-          <feComposite in="spec" in2="SourceAlpha" operator="in" result="specOut" />
-          <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
-        </filter>
-
-        {/* Textura de madeira */}
-        <pattern id="woodTexture" patternUnits="userSpaceOnUse" width="50" height="50">
-          <rect width="50" height="50" fill="#4A3728" />
-          <path d="M0,25 Q12,20 25,25 T50,25" stroke="#3E2723" strokeWidth="0.5" fill="none" opacity="0.4" />
-          <path d="M0,35 Q12,30 25,35 T50,35" stroke="#5D4E37" strokeWidth="0.3" fill="none" opacity="0.3" />
-        </pattern>
-      </defs>
-
-      <g filter="url(#bevel3D)">
-        {/* Base do ornamento - forma principal */}
-        <path 
-          d="M 20 20 
-             C 60 10, 90 40, 100 80 
-             C 110 120, 90 160, 60 180 
-             C 40 190, 20 185, 15 170 
-             C 10 150, 25 140, 35 135 
-             C 50 130, 70 135, 75 125 
-             C 80 115, 70 95, 55 85 
-             C 35 75, 15 80, 10 65 
-             C 5 50, 10 30, 20 20 Z" 
-          fill="url(#woodGradient)" 
-          stroke="#2C1810" 
-          strokeWidth="2"
-          filter="url(#deepShadow)"
-        />
-
-        {/* Camada interna para profundidade */}
-        <path           d="M 30 35 
-             C 55 30, 80 50, 85 75 
-             C 90 95, 80 120, 65 135 
-             C 55 145, 40 140, 35 130 
-             C 30 120, 40 115, 50 110 
-             C 60 105, 65 95, 60 85 
-             C 50 75, 35 80, 30 70 
-             C 25 60, 27 45, 30 35 Z" 
-          fill="url(#depthGradient)" 
-          opacity="0.8"
-        />
-
-        {/* Detalhes florais/volutas */}
-        <path 
-          d="M 40 50 
-             C 50 45, 65 50, 70 60 
-             C 75 70, 70 85, 60 90 
-             C 50 95, 35 90, 30 80 
-             C 25 70, 30 55, 40 50 Z" 
-          fill="url(#goldGradient)" 
-          opacity="0.7"
-        />
-
-        <path 
-          d="M 55 100 
-             C 65 95, 80 100, 85 110 
-             C 90 120, 85 135, 75 140 
-             C 65 145, 50 140, 45 130 
-             C 40 120, 45 105, 55 100 Z" 
-          fill="url(#goldGradient)" 
-          opacity="0.6"
-        />
-
-        {/* Círculo central decorativo */}
-        <circle 
-          cx="60" 
-          cy="85" 
-          r="12" 
-          fill="url(#goldGradient)" 
-          stroke="#8B6914" 
-          strokeWidth="2"
-          filter="url(#deepShadow)"
-        />
-
-        <circle 
-          cx="60" 
-          cy="85" 
-          r="6" 
-          fill="#2C1810" 
-          opacity="0.6"        />
-
-        {/* Linhas decorativas */}
-        <path 
-          d="M 25 45 Q 40 40 55 45" 
-          stroke="#D4AF37" 
-          strokeWidth="1.5" 
-          fill="none" 
-          opacity="0.6"
-        />
-        <path 
-          d="M 70 130 Q 75 145 70 160" 
-          stroke="#D4AF37" 
-          strokeWidth="1.5" 
-          fill="none" 
-          opacity="0.5"
-        />
-
-        {/* Detalhes de brilho */}
-        <ellipse cx="45" cy="60" rx="8" ry="4" fill="#FFE4B5" opacity="0.3" />
-        <ellipse cx="70" cy="110" rx="6" ry="3" fill="#FFE4B5" opacity="0.25" />
-      </g>
-    </svg>
-  );
+const typeOrnament: Record<string, string> = {
+  fabio: '★  ★  ★', claudia: '❀  ❀  ❀',
+  publicidade: '⚜  ⚜  ⚜', fatos: '◆  ◆  ◆', lugares: '⚑  ⚑  ⚑',
 };
 
-// ── Componente da Moldura Completa 3D ──────────────────
-const OrnateFrame3D = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div style={{ 
-      position: 'relative',
-      padding: '40px',
-      background: 'linear-gradient(135deg, #1a1005 0%, #2C1810 50%, #1a1005 100%)',
-      borderRadius: '12px',
-      boxShadow: `
-        0 20px 60px rgba(0,0,0,0.8),
-        0 10px 30px rgba(0,0,0,0.6),
-        inset 0 1px 2px rgba(255,255,255,0.1)
-      `,
-    }}>
-      {/* Cantos ornamentais posicionados */}
-      <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10 }}>
-        <OrnateCorner3D />
-      </div>
-      <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }}>
-        <OrnateCorner3D flipped />
-      </div>
-      <div style={{ position: 'absolute', bottom: '10px', left: '10px', zIndex: 10, transform: 'scaleY(-1)' }}>
-        <OrnateCorner3D />
-      </div>      <div style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 10, transform: 'scale(-1, -1)' }}>
-        <OrnateCorner3D />
-      </div>
+// ── SVG inline: ornamento de canto (80x80) ────────────────────────────────
+const CornerSVG = () => (
+  <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gf-c" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"  stopColor="#FFF0A0"/>
+        <stop offset="35%" stopColor="#DAA520"/>
+        <stop offset="65%" stopColor="#FFE566"/>
+        <stop offset="100%" stopColor="#B8860B"/>
+      </linearGradient>
+      <filter id="gg-c">
+        <feGaussianBlur stdDeviation="0.8" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#gg-c)">
+      {/* Losango */}
+      <path d="M 40 6 L 74 40 L 40 74 L 6 40 Z" fill="none" stroke="url(#gf-c)" strokeWidth="1.3"/>
+      {/* Rosa central */}
+      {[0,40,80,120,160,200,240,280,320].map((deg) => (
+        <ellipse key={deg}
+          cx={40+Math.cos(deg*Math.PI/180)*11} cy={40+Math.sin(deg*Math.PI/180)*11}
+          rx="5.5" ry="3.2"
+          transform={`rotate(${deg} ${40+Math.cos(deg*Math.PI/180)*11} ${40+Math.sin(deg*Math.PI/180)*11})`}
+          fill="url(#gf-c)" opacity="0.92"/>
+      ))}
+      <circle cx="40" cy="40" r="7.5" fill="url(#gf-c)"/>
+      <circle cx="40" cy="40" r="3.8" fill="#5a2800"/>
+      {/* Folhas */}
+      <path d="M 40 28 Q 28 18 16 8 Q 28 14 40 28" fill="#B8860B" opacity="0.78"/>
+      <path d="M 52 40 Q 64 28 74 16 Q 66 28 52 40" fill="#B8860B" opacity="0.78"/>
+      <path d="M 40 52 Q 28 64 16 74 Q 28 66 40 52" fill="#B8860B" opacity="0.78"/>
+      <path d="M 28 40 Q 16 52 6 62 Q 16 56 28 40" fill="#B8860B" opacity="0.78"/>
+      {/* Caules */}
+      <path d="M 16 72 Q 28 54 40 40" stroke="#9B6914" strokeWidth="1.2" fill="none"/>
+      <path d="M 72 16 Q 58 28 40 40" stroke="#9B6914" strokeWidth="1.2" fill="none"/>
+      {/* Mini flores nos vértices */}
+      {[[40,6],[74,40],[40,74],[6,40]].map(([cx,cy],i) => (
+        <g key={i}>
+          {[0,72,144,216,288].map((d) => (
+            <ellipse key={d}
+              cx={cx+Math.cos(d*Math.PI/180)*4.5} cy={cy+Math.sin(d*Math.PI/180)*4.5}
+              rx="2.6" ry="1.7"
+              transform={`rotate(${d} ${cx+Math.cos(d*Math.PI/180)*4.5} ${cy+Math.sin(d*Math.PI/180)*4.5})`}
+              fill="url(#gf-c)" opacity="0.88"/>
+          ))}
+          <circle cx={cx} cy={cy} r="2.4" fill="#DAA520"/>
+        </g>
+      ))}
+      {/* Arabescos */}
+      <path d="M 10 10 Q 18 6 26 12 Q 20 18 10 10" fill="url(#gf-c)" opacity="0.55"/>
+      <path d="M 70 10 Q 62 6 54 12 Q 60 18 70 10" fill="url(#gf-c)" opacity="0.55"/>
+      <path d="M 10 70 Q 18 74 26 68 Q 20 62 10 70" fill="url(#gf-c)" opacity="0.55"/>
+    </g>
+  </svg>
+);
 
-      {/* Moldura principal */}
-      <div style={{
-        position: 'relative',
-        background: 'linear-gradient(90deg, #3E2723 0%, #5D4E37 15%, #6B4423 30%, #8B6914 50%, #6B4423 70%, #5D4E37 85%, #3E2723 100%)',
-        padding: '25px',
-        borderRadius: '4px',
-        boxShadow: `
-          0 0 0 8px #2C1810,
-          0 0 0 12px #4A3728,
-          0 0 0 15px #1a1005,
-          inset 0 0 30px rgba(0,0,0,0.8),
-          inset 0 0 60px rgba(0,0,0,0.6),
-          0 10px 40px rgba(0,0,0,0.7)
-        `,
-      }}>
-        {/* Camada intermediária com textura */}
-        <div style={{
-          position: 'relative',
-          background: 'linear-gradient(135deg, #4A3728 0%, #5D4E37 50%, #4A3728 100%)',
-          padding: '20px',
-          borderRadius: '2px',
-          boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)',
-        }}>
-          {/* Conteúdo interno - Papel envelhecido */}
-          <div style={{
-            background: '#F5EBD8',
-            backgroundImage: `
-              linear-gradient(90deg, rgba(139,105,20,0.03) 50%, transparent 50%),
-              linear-gradient(rgba(139,105,20,0.03) 50%, transparent 50%)
-            `,
-            backgroundSize: '20px 20px',
-            padding: '50px 40px',
-            minHeight: '700px',
-            boxShadow: `
-              inset 0 0 80px rgba(139,105,20,0.15),
-              inset 0 0 120px rgba(0,0,0,0.1)
-            `,
-            position: 'relative',
-          }}>
-            {/* Efeito de vinhetagem nas bordas do papel */}
-            <div style={{
-              position: 'absolute',
-              top: 0, left: 0, right: 0, bottom: 0,
-              background: 'radial-gradient(ellipse at center, transparent 40%, rgba(139,105,20,0.1) 100%)',
-              pointerEvents: 'none',
-            }} />            
-            {children}
-          </div>
-        </div>
-      </div>
-
-      {/* Sombra projetada abaixo */}
-      <div style={{
-        position: 'absolute',
-        bottom: '-20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '90%',
-        height: '40px',
-        background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, transparent 70%)',
-        filter: 'blur(10px)',
-        zIndex: -1,
-      }} />
-    </div>
-  );
-};
+// ── SVG inline: ornamento central horizontal (120x30) ─────────────────────
+const CenterSVG = () => (
+  <svg viewBox="0 0 120 30" width="120" height="30" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gf-m" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"  stopColor="#FFF0A0"/>
+        <stop offset="40%" stopColor="#DAA520"/>
+        <stop offset="70%" stopColor="#FFE566"/>
+        <stop offset="100%" stopColor="#B8860B"/>
+      </linearGradient>
+      <filter id="gg-m">
+        <feGaussianBlur stdDeviation="0.7" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#gg-m)">
+      {/* Flor central */}
+      {[0,36,72,108,144,180,216,252,288,324].map((deg) => (
+        <ellipse key={deg}
+          cx={60+Math.cos(deg*Math.PI/180)*9} cy={15+Math.sin(deg*Math.PI/180)*8}
+          rx="5" ry="3"
+          transform={`rotate(${deg} ${60+Math.cos(deg*Math.PI/180)*9} ${15+Math.sin(deg*Math.PI/180)*8})`}
+          fill="url(#gf-m)" opacity="0.92"/>
+      ))}
+      <circle cx="60" cy="15" r="6" fill="url(#gf-m)"/>
+      <circle cx="60" cy="15" r="3" fill="#5a2800"/>
+      {/* Arabescos laterais */}
+      <path d="M 60 15 Q 42 8 28 12" stroke="url(#gf-m)" strokeWidth="1.3" fill="none"/>
+      <path d="M 60 15 Q 78 8 92 12" stroke="url(#gf-m)" strokeWidth="1.3" fill="none"/>
+      <path d="M 28 12 Q 22 15 28 18 Q 34 15 28 12" fill="url(#gf-m)" opacity="0.7"/>
+      <path d="M 92 12 Q 98 15 92 18 Q 86 15 92 12" fill="url(#gf-m)" opacity="0.7"/>
+      {/* Mini flores */}
+      {[0,72,144,216,288].map((d) => (
+        <ellipse key={d}
+          cx={28+Math.cos(d*Math.PI/180)*4} cy={15+Math.sin(d*Math.PI/180)*4}
+          rx="2.2" ry="1.5"
+          transform={`rotate(${d} ${28+Math.cos(d*Math.PI/180)*4} ${15+Math.sin(d*Math.PI/180)*4})`}
+          fill="url(#gf-m)" opacity="0.82"/>
+      ))}
+      {[0,72,144,216,288].map((d) => (
+        <ellipse key={d}
+          cx={92+Math.cos(d*Math.PI/180)*4} cy={15+Math.sin(d*Math.PI/180)*4}
+          rx="2.2" ry="1.5"
+          transform={`rotate(${d} ${92+Math.cos(d*Math.PI/180)*4} ${15+Math.sin(d*Math.PI/180)*4})`}
+          fill="url(#gf-m)" opacity="0.82"/>
+      ))}
+      <circle cx="28" cy="15" r="2" fill="#DAA520"/>
+      <circle cx="92" cy="15" r="2" fill="#DAA520"/>
+    </g>
+  </svg>
+);
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -273,193 +133,188 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   if (!post) notFound();
 
   const cfg = typeConfig[post.type] ?? typeConfig['fatos'];
+  const ornament = typeOrnament[post.type] ?? '◆  ◆  ◆';
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
     <JornalPageWrapper>
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 16px' }}>
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: '28px 12px 80px' }}>
 
-        {/* Botão Superior Estilo Placa de Madeira 3D */}
-        <div style={{ textAlign: 'center', marginBottom: 50 }}>
-          <Link href="/jornal" style={{
-            display: 'inline-block',
-            padding: '14px 48px',
-            background: `
-              linear-gradient(135deg, 
-                #6d3a1a 0%, 
-                #8B4513 25%, 
-                #6d3a1a 50%, 
-                #4a250f 75%, 
-                #3d1e0a 100%
-              )            `,
-            border: '3px solid #2C1810',
-            borderRadius: '6px',
-            boxShadow: `
-              0 8px 20px rgba(0,0,0,0.6),
-              0 4px 10px rgba(0,0,0,0.4),
-              inset 0 2px 3px rgba(255,255,255,0.3),
-              inset 0 -2px 3px rgba(0,0,0,0.4)
+        {/* Voltar topo */}
+        <Link href="/jornal" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          fontFamily: "'Courier New', monospace", fontSize: 10,
+          letterSpacing: 3, color: cfg.accent, textDecoration: 'none',
+          textTransform: 'uppercase', marginBottom: 20, opacity: 0.65,
+        }}>← VOLTAR AO JORNAL</Link>
+
+        {/* ════ MOLDURA PRINCIPAL ════
+            Abordagem: borda CSS de madeira + cantos SVG sobrepostos
+            O conteúdo cresce livremente, bordas acompanham
+        */}
+        <div style={{ position: 'relative' }}>
+
+          {/* Corpo com papel envelhecido + borda de madeira CSS */}
+          <div style={{
+            background: 'linear-gradient(160deg, #f9f4e8 0%, #f2ead6 30%, #ede5d0 65%, #f4eedd 100%)',
+            border: '22px solid transparent',
+            borderImage: `
+              linear-gradient(
+                135deg,
+                #e8a060 0%, #c07838 15%, #9B5520 30%,
+                #7a3e10 45%, #9B5520 55%, #c07838 70%,
+                #e8a060 85%, #c07838 100%
+              ) 1
             `,
-            color: '#E8D5B7',
-            fontFamily: "'Georgia', serif",
-            fontSize: 15,
-            fontWeight: 'bold',
-            letterSpacing: 3,
-            textDecoration: 'none',
-            textTransform: 'uppercase',
+            boxShadow: `
+              inset 0 0 0 1px rgba(218,165,32,0.7),
+              inset 0 0 0 2px rgba(90,40,0,0.25),
+              inset 18px 0 24px rgba(0,0,0,0.06),
+              inset -18px 0 24px rgba(0,0,0,0.06),
+              inset 0 18px 24px rgba(0,0,0,0.04),
+              inset 0 -18px 24px rgba(0,0,0,0.04),
+              0 8px 40px rgba(0,0,0,0.3),
+              0 2px 8px rgba(0,0,0,0.2)
+            `,
+            padding: '44px 48px',
             position: 'relative',
-            textShadow: '0 2px 4px rgba(0,0,0,0.6)',
-            transform: 'translateY(0)',
-            transition: 'transform 0.2s',
           }}>
-            {/* Efeito de relevo no botão */}
-            <span style={{ 
-              position: 'relative',
-              zIndex: 1,
-            }}>← VOLTAR AO JORNAL</span>
+
+            {/* Linha dourada interna dupla */}
             <div style={{
-              position: 'absolute',
-              top: 0, left: 0, right: 0, bottom: 0,
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.2) 100%)',
-              borderRadius: '4px',
-              pointerEvents: 'none',
-            }} />
+              position: 'absolute', inset: 8,
+              border: '1.5px solid rgba(218,165,32,0.75)',
+              pointerEvents: 'none', zIndex: 1,
+            }}/>
+            <div style={{
+              position: 'absolute', inset: 12,
+              border: '0.5px solid rgba(218,165,32,0.38)',
+              pointerEvents: 'none', zIndex: 1,
+            }}/>
+
+            {/* Entalhe sombra interna */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: `
+                radial-gradient(ellipse at top left, rgba(100,60,10,0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at top right, rgba(100,60,10,0.10) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom left, rgba(80,40,5,0.09) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(80,40,5,0.09) 0%, transparent 50%)
+              `,
+              pointerEvents: 'none', zIndex: 0,
+            }}/>
+
+            {/* Linhas sutis de papel */}
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(160,120,40,0.045) 22px, rgba(160,120,40,0.045) 23px)',
+            }}/>
+
+            {/* Conteúdo */}
+            <div style={{ position: 'relative', zIndex: 2 }}>
+
+              {/* Ornamento tipo */}
+              <div style={{ textAlign:'center', fontSize:11, color:'rgba(80,50,10,0.28)', letterSpacing:9, marginBottom:22 }}>
+                {ornament}
+              </div>
+
+              {/* Label */}
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+                <span style={{ fontSize:18 }}>{cfg.icon}</span>
+                <span style={{ fontFamily:"'Courier New',monospace", fontSize:9, fontWeight:'bold', letterSpacing:2, textTransform:'uppercase', color:cfg.accent }}>
+                  {cfg.label}
+                </span>
+              </div>
+
+              <div style={{ borderTop:`1px solid ${cfg.accent}`, opacity:0.2, marginBottom:18 }}/>
+
+              {/* Título */}
+              <h1 style={{ fontFamily:"'Georgia',serif", fontSize:'clamp(20px,3.5vw,28px)', fontWeight:'bold', lineHeight:1.25, color:'#1e1008', margin:'0 0 10px' }}>
+                {post.title}
+              </h1>
+
+              {/* Data */}
+              <div style={{ fontFamily:"'Georgia',serif", fontSize:11, fontStyle:'italic', color:'rgba(42,24,16,0.48)', marginBottom:10 }}>
+                {formatDate(post.date)}
+                {post.character && <span style={{ marginLeft:10 }}>— {post.character}</span>}
+              </div>
+
+              {/* Excerpt */}
+              {post.excerpt && (
+                <p style={{ fontFamily:"'Georgia',serif", fontSize:13, fontStyle:'italic', color:'rgba(42,24,16,0.62)', borderLeft:`2px solid ${cfg.accent}`, paddingLeft:12, marginBottom:20, lineHeight:1.65, margin:'0 0 20px' }}>
+                  {post.excerpt}
+                </p>
+              )}
+
+              <div style={{ borderTop:`1px solid ${cfg.accent}`, opacity:0.16, marginBottom:22 }}/>
+
+              {/* Corpo do post — cresce livremente */}
+              <div className="jornal-content" dangerouslySetInnerHTML={{ __html: post.content }}/>
+
+              {/* Ornamento rodapé */}
+              <div style={{ textAlign:'center', marginTop:40, fontSize:11, color:'rgba(80,50,10,0.2)', letterSpacing:10 }}>
+                ◆ &nbsp; ◆ &nbsp; ◆
+              </div>
+
+            </div>
+          </div>
+
+          {/* ── CANTOS SVG sobrepostos (fora do fluxo) ── */}
+          {/* Superior esquerdo */}
+          <div style={{ position:'absolute', top:-6, left:-6, zIndex:10, pointerEvents:'none' }}>
+            <CornerSVG/>
+          </div>
+          {/* Superior direito */}
+          <div style={{ position:'absolute', top:-6, right:-6, zIndex:10, pointerEvents:'none', transform:'scaleX(-1)' }}>
+            <CornerSVG/>
+          </div>
+          {/* Inferior esquerdo */}
+          <div style={{ position:'absolute', bottom:-6, left:-6, zIndex:10, pointerEvents:'none', transform:'scaleY(-1)' }}>
+            <CornerSVG/>
+          </div>
+          {/* Inferior direito */}
+          <div style={{ position:'absolute', bottom:-6, right:-6, zIndex:10, pointerEvents:'none', transform:'scale(-1,-1)' }}>
+            <CornerSVG/>
+          </div>
+
+          {/* ── CENTRO topo e base ── */}
+          <div style={{ position:'absolute', top:-9, left:'50%', transform:'translateX(-50%)', zIndex:10, pointerEvents:'none' }}>
+            <CenterSVG/>
+          </div>
+          <div style={{ position:'absolute', bottom:-9, left:'50%', transform:'translateX(-50%) scaleY(-1)', zIndex:10, pointerEvents:'none' }}>
+            <CenterSVG/>
+          </div>
+
+        </div>
+        {/* fim moldura */}
+
+        {/* Voltar rodapé */}
+        <div style={{ textAlign:'center', marginTop:32 }}>
+          <Link href="/jornal" style={{ fontFamily:"'Courier New',monospace", fontSize:10, letterSpacing:3, color:cfg.accent, textDecoration:'none', textTransform:'uppercase', opacity:0.58 }}>
+            ← VOLTAR AO JORNAL
           </Link>
         </div>
-
-        {/* ════ MOLDURA 3D ORNAMENTADA ════ */}
-        <OrnateFrame3D>
-          {/* Cabeçalho do Post */}
-          <div style={{ textAlign: 'center', marginBottom: 40, position: 'relative' }}>
-            <div style={{ fontSize: 11, letterSpacing: 6, color: '#8B6914', opacity: 0.7, marginBottom: 20, fontWeight: 'bold' }}>
-              ◆ ◆ ◆
-            </div>
-            
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              gap: 15, 
-              marginBottom: 25,              padding: '10px 30px',
-              background: 'linear-gradient(90deg, transparent, rgba(139,105,20,0.1), transparent)',
-            }}>
-              <span style={{ fontSize: 32, filter: 'drop-shadow(2px 2px 3px rgba(0,0,0,0.3))' }}>{cfg.icon}</span>
-              <span style={{ 
-                fontFamily: "'Georgia', serif", 
-                fontWeight: 'bold', 
-                letterSpacing: 4, 
-                color: '#4A3728',
-                fontSize: 14,
-                textTransform: 'uppercase',
-                borderBottom: '2px solid #8B6914',
-                paddingBottom: '5px',
-              }}>{cfg.label}</span>
-            </div>
-
-            <h1 style={{ 
-              fontFamily: "'Georgia', serif", 
-              fontSize: '2.4rem', 
-              color: '#2C1810', 
-              margin: '30px 0',
-              textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-              lineHeight: 1.2,
-            }}>
-              {post.title}
-            </h1>
-            
-            <div style={{ 
-              fontStyle: 'italic', 
-              color: '#6B4423', 
-              fontSize: '1.1rem',
-              opacity: 0.9,
-              fontFamily: "'Georgia', serif",
-            }}>
-              {formatDate(post.date)}
-            </div>
-          </div>
-
-          {/* Separador decorativo */}
-          <div style={{ 
-            height: '2px', 
-            background: 'linear-gradient(to right, transparent, #8B6914, #D4AF37, #8B6914, transparent)', 
-            margin: '30px 0', 
-            opacity: 0.6,
-            position: 'relative',
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',              transform: 'translate(-50%, -50%)',
-              width: '8px',
-              height: '8px',
-              background: '#8B6914',
-              borderRadius: '50%',
-              boxShadow: '0 0 10px rgba(139,105,20,0.5)',
-            }} />
-          </div>
-
-          {/* Conteúdo */}
-          <div 
-            className="jornal-content" 
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-            style={{ position: 'relative', zIndex: 1 }}
-          />
-        </OrnateFrame3D>
-
       </div>
 
       <style>{`
-        .jornal-content { 
-          font-family: 'Georgia', serif; 
-          font-size: 17px; 
-          line-height: 1.9; 
-          color: #2C1810; 
-        }
-        .jornal-content p { 
-          margin-bottom: 24px; 
-          text-align: justify;
-          text-indent: 30px;
-        }
-        .jornal-content p:first-of-type {
-          text-indent: 0;
-        }
-        .jornal-content p:first-of-type::first-letter {
-          font-size: 3.5rem;
-          float: left;
-          line-height: 0.8;
-          margin-right: 12px;
-          margin-top: 4px;
-          color: #6B4423;
-          font-weight: bold;
-          text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-        .jornal-content strong { 
-          color: #4A3728; 
-          font-weight: 700;
-        }
-        .jornal-content h2, .jornal-content h3 {
-          font-family: 'Georgia', serif;          color: #4A3728;
-          margin-top: 40px;
-          margin-bottom: 20px;
-        }
-        .jornal-content h2 {
-          font-size: 1.8rem;
-          border-bottom: 2px solid rgba(139,105,20,0.3);
-          padding-bottom: 10px;
-        }
-        .jornal-content h3 {
-          font-size: 1.4rem;
-        }
+        .jornal-content { font-family:'Georgia',serif; font-size:14px; line-height:1.88; color:#3a2415; }
+        .jornal-content h2 { font-size:19px; color:#1e1008; margin:24px 0 10px; font-weight:bold; }
+        .jornal-content h3 { font-size:16px; color:#2a1810; margin:18px 0 7px; }
+        .jornal-content p  { margin-bottom:14px; }
+        .jornal-content ul, .jornal-content ol { padding-left:22px; margin-bottom:14px; }
+        .jornal-content li { margin-bottom:5px; }
+        .jornal-content strong { color:#1e1008; font-weight:bold; }
+        .jornal-content em { font-style:italic; }
         .jornal-content blockquote {
-          border-left: 4px solid #8B6914;
-          padding-left: 20px;
-          margin: 30px 0;
-          font-style: italic;
-          color: #5D4E37;
-          background: rgba(139,105,20,0.05);
-          padding: 20px 20px 20px 30px;
+          border-left:2px solid #8B4513; padding-left:14px;
+          margin:16px 0; font-style:italic; color:rgba(42,24,16,0.62);
         }
+        .jornal-content hr { border:none; border-top:1px solid rgba(139,69,19,0.14); margin:20px 0; }
+        .jornal-content a  { color:#8B4513; }
+        .jornal-content table { width:100%; border-collapse:collapse; margin-bottom:16px; font-size:13px; }
+        .jornal-content th, .jornal-content td { border:1px solid rgba(139,69,19,0.2); padding:6px 10px; }
+        .jornal-content th { background:rgba(139,69,19,0.08); font-weight:bold; }
       `}</style>
     </JornalPageWrapper>
   );
