@@ -11,6 +11,120 @@ const typeConfig: Record<string, { label: string; icon: string; accent: string }
   lugares:     { label: 'TERRAS EXPLORADAS',   icon: '🗺️', accent: '#4B5E2A' },
 };
 
+const typeOrnament: Record<string, string> = {
+  fabio: '★  ★  ★', claudia: '❀  ❀  ❀',
+  publicidade: '⚜  ⚜  ⚜', fatos: '◆  ◆  ◆', lugares: '⚑  ⚑  ⚑',
+};
+
+// ── SVG inline: ornamento de canto (80x80) ────────────────────────────────
+const CornerSVG = () => (
+  <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gf-c" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"  stopColor="#FFF0A0"/>
+        <stop offset="35%" stopColor="#DAA520"/>
+        <stop offset="65%" stopColor="#FFE566"/>
+        <stop offset="100%" stopColor="#B8860B"/>
+      </linearGradient>
+      <filter id="gg-c">
+        <feGaussianBlur stdDeviation="0.8" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#gg-c)">
+      {/* Losango */}
+      <path d="M 40 6 L 74 40 L 40 74 L 6 40 Z" fill="none" stroke="url(#gf-c)" strokeWidth="1.3"/>
+      {/* Rosa central */}
+      {[0,40,80,120,160,200,240,280,320].map((deg) => (
+        <ellipse key={deg}
+          cx={40+Math.cos(deg*Math.PI/180)*11} cy={40+Math.sin(deg*Math.PI/180)*11}
+          rx="5.5" ry="3.2"
+          transform={`rotate(${deg} ${40+Math.cos(deg*Math.PI/180)*11} ${40+Math.sin(deg*Math.PI/180)*11})`}
+          fill="url(#gf-c)" opacity="0.92"/>
+      ))}
+      <circle cx="40" cy="40" r="7.5" fill="url(#gf-c)"/>
+      <circle cx="40" cy="40" r="3.8" fill="#5a2800"/>
+      {/* Folhas */}
+      <path d="M 40 28 Q 28 18 16 8 Q 28 14 40 28" fill="#B8860B" opacity="0.78"/>
+      <path d="M 52 40 Q 64 28 74 16 Q 66 28 52 40" fill="#B8860B" opacity="0.78"/>
+      <path d="M 40 52 Q 28 64 16 74 Q 28 66 40 52" fill="#B8860B" opacity="0.78"/>
+      <path d="M 28 40 Q 16 52 6 62 Q 16 56 28 40" fill="#B8860B" opacity="0.78"/>
+      {/* Caules */}
+      <path d="M 16 72 Q 28 54 40 40" stroke="#9B6914" strokeWidth="1.2" fill="none"/>
+      <path d="M 72 16 Q 58 28 40 40" stroke="#9B6914" strokeWidth="1.2" fill="none"/>
+      {/* Mini flores nos vértices */}
+      {[[40,6],[74,40],[40,74],[6,40]].map(([cx,cy],i) => (
+        <g key={i}>
+          {[0,72,144,216,288].map((d) => (
+            <ellipse key={d}
+              cx={cx+Math.cos(d*Math.PI/180)*4.5} cy={cy+Math.sin(d*Math.PI/180)*4.5}
+              rx="2.6" ry="1.7"
+              transform={`rotate(${d} ${cx+Math.cos(d*Math.PI/180)*4.5} ${cy+Math.sin(d*Math.PI/180)*4.5})`}
+              fill="url(#gf-c)" opacity="0.88"/>
+          ))}
+          <circle cx={cx} cy={cy} r="2.4" fill="#DAA520"/>
+        </g>
+      ))}
+      {/* Arabescos */}
+      <path d="M 10 10 Q 18 6 26 12 Q 20 18 10 10" fill="url(#gf-c)" opacity="0.55"/>
+      <path d="M 70 10 Q 62 6 54 12 Q 60 18 70 10" fill="url(#gf-c)" opacity="0.55"/>
+      <path d="M 10 70 Q 18 74 26 68 Q 20 62 10 70" fill="url(#gf-c)" opacity="0.55"/>
+    </g>
+  </svg>
+);
+
+// ── SVG inline: ornamento central horizontal (120x30) ─────────────────────
+const CenterSVG = () => (
+  <svg viewBox="0 0 120 30" width="120" height="30" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gf-m" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"  stopColor="#FFF0A0"/>
+        <stop offset="40%" stopColor="#DAA520"/>
+        <stop offset="70%" stopColor="#FFE566"/>
+        <stop offset="100%" stopColor="#B8860B"/>
+      </linearGradient>
+      <filter id="gg-m">
+        <feGaussianBlur stdDeviation="0.7" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#gg-m)">
+      {/* Flor central */}
+      {[0,36,72,108,144,180,216,252,288,324].map((deg) => (
+        <ellipse key={deg}
+          cx={60+Math.cos(deg*Math.PI/180)*9} cy={15+Math.sin(deg*Math.PI/180)*8}
+          rx="5" ry="3"
+          transform={`rotate(${deg} ${60+Math.cos(deg*Math.PI/180)*9} ${15+Math.sin(deg*Math.PI/180)*8})`}
+          fill="url(#gf-m)" opacity="0.92"/>
+      ))}
+      <circle cx="60" cy="15" r="6" fill="url(#gf-m)"/>
+      <circle cx="60" cy="15" r="3" fill="#5a2800"/>
+      {/* Arabescos laterais */}
+      <path d="M 60 15 Q 42 8 28 12" stroke="url(#gf-m)" strokeWidth="1.3" fill="none"/>
+      <path d="M 60 15 Q 78 8 92 12" stroke="url(#gf-m)" strokeWidth="1.3" fill="none"/>
+      <path d="M 28 12 Q 22 15 28 18 Q 34 15 28 12" fill="url(#gf-m)" opacity="0.7"/>
+      <path d="M 92 12 Q 98 15 92 18 Q 86 15 92 12" fill="url(#gf-m)" opacity="0.7"/>
+      {/* Mini flores */}
+      {[0,72,144,216,288].map((d) => (
+        <ellipse key={d}
+          cx={28+Math.cos(d*Math.PI/180)*4} cy={15+Math.sin(d*Math.PI/180)*4}
+          rx="2.2" ry="1.5"
+          transform={`rotate(${d} ${28+Math.cos(d*Math.PI/180)*4} ${15+Math.sin(d*Math.PI/180)*4})`}
+          fill="url(#gf-m)" opacity="0.82"/>
+      ))}
+      {[0,72,144,216,288].map((d) => (
+        <ellipse key={d}
+          cx={92+Math.cos(d*Math.PI/180)*4} cy={15+Math.sin(d*Math.PI/180)*4}
+          rx="2.2" ry="1.5"
+          transform={`rotate(${d} ${92+Math.cos(d*Math.PI/180)*4} ${15+Math.sin(d*Math.PI/180)*4})`}
+          fill="url(#gf-m)" opacity="0.82"/>
+      ))}
+      <circle cx="28" cy="15" r="2" fill="#DAA520"/>
+      <circle cx="92" cy="15" r="2" fill="#DAA520"/>
+    </g>
+  </svg>
+);
+
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (!slug || slug === 'undefined') notFound();
@@ -19,500 +133,173 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   if (!post) notFound();
 
   const cfg = typeConfig[post.type] ?? typeConfig['fatos'];
-
+  const ornament = typeOrnament[post.type] ?? '◆  ◆  ◆';
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const typeOrnament: Record<string, string> = {
-    fabio: '★  ★  ★', claudia: '❀  ❀  ❀',
-    publicidade: '⚜  ⚜  ⚜', fatos: '◆  ◆  ◆', lugares: '⚑  ⚑  ⚑',
-  };
-  const ornament = typeOrnament[post.type] ?? '◆  ◆  ◆';
-
   return (
     <JornalPageWrapper>
-      <div style={{ maxWidth: 820, margin: '0 auto', padding: '32px 12px 80px' }}>
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: '28px 12px 80px' }}>
 
-        {/* Voltar */}
+        {/* Voltar topo */}
         <Link href="/jornal" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           fontFamily: "'Courier New', monospace", fontSize: 10,
           letterSpacing: 3, color: cfg.accent, textDecoration: 'none',
-          textTransform: 'uppercase', marginBottom: 24, opacity: 0.65,
+          textTransform: 'uppercase', marginBottom: 20, opacity: 0.65,
         }}>← VOLTAR AO JORNAL</Link>
 
-        {/* ════ MOLDURA SVG COMPLETA ════ */}
-        <svg
-          viewBox="0 0 820 1100"
-          width="100%"
-          style={{ display: 'block', filter: 'drop-shadow(2px 6px 20px rgba(0,0,0,0.35))' }}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-        >
-          <defs>
-            {/* ── Gradientes madeira ── */}
-            <linearGradient id="wg-h" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor="#e8a060"/>
-              <stop offset="20%"  stopColor="#c07838"/>
-              <stop offset="50%"  stopColor="#9B5520"/>
-              <stop offset="80%"  stopColor="#7a3e10"/>
-              <stop offset="100%" stopColor="#5c2e08"/>
-            </linearGradient>
-            <linearGradient id="wg-v" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%"   stopColor="#5c2e08"/>
-              <stop offset="20%"  stopColor="#7a3e10"/>
-              <stop offset="50%"  stopColor="#9B5520"/>
-              <stop offset="80%"  stopColor="#c07838"/>
-              <stop offset="100%" stopColor="#e8a060"/>
-            </linearGradient>
+        {/* ════ MOLDURA PRINCIPAL ════
+            Abordagem: borda CSS de madeira + cantos SVG sobrepostos
+            O conteúdo cresce livremente, bordas acompanham
+        */}
+        <div style={{ position: 'relative' }}>
 
-            {/* ── Gradiente ouro ── */}
-            <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%"   stopColor="#FFF0A0"/>
-              <stop offset="25%"  stopColor="#DAA520"/>
-              <stop offset="55%"  stopColor="#FFE566"/>
-              <stop offset="80%"  stopColor="#B8860B"/>
-              <stop offset="100%" stopColor="#FFD700"/>
-            </linearGradient>
-            <linearGradient id="gold2" x1="1" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor="#FFD700"/>
-              <stop offset="50%"  stopColor="#B8860B"/>
-              <stop offset="100%" stopColor="#DAA520"/>
-            </linearGradient>
+          {/* Corpo com papel envelhecido + borda de madeira CSS */}
+          <div style={{
+            background: 'linear-gradient(160deg, #f9f4e8 0%, #f2ead6 30%, #ede5d0 65%, #f4eedd 100%)',
+            border: '22px solid transparent',
+            borderImage: `
+              linear-gradient(
+                135deg,
+                #e8a060 0%, #c07838 15%, #9B5520 30%,
+                #7a3e10 45%, #9B5520 55%, #c07838 70%,
+                #e8a060 85%, #c07838 100%
+              ) 1
+            `,
+            boxShadow: `
+              inset 0 0 0 1px rgba(218,165,32,0.7),
+              inset 0 0 0 2px rgba(90,40,0,0.25),
+              inset 18px 0 24px rgba(0,0,0,0.06),
+              inset -18px 0 24px rgba(0,0,0,0.06),
+              inset 0 18px 24px rgba(0,0,0,0.04),
+              inset 0 -18px 24px rgba(0,0,0,0.04),
+              0 8px 40px rgba(0,0,0,0.3),
+              0 2px 8px rgba(0,0,0,0.2)
+            `,
+            padding: '44px 48px',
+            position: 'relative',
+          }}>
 
-            {/* ── Papel envelhecido ── */}
-            <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%"   stopColor="#f9f4e8"/>
-              <stop offset="30%"  stopColor="#f2ead6"/>
-              <stop offset="65%"  stopColor="#ede5d0"/>
-              <stop offset="100%" stopColor="#f5f0e0"/>
-            </linearGradient>
-            <filter id="paper-noise" x="0%" y="0%" width="100%" height="100%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" seed="8" result="noise"/>
-              <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
-              <feBlend in="SourceGraphic" in2="gray" mode="multiply" result="blend"/>
-              <feComponentTransfer in="blend">
-                <feFuncR type="linear" slope="0.97" intercept="0.03"/>
-                <feFuncG type="linear" slope="0.95" intercept="0.02"/>
-                <feFuncB type="linear" slope="0.90" intercept="0.01"/>
-              </feComponentTransfer>
-            </filter>
+            {/* Linha dourada interna dupla */}
+            <div style={{
+              position: 'absolute', inset: 8,
+              border: '1.5px solid rgba(218,165,32,0.75)',
+              pointerEvents: 'none', zIndex: 1,
+            }}/>
+            <div style={{
+              position: 'absolute', inset: 12,
+              border: '0.5px solid rgba(218,165,32,0.38)',
+              pointerEvents: 'none', zIndex: 1,
+            }}/>
 
-            {/* ── Textura veio madeira ── */}
-            <filter id="wood-grain">
-              <feTurbulence type="fractalNoise" baseFrequency="0.012 0.8" numOctaves="5" seed="3" result="n"/>
-              <feColorMatrix type="saturate" values="0.4" in="n" result="c"/>
-              <feBlend in="SourceGraphic" in2="c" mode="overlay" result="b"/>
-              <feComponentTransfer in="b">
-                <feFuncR type="linear" slope="0.85" intercept="0.08"/>
-                <feFuncG type="linear" slope="0.72" intercept="0.05"/>
-                <feFuncB type="linear" slope="0.52" intercept="0.02"/>
-              </feComponentTransfer>
-            </filter>
+            {/* Entalhe sombra interna */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: `
+                radial-gradient(ellipse at top left, rgba(100,60,10,0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at top right, rgba(100,60,10,0.10) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom left, rgba(80,40,5,0.09) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(80,40,5,0.09) 0%, transparent 50%)
+              `,
+              pointerEvents: 'none', zIndex: 0,
+            }}/>
 
-            {/* ── Brilho dourado ── */}
-            <filter id="gold-glow">
-              <feGaussianBlur stdDeviation="1.2" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="engrave">
-              <feGaussianBlur stdDeviation="0.4" result="b"/>
-              <feOffset dx="0.5" dy="0.8" in="b" result="offset"/>
-              <feBlend in="SourceGraphic" in2="offset" mode="multiply"/>
-            </filter>
-          </defs>
+            {/* Linhas sutis de papel */}
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(160,120,40,0.045) 22px, rgba(160,120,40,0.045) 23px)',
+            }}/>
 
-          {/* ══════════════════════════════════════════════
-              PAPEL — fundo envelhecido
-          ══════════════════════════════════════════════ */}
-          <rect x="28" y="28" width="764" height="1044" fill="url(#paper)" filter="url(#paper-noise)" rx="1"/>
-          {/* Manchas de idade nos cantos */}
-          <radialGradient id="age-tl" cx="0%" cy="0%" r="40%">
-            <stop offset="0%" stopColor="rgba(139,100,20,0.14)"/>
-            <stop offset="100%" stopColor="rgba(139,100,20,0)"/>
-          </radialGradient>
-          <radialGradient id="age-br" cx="100%" cy="100%" r="40%">
-            <stop offset="0%" stopColor="rgba(100,70,10,0.10)"/>
-            <stop offset="100%" stopColor="rgba(100,70,10,0)"/>
-          </radialGradient>
-          <rect x="28" y="28" width="764" height="1044" fill="url(#age-tl)"/>
-          <rect x="28" y="28" width="764" height="1044" fill="url(#age-br)"/>
-          {/* Linhas horizontais sutis de papel */}
-          {Array.from({length:52},(_,i)=>(
-            <line key={i} x1="28" y1={80+i*19} x2="792" y2={80+i*19}
-              stroke="rgba(180,150,80,0.055)" strokeWidth="0.5"/>
-          ))}
+            {/* Conteúdo */}
+            <div style={{ position: 'relative', zIndex: 2 }}>
 
-          {/* ══════════════════════════════════════════════
-              MOLDURA — 4 BARRAS FINAS DE MADEIRA
-          ══════════════════════════════════════════════ */}
-
-          {/* Topo */}
-          <rect x="0" y="0" width="820" height="30" fill="url(#wg-h)" filter="url(#wood-grain)" rx="2"/>
-          {/* Base */}
-          <rect x="0" y="1070" width="820" height="30" fill="url(#wg-h)" filter="url(#wood-grain)" rx="2"/>
-          {/* Esquerda */}
-          <rect x="0" y="0" width="30" height="1100" fill="url(#wg-v)" filter="url(#wood-grain)"/>
-          {/* Direita */}
-          <rect x="790" y="0" width="30" height="1100" fill="url(#wg-v)" filter="url(#wood-grain)"/>
-
-          {/* ── Linha dourada interna (entalhe duplo) ── */}
-          {/* Topo */}
-          <rect x="4" y="4" width="812" height="22" rx="1" fill="none" stroke="url(#gold)" strokeWidth="1.8"/>
-          <rect x="8" y="8" width="804" height="14" rx="0.5" fill="none" stroke="url(#gold2)" strokeWidth="0.7" opacity="0.7"/>
-          {/* Base */}
-          <rect x="4" y="1074" width="812" height="22" rx="1" fill="none" stroke="url(#gold)" strokeWidth="1.8"/>
-          <rect x="8" y="1078" width="804" height="14" rx="0.5" fill="none" stroke="url(#gold2)" strokeWidth="0.7" opacity="0.7"/>
-          {/* Esquerda */}
-          <rect x="4" y="4" width="22" height="1092" rx="1" fill="none" stroke="url(#gold)" strokeWidth="1.8"/>
-          <rect x="8" y="8" width="14" height="1084" rx="0.5" fill="none" stroke="url(#gold2)" strokeWidth="0.7" opacity="0.7"/>
-          {/* Direita */}
-          <rect x="794" y="4" width="22" height="1092" rx="1" fill="none" stroke="url(#gold)" strokeWidth="1.8"/>
-          <rect x="798" y="8" width="14" height="1084" rx="0.5" fill="none" stroke="url(#gold2)" strokeWidth="0.7" opacity="0.7"/>
-
-          {/* ══════════════════════════════════════════════
-              ENTALHES NA MADEIRA — linhas decorativas
-          ══════════════════════════════════════════════ */}
-          {/* Topo — entalhes horizontais */}
-          <line x1="80" y1="10" x2="740" y2="10" stroke="rgba(0,0,0,0.18)" strokeWidth="0.6"/>
-          <line x1="80" y1="20" x2="740" y2="20" stroke="rgba(255,255,255,0.12)" strokeWidth="0.4"/>
-          {/* Base */}
-          <line x1="80" y1="1080" x2="740" y2="1080" stroke="rgba(0,0,0,0.18)" strokeWidth="0.6"/>
-          <line x1="80" y1="1090" x2="740" y2="1090" stroke="rgba(255,255,255,0.12)" strokeWidth="0.4"/>
-          {/* Laterais — entalhes verticais */}
-          <line x1="10" y1="90" x2="10" y2="1010" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5"/>
-          <line x1="20" y1="90" x2="20" y2="1010" stroke="rgba(255,255,255,0.10)" strokeWidth="0.4"/>
-          <line x1="800" y1="90" x2="800" y2="1010" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5"/>
-          <line x1="810" y1="90" x2="810" y2="1010" stroke="rgba(255,255,255,0.10)" strokeWidth="0.4"/>
-
-          {/* ══════════════════════════════════════════════
-              ORNAMENTOS DOURADOS — CANTOS + CENTRO
-              (entalhados com filter engrave)
-          ══════════════════════════════════════════════ */}
-          <g filter="url(#gold-glow)">
-
-            {/* ── CANTO SUPERIOR ESQUERDO ── */}
-            <g transform="translate(2, 2)">
-              {/* Quadrado de canto */}
-              <rect x="2" y="2" width="76" height="76" rx="2" fill="none" stroke="url(#gold)" strokeWidth="1.2"/>
-              {/* Losango central */}
-              <path d="M 39 8 L 70 39 L 39 70 L 8 39 Z" fill="none" stroke="url(#gold)" strokeWidth="1.4"/>
-              {/* Rosa central */}
-              {[0,40,80,120,160,200,240,280,320].map((deg) => (
-                <ellipse key={deg}
-                  cx={39 + Math.cos(deg*Math.PI/180)*10}
-                  cy={39 + Math.sin(deg*Math.PI/180)*10}
-                  rx="5.5" ry="3.2"
-                  transform={`rotate(${deg} ${39+Math.cos(deg*Math.PI/180)*10} ${39+Math.sin(deg*Math.PI/180)*10})`}
-                  fill="url(#gold)" opacity="0.9"/>
-              ))}
-              <circle cx="39" cy="39" r="7" fill="url(#gold)"/>
-              <circle cx="39" cy="39" r="3.5" fill="#6B3010"/>
-              {/* Folhas nos diagonais */}
-              <path d="M 39 28 Q 28 18 18 10 Q 30 16 39 28" fill="#B8860B" opacity="0.8"/>
-              <path d="M 50 39 Q 62 28 70 18 Q 64 30 50 39" fill="#B8860B" opacity="0.8"/>
-              <path d="M 39 50 Q 28 62 18 70 Q 30 64 39 50" fill="#B8860B" opacity="0.8"/>
-              <path d="M 28 39 Q 16 50 8 60 Q 18 54 28 39" fill="#B8860B" opacity="0.8"/>
-              {/* Veias das folhas */}
-              <path d="M 39 28 Q 32 22 25 14" stroke="#DAA520" strokeWidth="0.6" fill="none" opacity="0.7"/>
-              <path d="M 50 39 Q 58 32 66 22" stroke="#DAA520" strokeWidth="0.6" fill="none" opacity="0.7"/>
-              {/* Flores mini nos cantos do losango */}
-              {[[39,8],[70,39],[39,70],[8,39]].map(([cx,cy],i) => (
-                <g key={i}>
-                  {[0,72,144,216,288].map((d) => (
-                    <ellipse key={d}
-                      cx={cx + Math.cos(d*Math.PI/180)*4.5}
-                      cy={cy + Math.sin(d*Math.PI/180)*4.5}
-                      rx="2.8" ry="1.8"
-                      transform={`rotate(${d} ${cx+Math.cos(d*Math.PI/180)*4.5} ${cy+Math.sin(d*Math.PI/180)*4.5})`}
-                      fill="url(#gold)" opacity="0.85"/>
-                  ))}
-                  <circle cx={cx} cy={cy} r="2.5" fill="#DAA520"/>
-                </g>
-              ))}
-              {/* Arabescos finos */}
-              <path d="M 12 12 Q 20 8 28 14 Q 22 20 12 12" fill="url(#gold)" opacity="0.55"/>
-              <path d="M 66 12 Q 58 8 50 14 Q 56 20 66 12" fill="url(#gold)" opacity="0.55"/>
-              <path d="M 12 66 Q 20 72 28 66 Q 22 58 12 66" fill="url(#gold)" opacity="0.55"/>
-            </g>
-
-            {/* ── CANTO SUPERIOR DIREITO (espelho H) ── */}
-            <g transform="translate(820,2) scale(-1,1)">
-              <rect x="2" y="2" width="76" height="76" rx="2" fill="none" stroke="url(#gold)" strokeWidth="1.2"/>
-              <path d="M 39 8 L 70 39 L 39 70 L 8 39 Z" fill="none" stroke="url(#gold)" strokeWidth="1.4"/>
-              {[0,40,80,120,160,200,240,280,320].map((deg) => (
-                <ellipse key={deg}
-                  cx={39+Math.cos(deg*Math.PI/180)*10} cy={39+Math.sin(deg*Math.PI/180)*10}
-                  rx="5.5" ry="3.2"
-                  transform={`rotate(${deg} ${39+Math.cos(deg*Math.PI/180)*10} ${39+Math.sin(deg*Math.PI/180)*10})`}
-                  fill="url(#gold)" opacity="0.9"/>
-              ))}
-              <circle cx="39" cy="39" r="7" fill="url(#gold)"/>
-              <circle cx="39" cy="39" r="3.5" fill="#6B3010"/>
-              <path d="M 39 28 Q 28 18 18 10 Q 30 16 39 28" fill="#B8860B" opacity="0.8"/>
-              <path d="M 50 39 Q 62 28 70 18 Q 64 30 50 39" fill="#B8860B" opacity="0.8"/>
-              <path d="M 39 50 Q 28 62 18 70 Q 30 64 39 50" fill="#B8860B" opacity="0.8"/>
-              <path d="M 28 39 Q 16 50 8 60 Q 18 54 28 39" fill="#B8860B" opacity="0.8"/>
-              {[[39,8],[70,39],[39,70],[8,39]].map(([cx,cy],i) => (
-                <g key={i}>
-                  {[0,72,144,216,288].map((d) => (
-                    <ellipse key={d}
-                      cx={cx+Math.cos(d*Math.PI/180)*4.5} cy={cy+Math.sin(d*Math.PI/180)*4.5}
-                      rx="2.8" ry="1.8"
-                      transform={`rotate(${d} ${cx+Math.cos(d*Math.PI/180)*4.5} ${cy+Math.sin(d*Math.PI/180)*4.5})`}
-                      fill="url(#gold)" opacity="0.85"/>
-                  ))}
-                  <circle cx={cx} cy={cy} r="2.5" fill="#DAA520"/>
-                </g>
-              ))}
-              <path d="M 12 12 Q 20 8 28 14 Q 22 20 12 12" fill="url(#gold)" opacity="0.55"/>
-              <path d="M 66 12 Q 58 8 50 14 Q 56 20 66 12" fill="url(#gold)" opacity="0.55"/>
-              <path d="M 12 66 Q 20 72 28 66 Q 22 58 12 66" fill="url(#gold)" opacity="0.55"/>
-            </g>
-
-            {/* ── CANTO INFERIOR ESQUERDO (espelho V) ── */}
-            <g transform="translate(2,1100) scale(1,-1)">
-              <rect x="2" y="2" width="76" height="76" rx="2" fill="none" stroke="url(#gold)" strokeWidth="1.2"/>
-              <path d="M 39 8 L 70 39 L 39 70 L 8 39 Z" fill="none" stroke="url(#gold)" strokeWidth="1.4"/>
-              {[0,40,80,120,160,200,240,280,320].map((deg) => (
-                <ellipse key={deg}
-                  cx={39+Math.cos(deg*Math.PI/180)*10} cy={39+Math.sin(deg*Math.PI/180)*10}
-                  rx="5.5" ry="3.2"
-                  transform={`rotate(${deg} ${39+Math.cos(deg*Math.PI/180)*10} ${39+Math.sin(deg*Math.PI/180)*10})`}
-                  fill="url(#gold)" opacity="0.9"/>
-              ))}
-              <circle cx="39" cy="39" r="7" fill="url(#gold)"/>
-              <circle cx="39" cy="39" r="3.5" fill="#6B3010"/>
-              <path d="M 39 28 Q 28 18 18 10 Q 30 16 39 28" fill="#B8860B" opacity="0.8"/>
-              <path d="M 50 39 Q 62 28 70 18 Q 64 30 50 39" fill="#B8860B" opacity="0.8"/>
-              <path d="M 39 50 Q 28 62 18 70 Q 30 64 39 50" fill="#B8860B" opacity="0.8"/>
-              <path d="M 28 39 Q 16 50 8 60 Q 18 54 28 39" fill="#B8860B" opacity="0.8"/>
-              {[[39,8],[70,39],[39,70],[8,39]].map(([cx,cy],i) => (
-                <g key={i}>
-                  {[0,72,144,216,288].map((d) => (
-                    <ellipse key={d}
-                      cx={cx+Math.cos(d*Math.PI/180)*4.5} cy={cy+Math.sin(d*Math.PI/180)*4.5}
-                      rx="2.8" ry="1.8"
-                      transform={`rotate(${d} ${cx+Math.cos(d*Math.PI/180)*4.5} ${cy+Math.sin(d*Math.PI/180)*4.5})`}
-                      fill="url(#gold)" opacity="0.85"/>
-                  ))}
-                  <circle cx={cx} cy={cy} r="2.5" fill="#DAA520"/>
-                </g>
-              ))}
-              <path d="M 12 12 Q 20 8 28 14 Q 22 20 12 12" fill="url(#gold)" opacity="0.55"/>
-              <path d="M 66 12 Q 58 8 50 14 Q 56 20 66 12" fill="url(#gold)" opacity="0.55"/>
-              <path d="M 12 66 Q 20 72 28 66 Q 22 58 12 66" fill="url(#gold)" opacity="0.55"/>
-            </g>
-
-            {/* ── CANTO INFERIOR DIREITO (espelho HV) ── */}
-            <g transform="translate(820,1100) scale(-1,-1)">
-              <rect x="2" y="2" width="76" height="76" rx="2" fill="none" stroke="url(#gold)" strokeWidth="1.2"/>
-              <path d="M 39 8 L 70 39 L 39 70 L 8 39 Z" fill="none" stroke="url(#gold)" strokeWidth="1.4"/>
-              {[0,40,80,120,160,200,240,280,320].map((deg) => (
-                <ellipse key={deg}
-                  cx={39+Math.cos(deg*Math.PI/180)*10} cy={39+Math.sin(deg*Math.PI/180)*10}
-                  rx="5.5" ry="3.2"
-                  transform={`rotate(${deg} ${39+Math.cos(deg*Math.PI/180)*10} ${39+Math.sin(deg*Math.PI/180)*10})`}
-                  fill="url(#gold)" opacity="0.9"/>
-              ))}
-              <circle cx="39" cy="39" r="7" fill="url(#gold)"/>
-              <circle cx="39" cy="39" r="3.5" fill="#6B3010"/>
-              <path d="M 39 28 Q 28 18 18 10 Q 30 16 39 28" fill="#B8860B" opacity="0.8"/>
-              <path d="M 50 39 Q 62 28 70 18 Q 64 30 50 39" fill="#B8860B" opacity="0.8"/>
-              <path d="M 39 50 Q 28 62 18 70 Q 30 64 39 50" fill="#B8860B" opacity="0.8"/>
-              <path d="M 28 39 Q 16 50 8 60 Q 18 54 28 39" fill="#B8860B" opacity="0.8"/>
-              {[[39,8],[70,39],[39,70],[8,39]].map(([cx,cy],i) => (
-                <g key={i}>
-                  {[0,72,144,216,288].map((d) => (
-                    <ellipse key={d}
-                      cx={cx+Math.cos(d*Math.PI/180)*4.5} cy={cy+Math.sin(d*Math.PI/180)*4.5}
-                      rx="2.8" ry="1.8"
-                      transform={`rotate(${d} ${cx+Math.cos(d*Math.PI/180)*4.5} ${cy+Math.sin(d*Math.PI/180)*4.5})`}
-                      fill="url(#gold)" opacity="0.85"/>
-                  ))}
-                  <circle cx={cx} cy={cy} r="2.5" fill="#DAA520"/>
-                </g>
-              ))}
-              <path d="M 12 12 Q 20 8 28 14 Q 22 20 12 12" fill="url(#gold)" opacity="0.55"/>
-              <path d="M 66 12 Q 58 8 50 14 Q 56 20 66 12" fill="url(#gold)" opacity="0.55"/>
-              <path d="M 12 66 Q 20 72 28 66 Q 22 58 12 66" fill="url(#gold)" opacity="0.55"/>
-            </g>
-
-            {/* ── CENTRO TOPO ── */}
-            <g transform="translate(370, 0)">
-              {/* Flor central grande */}
-              {[0,36,72,108,144,180,216,252,288,324].map((deg) => (
-                <ellipse key={deg}
-                  cx={40+Math.cos(deg*Math.PI/180)*12} cy={15+Math.sin(deg*Math.PI/180)*10}
-                  rx="6" ry="3.5"
-                  transform={`rotate(${deg} ${40+Math.cos(deg*Math.PI/180)*12} ${15+Math.sin(deg*Math.PI/180)*10})`}
-                  fill="url(#gold)" opacity="0.92"/>
-              ))}
-              <circle cx="40" cy="15" r="7.5" fill="url(#gold)"/>
-              <circle cx="40" cy="15" r="3.8" fill="#6B3010"/>
-              {/* Arabescos laterais */}
-              <path d="M 40 15 Q 20 8 8 12" stroke="url(#gold)" strokeWidth="1.4" fill="none"/>
-              <path d="M 40 15 Q 60 8 72 12" stroke="url(#gold)" strokeWidth="1.4" fill="none"/>
-              <path d="M 8 12 Q 4 16 8 20 Q 12 16 8 12" fill="url(#gold)" opacity="0.7"/>
-              <path d="M 72 12 Q 76 16 72 20 Q 68 16 72 12" fill="url(#gold)" opacity="0.7"/>
-              {/* Mini flores */}
-              {[0,72,144,216,288].map((d) => (
-                <ellipse key={d}
-                  cx={8+Math.cos(d*Math.PI/180)*4} cy={16+Math.sin(d*Math.PI/180)*4}
-                  rx="2.5" ry="1.6"
-                  transform={`rotate(${d} ${8+Math.cos(d*Math.PI/180)*4} ${16+Math.sin(d*Math.PI/180)*4})`}
-                  fill="url(#gold)" opacity="0.8"/>
-              ))}
-              {[0,72,144,216,288].map((d) => (
-                <ellipse key={d}
-                  cx={72+Math.cos(d*Math.PI/180)*4} cy={16+Math.sin(d*Math.PI/180)*4}
-                  rx="2.5" ry="1.6"
-                  transform={`rotate(${d} ${72+Math.cos(d*Math.PI/180)*4} ${16+Math.sin(d*Math.PI/180)*4})`}
-                  fill="url(#gold)" opacity="0.8"/>
-              ))}
-            </g>
-
-            {/* ── CENTRO BASE (espelho V do topo) ── */}
-            <g transform="translate(370, 1100) scale(1,-1)">
-              {[0,36,72,108,144,180,216,252,288,324].map((deg) => (
-                <ellipse key={deg}
-                  cx={40+Math.cos(deg*Math.PI/180)*12} cy={15+Math.sin(deg*Math.PI/180)*10}
-                  rx="6" ry="3.5"
-                  transform={`rotate(${deg} ${40+Math.cos(deg*Math.PI/180)*12} ${15+Math.sin(deg*Math.PI/180)*10})`}
-                  fill="url(#gold)" opacity="0.92"/>
-              ))}
-              <circle cx="40" cy="15" r="7.5" fill="url(#gold)"/>
-              <circle cx="40" cy="15" r="3.8" fill="#6B3010"/>
-              <path d="M 40 15 Q 20 8 8 12" stroke="url(#gold)" strokeWidth="1.4" fill="none"/>
-              <path d="M 40 15 Q 60 8 72 12" stroke="url(#gold)" strokeWidth="1.4" fill="none"/>
-              <path d="M 8 12 Q 4 16 8 20 Q 12 16 8 12" fill="url(#gold)" opacity="0.7"/>
-              <path d="M 72 12 Q 76 16 72 20 Q 68 16 72 12" fill="url(#gold)" opacity="0.7"/>
-              {[0,72,144,216,288].map((d) => (
-                <ellipse key={d}
-                  cx={8+Math.cos(d*Math.PI/180)*4} cy={16+Math.sin(d*Math.PI/180)*4}
-                  rx="2.5" ry="1.6"
-                  transform={`rotate(${d} ${8+Math.cos(d*Math.PI/180)*4} ${16+Math.sin(d*Math.PI/180)*4})`}
-                  fill="url(#gold)" opacity="0.8"/>
-              ))}
-              {[0,72,144,216,288].map((d) => (
-                <ellipse key={d}
-                  cx={72+Math.cos(d*Math.PI/180)*4} cy={16+Math.sin(d*Math.PI/180)*4}
-                  rx="2.5" ry="1.6"
-                  transform={`rotate(${d} ${72+Math.cos(d*Math.PI/180)*4} ${16+Math.sin(d*Math.PI/180)*4})`}
-                  fill="url(#gold)" opacity="0.8"/>
-              ))}
-            </g>
-
-            {/* ── CENTRO LATERAL ESQUERDA (meio da altura) ── */}
-            <g transform="translate(0, 511) rotate(-90) translate(-40,0)">
-              {[0,36,72,108,144,180,216,252,288,324].map((deg) => (
-                <ellipse key={deg}
-                  cx={40+Math.cos(deg*Math.PI/180)*11} cy={15+Math.sin(deg*Math.PI/180)*9}
-                  rx="5.5" ry="3"
-                  transform={`rotate(${deg} ${40+Math.cos(deg*Math.PI/180)*11} ${15+Math.sin(deg*Math.PI/180)*9})`}
-                  fill="url(#gold)" opacity="0.88"/>
-              ))}
-              <circle cx="40" cy="15" r="7" fill="url(#gold)"/>
-              <circle cx="40" cy="15" r="3.5" fill="#6B3010"/>
-              <path d="M 40 15 Q 22 9 10 13" stroke="url(#gold)" strokeWidth="1.2" fill="none"/>
-              <path d="M 40 15 Q 58 9 70 13" stroke="url(#gold)" strokeWidth="1.2" fill="none"/>
-            </g>
-
-            {/* ── CENTRO LATERAL DIREITA ── */}
-            <g transform="translate(820, 589) rotate(90) translate(-40,0)">
-              {[0,36,72,108,144,180,216,252,288,324].map((deg) => (
-                <ellipse key={deg}
-                  cx={40+Math.cos(deg*Math.PI/180)*11} cy={15+Math.sin(deg*Math.PI/180)*9}
-                  rx="5.5" ry="3"
-                  transform={`rotate(${deg} ${40+Math.cos(deg*Math.PI/180)*11} ${15+Math.sin(deg*Math.PI/180)*9})`}
-                  fill="url(#gold)" opacity="0.88"/>
-              ))}
-              <circle cx="40" cy="15" r="7" fill="url(#gold)"/>
-              <circle cx="40" cy="15" r="3.5" fill="#6B3010"/>
-              <path d="M 40 15 Q 22 9 10 13" stroke="url(#gold)" strokeWidth="1.2" fill="none"/>
-              <path d="M 40 15 Q 58 9 70 13" stroke="url(#gold)" strokeWidth="1.2" fill="none"/>
-            </g>
-
-          </g>{/* fim gold-glow */}
-
-          {/* ══════════════════════════════════════════════
-              CONTEÚDO DO POST (via foreignObject)
-          ══════════════════════════════════════════════ */}
-          <foreignObject x="44" y="44" width="732" height="1012">
-            <div
-              // @ts-ignore
-              xmlns="http://www.w3.org/1999/xhtml"
-              style={{
-                fontFamily: "'Georgia', serif",
-                color: '#2a1810',
-                padding: '28px 32px',
-                height: '100%',
-                boxSizing: 'border-box' as const,
-              }}
-            >
-              {/* Ornamento topo */}
-              <div style={{ textAlign:'center', fontSize:11, color:'rgba(80,50,10,0.3)', letterSpacing:9, marginBottom:20 }}>
+              {/* Ornamento tipo */}
+              <div style={{ textAlign:'center', fontSize:11, color:'rgba(80,50,10,0.28)', letterSpacing:9, marginBottom:22 }}>
                 {ornament}
               </div>
 
-              {/* Tipo + ícone */}
+              {/* Label */}
               <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
                 <span style={{ fontSize:18 }}>{cfg.icon}</span>
-                <span style={{ fontFamily:"'Courier New',monospace", fontSize:9, fontWeight:'bold', letterSpacing:2, textTransform:'uppercase' as const, color:cfg.accent }}>
+                <span style={{ fontFamily:"'Courier New',monospace", fontSize:9, fontWeight:'bold', letterSpacing:2, textTransform:'uppercase', color:cfg.accent }}>
                   {cfg.label}
                 </span>
               </div>
 
-              {/* Linha */}
-              <div style={{ borderTop:`1px solid ${cfg.accent}`, opacity:0.22, marginBottom:16 }}/>
+              <div style={{ borderTop:`1px solid ${cfg.accent}`, opacity:0.2, marginBottom:18 }}/>
 
               {/* Título */}
-              <h1 style={{ fontFamily:"'Georgia',serif", fontSize:'clamp(20px,3.5vw,28px)', fontWeight:'bold', lineHeight:1.25, color:'#1e1008', marginBottom:10, margin:'0 0 10px' }}>
+              <h1 style={{ fontFamily:"'Georgia',serif", fontSize:'clamp(20px,3.5vw,28px)', fontWeight:'bold', lineHeight:1.25, color:'#1e1008', margin:'0 0 10px' }}>
                 {post.title}
               </h1>
 
               {/* Data */}
-              <div style={{ fontFamily:"'Georgia',serif", fontSize:11, fontStyle:'italic', color:'rgba(42,24,16,0.5)', marginBottom:10 }}>
+              <div style={{ fontFamily:"'Georgia',serif", fontSize:11, fontStyle:'italic', color:'rgba(42,24,16,0.48)', marginBottom:10 }}>
                 {formatDate(post.date)}
                 {post.character && <span style={{ marginLeft:10 }}>— {post.character}</span>}
               </div>
 
               {/* Excerpt */}
               {post.excerpt && (
-                <p style={{ fontFamily:"'Georgia',serif", fontSize:13, fontStyle:'italic', color:'rgba(42,24,16,0.65)', borderLeft:`2px solid ${cfg.accent}`, paddingLeft:12, marginBottom:20, lineHeight:1.65, margin:'0 0 20px' }}>
+                <p style={{ fontFamily:"'Georgia',serif", fontSize:13, fontStyle:'italic', color:'rgba(42,24,16,0.62)', borderLeft:`2px solid ${cfg.accent}`, paddingLeft:12, marginBottom:20, lineHeight:1.65, margin:'0 0 20px' }}>
                   {post.excerpt}
                 </p>
               )}
 
-              <div style={{ borderTop:`1px solid ${cfg.accent}`, opacity:0.18, marginBottom:20 }}/>
+              <div style={{ borderTop:`1px solid ${cfg.accent}`, opacity:0.16, marginBottom:22 }}/>
 
-              {/* Corpo */}
-              <div
-                className="jornal-content"
-                dangerouslySetInnerHTML={{ __html: post.content }}
-                style={{ fontFamily:"'Georgia',serif", fontSize:14, lineHeight:1.85, color:'#3a2415' }}
-              />
+              {/* Corpo do post — cresce livremente */}
+              <div className="jornal-content" dangerouslySetInnerHTML={{ __html: post.content }}/>
 
               {/* Ornamento rodapé */}
-              <div style={{ textAlign:'center', marginTop:36, fontSize:11, color:'rgba(80,50,10,0.22)', letterSpacing:10 }}>
+              <div style={{ textAlign:'center', marginTop:40, fontSize:11, color:'rgba(80,50,10,0.2)', letterSpacing:10 }}>
                 ◆ &nbsp; ◆ &nbsp; ◆
               </div>
-            </div>
-          </foreignObject>
 
-        </svg>
-        {/* fim SVG moldura */}
+            </div>
+          </div>
+
+          {/* ── CANTOS SVG sobrepostos (fora do fluxo) ── */}
+          {/* Superior esquerdo */}
+          <div style={{ position:'absolute', top:-6, left:-6, zIndex:10, pointerEvents:'none' }}>
+            <CornerSVG/>
+          </div>
+          {/* Superior direito */}
+          <div style={{ position:'absolute', top:-6, right:-6, zIndex:10, pointerEvents:'none', transform:'scaleX(-1)' }}>
+            <CornerSVG/>
+          </div>
+          {/* Inferior esquerdo */}
+          <div style={{ position:'absolute', bottom:-6, left:-6, zIndex:10, pointerEvents:'none', transform:'scaleY(-1)' }}>
+            <CornerSVG/>
+          </div>
+          {/* Inferior direito */}
+          <div style={{ position:'absolute', bottom:-6, right:-6, zIndex:10, pointerEvents:'none', transform:'scale(-1,-1)' }}>
+            <CornerSVG/>
+          </div>
+
+          {/* ── CENTRO topo e base ── */}
+          <div style={{ position:'absolute', top:-9, left:'50%', transform:'translateX(-50%)', zIndex:10, pointerEvents:'none' }}>
+            <CenterSVG/>
+          </div>
+          <div style={{ position:'absolute', bottom:-9, left:'50%', transform:'translateX(-50%) scaleY(-1)', zIndex:10, pointerEvents:'none' }}>
+            <CenterSVG/>
+          </div>
+
+        </div>
+        {/* fim moldura */}
 
         {/* Voltar rodapé */}
-        <div style={{ textAlign:'center', marginTop:28 }}>
-          <Link href="/jornal" style={{ fontFamily:"'Courier New',monospace", fontSize:10, letterSpacing:3, color:cfg.accent, textDecoration:'none', textTransform:'uppercase', opacity:0.6 }}>
+        <div style={{ textAlign:'center', marginTop:32 }}>
+          <Link href="/jornal" style={{ fontFamily:"'Courier New',monospace", fontSize:10, letterSpacing:3, color:cfg.accent, textDecoration:'none', textTransform:'uppercase', opacity:0.58 }}>
             ← VOLTAR AO JORNAL
           </Link>
         </div>
       </div>
 
       <style>{`
-        .jornal-content h2 { font-size:20px; color:#1e1008; margin:24px 0 10px; font-weight:bold; }
+        .jornal-content { font-family:'Georgia',serif; font-size:14px; line-height:1.88; color:#3a2415; }
+        .jornal-content h2 { font-size:19px; color:#1e1008; margin:24px 0 10px; font-weight:bold; }
         .jornal-content h3 { font-size:16px; color:#2a1810; margin:18px 0 7px; }
         .jornal-content p  { margin-bottom:14px; }
         .jornal-content ul, .jornal-content ol { padding-left:22px; margin-bottom:14px; }
@@ -521,10 +308,13 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         .jornal-content em { font-style:italic; }
         .jornal-content blockquote {
           border-left:2px solid #8B4513; padding-left:14px;
-          margin:16px 0; font-style:italic; color:rgba(42,24,16,0.65);
+          margin:16px 0; font-style:italic; color:rgba(42,24,16,0.62);
         }
-        .jornal-content hr { border:none; border-top:1px solid rgba(139,69,19,0.15); margin:20px 0; }
-        .jornal-content a { color:#8B4513; }
+        .jornal-content hr { border:none; border-top:1px solid rgba(139,69,19,0.14); margin:20px 0; }
+        .jornal-content a  { color:#8B4513; }
+        .jornal-content table { width:100%; border-collapse:collapse; margin-bottom:16px; font-size:13px; }
+        .jornal-content th, .jornal-content td { border:1px solid rgba(139,69,19,0.2); padding:6px 10px; }
+        .jornal-content th { background:rgba(139,69,19,0.08); font-weight:bold; }
       `}</style>
     </JornalPageWrapper>
   );
