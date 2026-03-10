@@ -81,7 +81,7 @@ export function useWorkout(workout: Workout) {
 
   useEffect(() => () => stopTimer(), [stopTimer]);
 
-  // ── Função interna: avança para próximo set / exercício / bloco ───────────
+  // ── advance: próxima SÉRIE (descanso → próximo set / exercício / bloco) ────
 
   function advance(
     prev: WorkoutState,
@@ -90,10 +90,21 @@ export function useWorkout(workout: Workout) {
     const block = workout.blocks[prev.currentBlockIndex];
     const ex    = block.exercises[prev.currentExerciseIndex];
 
-    // Próxima série do mesmo exercício
+    // Ainda tem séries no exercício atual
     if (prev.currentSetIndex < ex.sets - 1) {
       return { ...prev, progress, phase: 'exercise', currentSetIndex: prev.currentSetIndex + 1, restSecondsLeft: 0 };
     }
+    return advanceExercise(prev, progress);
+  }
+
+  // ── advanceExercise: pula TODO o exercício atual → próximo exercício/bloco ─
+
+  function advanceExercise(
+    prev: WorkoutState,
+    progress: Record<string, ExerciseProgress>,
+  ): WorkoutState {
+    const block = workout.blocks[prev.currentBlockIndex];
+
     // Próximo exercício no mesmo bloco
     if (prev.currentExerciseIndex < block.exercises.length - 1) {
       return { ...prev, progress, phase: 'exercise', currentExerciseIndex: prev.currentExerciseIndex + 1, currentSetIndex: 0, restSecondsLeft: 0 };
@@ -158,11 +169,11 @@ export function useWorkout(workout: Workout) {
     });
   }, []);
 
-  /** Pula o exercício atual inteiro (avança para o próximo) */
+  /** Pula o exercício atual inteiro — vai direto para o próximo exercício ou bloco */
   const skipExercise = useCallback(() => {
     setState(prev => {
       if (prev.phase === 'idle' || prev.phase === 'finished') return prev;
-      return advance(prev, prev.progress);
+      return advanceExercise(prev, prev.progress);
     });
   }, []);
 
