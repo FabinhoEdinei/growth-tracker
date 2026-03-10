@@ -1,196 +1,233 @@
-'use client';
+import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
+import type { DailyReport } from './daily-report-generator';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CodeHealthCard.tsx — Saúde do código baseada nos dados reais do relatório
+// jornal-md-generator.ts
+// Gera um arquivo .md para o jornal a partir dos dados do relatório diário.
+// A narrativa é em estilo western/cronista — voz do Fabio ou Cláudia.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { motion } from 'framer-motion';
-import { Code2, CheckCircle, XCircle, FileCode, Terminal, Activity } from 'lucide-react';
-import type { DailyReport } from '@/app/utils/daily-report-generator';
-
-interface CodeHealthCardProps {
-  relatorio: DailyReport;
+export interface JornalPostConfig {
+  personagem: 'fabio' | 'claudia';
+  tipo: 'fatos' | 'lugares' | 'fabio' | 'claudia';
+  salvarEmDisco?: boolean; // false = só retorna o conteúdo sem salvar
 }
 
-const EXT_CORES: Record<string, { bg: string; text: string; label: string }> = {
-  '.tsx': { bg: 'bg-blue-500',   text: 'text-blue-300',   label: 'TypeScript React' },
-  '.ts':  { bg: 'bg-cyan-500',   text: 'text-cyan-300',   label: 'TypeScript' },
-  '.css': { bg: 'bg-pink-500',   text: 'text-pink-300',   label: 'CSS' },
-  '.md':  { bg: 'bg-amber-500',  text: 'text-amber-300',  label: 'Markdown' },
-  '.json':{ bg: 'bg-emerald-500',text: 'text-emerald-300',label: 'JSON' },
-};
+// ── Utilitários ───────────────────────────────────────────────────────────────
 
-export default function CodeHealthCard({ relatorio }: CodeHealthCardProps) {
-  const { testes, metricas, resumo } = relatorio;
-  const taxaNum = parseInt(testes.taxa) || 0;
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .slice(0, 60);
+}
 
-  const corTaxa = taxaNum === 100 ? '#10b981'
-                : taxaNum >= 80  ? '#06b6d4'
-                : taxaNum >= 60  ? '#f59e0b'
-                : '#ef4444';
+function formatDate(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
 
-  const raio  = 38;
-  const circ  = 2 * Math.PI * raio;
-  const offset = circ - (taxaNum / 100) * circ;
+function formatDatePtBR(date: Date): string {
+  return date.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
 
-  const totalTipos = Object.values(metricas.arquivosPorTipo).reduce((a, b) => a + b, 0);
+// ── Frases de abertura por personagem ────────────────────────────────────────
 
-  return (
-    <div className="h-full flex flex-col bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/20 overflow-hidden">
+const ABERTURAS_FABIO = [
+  'O sol raiou sobre o território digital e mais um dia de conquistas começou.',
+  'Montei meu cavalo de código e saí pela pradaria dos commits.',
+  'O vento do oeste trouxe notícias — e o Growth Tracker registrou cada uma.',
+  'Neste cantão de pixels e linhas de código, o dia foi próspero.',
+];
 
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-5"
-      >
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-          <Code2 className="w-5 h-5 text-green-400" />
-          Saúde do Código
-        </h3>
-        <div className="flex items-center gap-1.5">
-          <Activity className="w-4 h-4 text-green-400" />
-          <span className="text-green-400 text-xs font-semibold">Ao vivo</span>
-        </div>
-      </motion.div>
+const ABERTURAS_CLAUDIA = [
+  'Entre o aroma do café matinal e o brilho da tela, o dia se revelou cheio.',
+  'Com minha agenda de designs e uma xícara de curiosidade, parti para explorar.',
+  'As flores do jardim digital floresceram mais uma vez neste belo dia.',
+  'Registrei em meu diário cada momento que valeu a pena lembrar.',
+];
 
-      {/* Testes + arco */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="flex items-center gap-4 mb-5 p-4 bg-white/5 rounded-xl border border-white/10"
-      >
-        {/* Arco taxa */}
-        <div className="relative w-20 h-20 flex-shrink-0">
-          <svg width="80" height="80" style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx="40" cy="40" r={raio} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6"/>
-            <motion.circle
-              cx="40" cy="40" r={raio}
-              fill="none"
-              stroke={corTaxa}
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={circ}
-              initial={{ strokeDashoffset: circ }}
-              animate={{ strokeDashoffset: offset }}
-              transition={{ duration: 1.4, ease: 'easeOut', delay: 0.4 }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-lg font-black text-white leading-none">{testes.taxa}</span>
-            <span className="text-white/40 text-[9px]">testes</span>
-          </div>
-        </div>
+function abertura(personagem: 'fabio' | 'claudia'): string {
+  const lista = personagem === 'fabio' ? ABERTURAS_FABIO : ABERTURAS_CLAUDIA;
+  return lista[Math.floor(Math.random() * lista.length)];
+}
 
-        {/* Detalhes */}
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-4 h-4 text-green-400" />
-              <span className="text-white/70 text-sm">Passaram</span>
-            </div>
-            <span className="text-green-400 font-black text-lg">{testes.passou}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <XCircle className="w-4 h-4 text-red-400" />
-              <span className="text-white/70 text-sm">Falharam</span>
-            </div>
-            <span className="text-red-400 font-black text-lg">{testes.falhou}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Terminal className="w-4 h-4 text-white/40" />
-              <span className="text-white/40 text-sm">Total</span>
-            </div>
-            <span className="text-white/60 font-bold">{testes.total}</span>
-          </div>
-        </div>
-      </motion.div>
+// ── Seções narrativas ─────────────────────────────────────────────────────────
 
-      {/* Métricas de linhas */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.35 }}
-        className="grid grid-cols-3 gap-2 mb-4"
-      >
-        {[
-          { label: 'Linhas', valor: `${(metricas.linhasDeCodigo / 1000).toFixed(1)}k`, cor: 'text-cyan-400' },
-          { label: 'Arquivos', valor: String(metricas.arquivos), cor: 'text-blue-400' },
-          { label: 'Modificados', valor: String(resumo.arquivosModificados), cor: 'text-amber-400' },
-        ].map((m, i) => (
-          <motion.div
-            key={m.label}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 + i * 0.08 }}
-            className="bg-white/5 rounded-xl p-3 text-center border border-white/10"
-          >
-            <div className={`text-xl font-black ${m.cor}`}>{m.valor}</div>
-            <div className="text-white/40 text-[10px] mt-0.5">{m.label}</div>
-          </motion.div>
-        ))}
-      </motion.div>
+function secaoPostagens(relatorio: DailyReport, personagem: 'fabio' | 'claudia'): string {
+  const total = relatorio.resumo.postsJornal + relatorio.resumo.postsBlog;
+  if (total === 0) return '';
 
-      {/* Distribuição por tipo */}
-      <div className="flex-1">
-        <div className="flex items-center gap-1.5 mb-3">
-          <FileCode className="w-4 h-4 text-white/40" />
-          <span className="text-white/40 text-xs font-semibold uppercase tracking-wider">Tipos de arquivo</span>
-        </div>
-        <div className="space-y-2">
-          {Object.entries(metricas.arquivosPorTipo)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([ext, qtd], i) => {
-              const pct  = Math.round((qtd / totalTipos) * 100);
-              const cfg  = EXT_CORES[ext] ?? { bg: 'bg-slate-500', text: 'text-slate-300', label: ext };
-              return (
-                <motion.div
-                  key={ext}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + i * 0.08 }}
-                  className="flex items-center gap-2"
-                >
-                  <span className={`text-[10px] font-mono ${cfg.text} w-10 text-right`}>{ext}</span>
-                  <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div
-                      className={`h-full rounded-full ${cfg.bg}`}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 1, delay: 0.6 + i * 0.08 }}
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 w-12 justify-end">
-                    <span className="text-white/50 text-[10px]">{qtd}</span>
-                    <span className="text-white/25 text-[9px]">({pct}%)</span>
-                  </div>
-                </motion.div>
-              );
-            })}
-        </div>
-      </div>
+  const voz = personagem === 'fabio'
+    ? `Neste dia, ${total} história(s) foram registradas no território do Growth Tracker.`
+    : `Foram ${total} publicação(ões) lançadas ao vento — cada uma com sua própria alma.`;
 
-      {/* Status geral */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.9 }}
-        className={`mt-4 p-3 rounded-xl border text-center text-xs font-semibold ${
-          taxaNum === 100
-            ? 'bg-green-500/10 border-green-500/30 text-green-300'
-            : taxaNum >= 80
-            ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
-            : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-        }`}
-      >
-        {taxaNum === 100 ? '✅ Código em perfeita saúde!'
-          : taxaNum >= 80 ? `⚡ ${testes.falhou} teste(s) para corrigir`
-          : `⚠️ Atenção: ${testes.falhou} falha(s) detectada(s)`}
-      </motion.div>
-    </div>
-  );
+  let secao = `## 📰 As Publicações do Dia\n\n${voz}\n\n`;
+
+  if (relatorio.conteudo.jornal.length > 0) {
+    secao += `### No Jornal\n\n`;
+    relatorio.conteudo.jornal.slice(0, 3).forEach(post => {
+      secao += `**${post.titulo}**\n> ${post.excerpt || 'Uma história que vale a leitura.'}\n\n`;
+    });
+  }
+
+  if (relatorio.conteudo.blog.length > 0) {
+    secao += `### No Blog\n\n`;
+    relatorio.conteudo.blog.slice(0, 3).forEach(post => {
+      secao += `**${post.titulo}**\n> ${post.excerpt || 'Conhecimento compartilhado com o mundo.'}\n\n`;
+    });
+  }
+
+  return secao;
+}
+
+function secaoCodigo(relatorio: DailyReport, personagem: 'fabio' | 'claudia'): string {
+  const { linhasDeCodigo, arquivos, arquivosPorTipo } = relatorio.metricas;
+  const tipoMaisComum = Object.entries(arquivosPorTipo)
+    .sort((a, b) => b[1] - a[1])[0];
+
+  const voz = personagem === 'fabio'
+    ? `Com ${arquivos} arquivos percorridos e ${(linhasDeCodigo / 1000).toFixed(1)}k linhas de território mapeado, o dia de código foi intenso.`
+    : `Navegando por ${arquivos} arquivos — cada um um capítulo desta grande história digital.`;
+
+  const detalhe = tipoMaisComum
+    ? `O tipo de arquivo mais presente foi \`${tipoMaisComum[0]}\`, com **${tipoMaisComum[1]}** ocorrências.`
+    : '';
+
+  const arqMod = relatorio.resumo.arquivosModificados;
+
+  return `## 💻 O Território do Código\n\n${voz} ${detalhe}\n\n**${arqMod}** arquivos foram modificados ao longo do dia — cada alteração um passo rumo ao progresso.\n\n`;
+}
+
+function secaoTestes(relatorio: DailyReport, personagem: 'fabio' | 'claudia'): string {
+  const { passou, falhou, total, taxa } = relatorio.testes;
+
+  const voz = personagem === 'fabio'
+    ? `Na arena dos testes, ${passou} desafios foram superados e ${falhou} ainda aguardam domação.`
+    : `Os testes revelaram sua verdade: ${passou} aprovados, ${falhou} a revisar — com uma taxa de sucesso de **${taxa}**.`;
+
+  const humor = falhou === 0
+    ? '🏆 Perfeição absoluta — todos os testes passaram!'
+    : falhou <= 2
+    ? '⚡ Quase lá — poucos ajustes e o resultado será impecável.'
+    : '🔧 Há trabalho a fazer, mas cada bug resolvido é uma vitória.';
+
+  return `## 🧪 A Batalha dos Testes\n\n${voz}\n\n${humor}\n\n| Resultado | Quantidade |\n|-----------|------------|\n| ✅ Passou | ${passou} |\n| ❌ Falhou | ${falhou} |\n| 📊 Total  | ${total} |\n| 🎯 Taxa   | ${taxa} |\n\n`;
+}
+
+function secaoTempo(relatorio: DailyReport, personagem: 'fabio' | 'claudia'): string {
+  const duracao = relatorio.resumo.duracaoTotal;
+
+  const voz = personagem === 'fabio'
+    ? `O relógio marcou **${duracao}** de jornada — tempo bem investido na construção do futuro digital.`
+    : `Foram **${duracao}** de dedicação plena. Cada minuto, uma semente plantada.`;
+
+  return `## ⏱️ O Tempo Investido\n\n${voz}\n\n`;
+}
+
+function secaoEncerramento(personagem: 'fabio' | 'claudia', data: string): string {
+  const voz = personagem === 'fabio'
+    ? `E assim termina mais um dia no Growth Tracker. O pôr do sol digital encontra o território mais desenvolvido do que o amanhecer. Até amanhã, parceiros!`
+    : `Fecho meu diário com gratidão por mais um dia de descobertas. O crescimento não para — e nós também não. Até a próxima edição!`;
+
+  return `## 🌅 Até Amanhã\n\n${voz}\n\n---\n\n*Registrado em ${data} pelo Growth Tracker TV*\n`;
+}
+
+// ── Gerador principal ─────────────────────────────────────────────────────────
+
+export function gerarPostJornal(
+  relatorio: DailyReport,
+  config: JornalPostConfig = { personagem: 'fabio', tipo: 'fatos', salvarEmDisco: true }
+): { slug: string; frontmatter: string; conteudo: string; caminhoArquivo: string } {
+  const agora = new Date();
+  const dataFormatada = formatDate(agora);
+  const dataPtBR = formatDatePtBR(agora);
+
+  const { personagem, tipo } = config;
+
+  // ── Título dinâmico ───────────────────────────────────────────────────────
+  const totalPosts = relatorio.resumo.postsJornal + relatorio.resumo.postsBlog;
+  const titulos = {
+    fabio: [
+      `Dia ${dataFormatada}: Entre Bugs e Conquistas no Território Digital`,
+      `Crônicas do Oeste Digital — ${dataPtBR}`,
+      `O Sheriff do Código Relata: ${totalPosts} Publicação(ões) e Muito Mais`,
+    ],
+    claudia: [
+      `Diário de ${dataPtBR}: Um Dia de Descobertas e Crescimento`,
+      `Cláudia Registra: As Histórias que o Dia Trouxe`,
+      `${dataPtBR} — Páginas de um Dia Produtivo`,
+    ],
+  };
+  const listaTitulos = titulos[personagem];
+  const titulo = listaTitulos[Math.floor(Math.random() * listaTitulos.length)];
+
+  const slug = `${dataFormatada}-${slugify(titulo)}`;
+
+  const excerptBase = `Relatório do dia ${dataPtBR}: ${totalPosts} publicação(ões), ${relatorio.metricas.arquivos} arquivos analisados e uma taxa de testes de ${relatorio.testes.taxa}.`;
+
+  // ── Frontmatter ───────────────────────────────────────────────────────────
+  const frontmatter = matter.stringify('', {
+    title: titulo,
+    slug,
+    date: dataFormatada,
+    author: personagem === 'fabio' ? 'Fabio Edinei' : 'Cláudia',
+    character: personagem,
+    type: tipo,
+    category: 'Relatório Diário',
+    excerpt: excerptBase,
+    tags: ['relatório', 'daily', 'growth-tracker', dataFormatada],
+  });
+
+  // ── Corpo da história ─────────────────────────────────────────────────────
+  const corpo = [
+    `# ${titulo}\n`,
+    `*${dataPtBR}*\n`,
+    `---\n`,
+    `${abertura(personagem)}\n`,
+    secaoPostagens(relatorio, personagem),
+    secaoCodigo(relatorio, personagem),
+    secaoTestes(relatorio, personagem),
+    secaoTempo(relatorio, personagem),
+    secaoEncerramento(personagem, dataPtBR),
+  ].join('\n');
+
+  // ── Conteúdo completo (frontmatter + corpo) ───────────────────────────────
+  const conteudoCompleto = frontmatter + corpo;
+
+  // ── Salvar em disco ───────────────────────────────────────────────────────
+  const jornalPath = path.join(process.cwd(), 'app/content/jornal');
+  const nomeArquivo = `${slug}.md`;
+  const caminhoArquivo = path.join(jornalPath, nomeArquivo);
+
+  if (config.salvarEmDisco !== false) {
+    if (!fs.existsSync(jornalPath)) {
+      fs.mkdirSync(jornalPath, { recursive: true });
+    }
+    fs.writeFileSync(caminhoArquivo, conteudoCompleto, 'utf8');
+  }
+
+  return { slug, frontmatter, conteudo: conteudoCompleto, caminhoArquivo };
+}
+
+// ── Verificar se já foi gerado hoje ──────────────────────────────────────────
+
+export function postJornalJaGeradoHoje(): boolean {
+  const jornalPath = path.join(process.cwd(), 'app/content/jornal');
+  if (!fs.existsSync(jornalPath)) return false;
+
+  const hoje = formatDate(new Date());
+  const arquivos = fs.readdirSync(jornalPath);
+
+  return arquivos.some(f => f.startsWith(hoje) && f.endsWith('.md'));
 }
