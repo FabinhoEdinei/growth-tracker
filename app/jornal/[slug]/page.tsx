@@ -11,44 +11,18 @@ const typeConfig: Record<string, { label: string; icon: string; accent: string }
   lugares: { label: 'TERRAS EXPLORADAS', icon: '🗺️', accent: '#4B5E2A' },
 }
 
-/* ───────── CANTOS BARROCOS ───────── */
+/* ───── Cantos discretos ───── */
 
-const CornerOrnament = ({ rotate = 0 }: { rotate?: number }) => (
-  <svg viewBox="0 0 120 120" width="120" height="120" style={{ transform: `rotate(${rotate}deg)` }}>
-    <defs>
-      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#F4E8C1"/>
-        <stop offset="40%" stopColor="#DAA520"/>
-        <stop offset="70%" stopColor="#B8860B"/>
-        <stop offset="100%" stopColor="#6E4F1F"/>
-      </linearGradient>
-    </defs>
-
+const Corner = ({ rotate = 0 }: { rotate?: number }) => (
+  <svg viewBox="0 0 60 60" width="40" height="40" style={{ transform:`rotate(${rotate}deg)` }}>
     <path
-      d="M10 10 C40 -10 90 10 110 40
-         C95 50 80 70 60 95
-         C40 80 20 70 10 40 Z"
-      fill="url(#goldGrad)"
-      stroke="#5D4E37"
-      strokeWidth="1"
-    />
-
-    <circle cx="65" cy="60" r="8" fill="#8B6914"/>
-    <circle cx="65" cy="60" r="3" fill="#3E2723"/>
-
-    <path
-      d="M40 30 C60 20 90 40 80 60"
-      stroke="#5D4E37"
-      strokeWidth="2"
+      d="M5 55 C5 20 20 5 55 5"
       fill="none"
+      stroke="#8B6914"
+      strokeWidth="3"
+      strokeLinecap="round"
     />
-
-    <path
-      d="M25 55 C40 45 50 65 40 80"
-      stroke="#5D4E37"
-      strokeWidth="2"
-      fill="none"
-    />
+    <circle cx="8" cy="52" r="3" fill="#8B6914"/>
   </svg>
 )
 
@@ -70,134 +44,117 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     })
 
   return (
-    <JornalPageWrapper>
 
-      <div className="page-bg">
+<JornalPageWrapper>
 
-        {/* BOTÃO SUPERIOR */}
+<div className="page">
 
-        <div className="top-btn">
-          <Link href="/jornal" className="btn-wood">
-            ← Voltar ao Jornal
-          </Link>
-        </div>
+{/* BOTÃO */}
 
-        {/* MOLDURA */}
+<div className="top">
+<Link href="/jornal" className="btn">← VOLTAR AO JORNAL</Link>
+</div>
 
-        <div className="frame">
+{/* QUADRO */}
 
-          <div className="corner tl"><CornerOrnament/></div>
-          <div className="corner tr"><CornerOrnament rotate={90}/></div>
-          <div className="corner bl"><CornerOrnament rotate={-90}/></div>
-          <div className="corner br"><CornerOrnament rotate={180}/></div>
+<div className="frame">
 
-          {/* PAPEL */}
+<div className="corner tl"><Corner/></div>
+<div className="corner tr"><Corner rotate={90}/></div>
+<div className="corner bl"><Corner rotate={-90}/></div>
+<div className="corner br"><Corner rotate={180}/></div>
 
-          <div className="paper">
+{/* PAPEL */}
 
-            <div className="paper-texture"/>
+<div className="paper">
 
-            <div className="content">
+<div className="content">
 
-              <div className="header">
+<div className="header">
 
-                <div className="ornament">◆ ◆ ◆</div>
+<div className="orn">◆ ◆ ◆</div>
 
-                <div className="label">
-                  <span className="icon">{cfg.icon}</span>
-                  <span className="type">{cfg.label}</span>
-                </div>
+<div className="label">
+<span>{cfg.icon}</span>
+<span className="type">{cfg.label}</span>
+</div>
 
-                <h1>{post.title}</h1>
+<h1>{post.title}</h1>
 
-                <div className="date">
-                  {formatDate(post.date)}
-                  {post.character && <span> — {post.character}</span>}
-                </div>
+<div className="date">
+{formatDate(post.date)}
+{post.character && <span> — {post.character}</span>}
+</div>
 
-              </div>
+</div>
 
-              <div className="divider"/>
+<div className="divider"/>
 
-              {post.excerpt && (
-                <div className="excerpt">
-                  {post.excerpt}
-                </div>
-              )}
+{post.excerpt && (
+<div className="excerpt">{post.excerpt}</div>
+)}
 
-              <div
-                className="jornal-content"
-                dangerouslySetInnerHTML={{ __html: post.content }}
-              />
+<div
+className="jornal-content"
+dangerouslySetInnerHTML={{ __html: post.content }}
+/>
 
-              <div className="footer-orn">❖ ❖ ❖</div>
+<div className="footer">❖ ❖ ❖</div>
 
-            </div>
+</div>
+</div>
+</div>
 
-          </div>
-
-        </div>
-
-        {/* BOTÃO INFERIOR */}
-
-        <div className="bottom-btn">
-          <Link href="/jornal">← Voltar ao Jornal</Link>
-        </div>
-
-      </div>
+</div>
 
 <style>{`
 
-.page-bg{
+.page{
 min-height:100vh;
-background:linear-gradient(135deg,#E8DCC4,#D4C4A8,#C9B896);
-padding:20px 16px 40px;
+background:linear-gradient(135deg,#E8DCC4,#D4C4A8);
+padding:14px;
 }
 
-/* BOTÃO */
+/* botão */
 
-.btn-wood{
-display:inline-block;
-padding:10px 32px;
-background:linear-gradient(180deg,#8B6914,#6B4423,#4A3728);
+.top{
+text-align:center;
+margin-bottom:14px;
+}
+
+.btn{
+padding:8px 26px;
+background:linear-gradient(180deg,#8B6914,#6B4423);
 border:2px solid #3E2723;
 border-radius:4px;
 color:#F4E8C1;
 font-family:Georgia,serif;
 font-size:12px;
-font-weight:bold;
-letter-spacing:3px;
+letter-spacing:2px;
 text-decoration:none;
-text-transform:uppercase;
-box-shadow:
-0 3px 8px rgba(0,0,0,0.4),
-inset 0 1px 0 rgba(255,255,255,0.2);
+box-shadow:0 3px 8px rgba(0,0,0,0.4);
 }
 
-.top-btn{text-align:center;margin-bottom:24px}
-.bottom-btn{text-align:center;margin-top:28px}
-
-/* MOLDURA */
+/* moldura */
 
 .frame{
+position:relative;
 max-width:760px;
 margin:auto;
-position:relative;
-padding:26px;
+padding:10px;
 
 background:
-linear-gradient(145deg,#7a5230,#5b3a22 40%,#3a2315);
+linear-gradient(145deg,#6B4423,#4A3728);
 
-border:16px solid #5a3a23;
+border:8px solid #5a3a23;
 
 box-shadow:
-0 20px 50px rgba(0,0,0,0.6),
-inset 0 2px 4px rgba(255,255,255,0.15),
-inset 0 -8px 16px rgba(0,0,0,0.6);
-
+0 10px 30px rgba(0,0,0,0.5),
+inset 0 2px 3px rgba(255,255,255,0.15),
+inset 0 -4px 8px rgba(0,0,0,0.5);
 }
 
-/* TEXTURA MADEIRA */
+/* textura madeira */
 
 .frame::before{
 content:"";
@@ -207,89 +164,57 @@ inset:0;
 background:
 repeating-linear-gradient(
 90deg,
-rgba(255,255,255,0.04),
-rgba(255,255,255,0.04) 2px,
+rgba(255,255,255,0.03),
+rgba(255,255,255,0.03) 2px,
 transparent 2px,
 transparent 6px
 );
-
 pointer-events:none;
 }
 
-/* ENTALHE INTERNO */
-
-.frame::after{
-content:"";
-position:absolute;
-inset:14px;
-border:5px solid #3a2416;
-
-box-shadow:
-inset 0 0 15px rgba(0,0,0,0.6),
-inset 0 0 35px rgba(0,0,0,0.4);
-
-pointer-events:none;
-}
-
-/* CANTOS */
+/* cantos */
 
 .corner{
 position:absolute;
-z-index:10;
+opacity:0.7;
 }
 
-.tl{top:-10px;left:-10px}
-.tr{top:-10px;right:-10px}
-.bl{bottom:-10px;left:-10px}
-.br{bottom:-10px;right:-10px}
+.tl{top:4px;left:4px}
+.tr{top:4px;right:4px}
+.bl{bottom:4px;left:4px}
+.br{bottom:4px;right:4px}
 
-/* PAPEL */
+/* papel */
 
 .paper{
 background:
-linear-gradient(160deg,#FAF6EC,#F5EFDD,#F0E8D0);
-padding:48px 42px 56px;
-position:relative;
+linear-gradient(160deg,#FAF6EC,#F5EFDD);
+
+padding:34px 28px;
 
 box-shadow:
-inset 0 0 60px rgba(139,105,20,0.08);
+inset 0 0 40px rgba(139,105,20,0.08);
 }
 
-.paper-texture{
-position:absolute;
-inset:0;
+/* conteúdo */
 
-background-image:
-repeating-linear-gradient(
-0deg,
-transparent,
-transparent 24px,
-rgba(139,105,20,0.03) 24px,
-rgba(139,105,20,0.03) 25px
-);
-
-pointer-events:none;
+.header{
+text-align:center;
+margin-bottom:24px;
 }
 
-.content{position:relative;z-index:2}
-
-/* HEADER */
-
-.header{text-align:center;margin-bottom:32px}
-
-.ornament{
+.orn{
 font-size:10px;
 letter-spacing:8px;
 color:rgba(139,105,20,0.4);
-margin-bottom:16px;
+margin-bottom:14px;
 }
 
 .label{
 display:flex;
 justify-content:center;
-align-items:center;
 gap:10px;
-margin-bottom:16px;
+margin-bottom:12px;
 }
 
 .type{
@@ -297,14 +222,13 @@ font-family:Georgia,serif;
 font-size:9px;
 font-weight:bold;
 letter-spacing:3px;
-text-transform:uppercase;
 }
 
-.header h1{
+h1{
 font-family:Georgia,serif;
 font-size:clamp(22px,4vw,28px);
 color:#2C1810;
-margin:20px 0 12px;
+margin:14px 0;
 }
 
 .date{
@@ -314,34 +238,30 @@ font-style:italic;
 color:rgba(62,39,35,0.6);
 }
 
-/* DIVIDER */
-
 .divider{
 height:1px;
-background:linear-gradient(90deg,transparent,#8B691450,transparent);
-margin:24px 0 28px;
+background:linear-gradient(90deg,transparent,#8B691440,transparent);
+margin:22px 0;
 }
 
 .excerpt{
 border-left:3px solid #8B6914;
-padding-left:16px;
-margin-bottom:28px;
+padding-left:14px;
+margin-bottom:24px;
 font-style:italic;
 color:rgba(62,39,35,0.7);
 line-height:1.7;
 }
 
-/* FOOTER */
-
-.footer-orn{
+.footer{
 text-align:center;
-margin-top:48px;
+margin-top:36px;
 font-size:10px;
-letter-spacing:8px;
+letter-spacing:6px;
 color:rgba(139,105,20,0.3);
 }
 
-/* TEXTO */
+/* texto */
 
 .jornal-content{
 font-family:Georgia,serif;
@@ -357,6 +277,6 @@ text-align:justify;
 
 `}</style>
 
-    </JornalPageWrapper>
-  )
+</JornalPageWrapper>
+)
 }
