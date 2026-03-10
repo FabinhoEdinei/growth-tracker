@@ -1,17 +1,14 @@
 'use client';
 
-import { useWorkout } from './hooks/useWorkout';
-import { WORKOUT_FULLBODY_45, getTotalExercises, getTotalSets } from './data/workout';
-import {
-  WorkoutHeader,
-  BlockBadge,
-  ExerciseCard,
-  RestTimer,
-  WorkoutIdle,
-  WorkoutFinished,
-} from './components';
+// ─────────────────────────────────────────────────────────────────────────────
+// GymTrackerPage.tsx — Orquestra todo o fluxo do treino
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ─── Estilos globais + fontes industriais ────────────────────────────────────
+import { useWorkout }                           from './hooks/useWorkout';
+import { WORKOUT_FULLBODY_45, getTotalExercises, getTotalSets } from './data/workout';
+import { WorkoutHeader, BlockBadge, ExerciseCard, RestTimer, WorkoutIdle, WorkoutFinished } from './components';
+
+// ── Estilos globais (fontes industriais + reset) ──────────────────────────────
 
 const GLOBAL_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Share+Tech+Mono&display=swap');
@@ -21,38 +18,31 @@ const GLOBAL_STYLES = `
     --font-mono:    'Share Tech Mono', monospace;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     background: #0e0e0e;
     color: #f0ede8;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Scrollbar discreta */
-  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
   ::-webkit-scrollbar-track { background: #161616; }
   ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 99px; }
 
-  /* Tap highlight off no mobile */
   * { -webkit-tap-highlight-color: transparent; }
 
-  /* Animação entrada do card */
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .slide-up { animation: slideUp .35s ease-out forwards; }
-
-  @keyframes pulse-ring {
-    0%   { box-shadow: 0 0 0 0 rgba(255,69,32,.4); }
-    70%  { box-shadow: 0 0 0 10px rgba(255,69,32,0); }
-    100% { box-shadow: 0 0 0 0 rgba(255,69,32,0); }
-  }
-  .pulse { animation: pulse-ring 1.8s ease-out infinite; }
+  .slide-up { animation: slideUp .3s ease-out forwards; }
 `;
 
-// ─── Página principal ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Componente principal
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function GymTrackerPage() {
   const workout = WORKOUT_FULLBODY_45;
@@ -62,48 +52,32 @@ export default function GymTrackerPage() {
     currentBlock,
     currentExercise,
     currentProgress,
-    isLastSet,
     overallProgress,
+    nextExerciseName,
     startWorkout,
     completeSet,
     skipRest,
+    skipExercise,
     resetWorkout,
     formatTime,
     getTotalCompletedSets,
+    getTotalSets,
   } = useWorkout(workout);
 
+  const completedSets  = getTotalCompletedSets();
+  const totalSets      = getTotalSets();
   const totalExercises = getTotalExercises(workout);
-  const totalSets      = getTotalSets(workout);
-
-  // Próximo exercício (para mostrar no descanso)
-  const nextExercise = (() => {
-    if (!currentBlock || !currentExercise) return undefined;
-    const exIdx = state.currentExerciseIndex;
-    const blIdx = state.currentBlockIndex;
-
-    if (!isLastSet) return currentExercise.name; // próxima série do mesmo
-
-    const nextInBlock = currentBlock.exercises[exIdx + 1];
-    if (nextInBlock) return nextInBlock.name;
-
-    const nextBlock = workout.blocks[blIdx + 1];
-    if (nextBlock) return nextBlock.exercises[0]?.name;
-
-    return undefined;
-  })();
+  const isActive       = state.phase === 'exercise' || state.phase === 'rest';
 
   return (
     <>
-      {/* Injeção de estilos globais */}
       <style dangerouslySetInnerHTML={{ __html: GLOBAL_STYLES }}/>
 
-      <div style={{
-        minHeight: '100vh',
-        background: '#0e0e0e',
-        fontFamily: 'var(--font-display)',
-      }}>
+      <div style={{ minHeight: '100vh', background: '#0e0e0e', fontFamily: 'var(--font-display)' }}>
 
-        {/* ── TELA IDLE ─────────────────────────────────────────────── */}
+        {/* ════════════════════════════════════════════
+            TELA IDLE — antes de iniciar
+        ════════════════════════════════════════════ */}
         {state.phase === 'idle' && (
           <WorkoutIdle
             totalMinutes={workout.totalMinutes}
@@ -113,7 +87,9 @@ export default function GymTrackerPage() {
           />
         )}
 
-        {/* ── TELA FINALIZADO ───────────────────────────────────────── */}
+        {/* ════════════════════════════════════════════
+            TELA FINALIZADO
+        ════════════════════════════════════════════ */}
         {state.phase === 'finished' && (
           <>
             <WorkoutHeader
@@ -121,91 +97,80 @@ export default function GymTrackerPage() {
               elapsedSeconds={state.elapsedSeconds}
               totalMinutes={workout.totalMinutes}
               overallProgress={100}
-              completedSets={getTotalCompletedSets()}
+              completedSets={completedSets}
               totalSets={totalSets}
               phase={state.phase}
               formatTime={formatTime}
             />
             <WorkoutFinished
               elapsedSeconds={state.elapsedSeconds}
-              totalSets={getTotalCompletedSets()}
+              completedSets={completedSets}
               formatTime={formatTime}
               onReset={resetWorkout}
             />
           </>
         )}
 
-        {/* ── TREINO ATIVO ──────────────────────────────────────────── */}
-        {(state.phase === 'exercise' || state.phase === 'rest' || state.phase === 'warmup') && (
+        {/* ════════════════════════════════════════════
+            TREINO ATIVO (exercise | rest)
+        ════════════════════════════════════════════ */}
+        {isActive && (
           <>
-            {/* Header sticky */}
+            {/* ── Header sticky ── */}
             <WorkoutHeader
               workoutName={workout.name}
               elapsedSeconds={state.elapsedSeconds}
               totalMinutes={workout.totalMinutes}
               overallProgress={overallProgress}
-              completedSets={getTotalCompletedSets()}
+              completedSets={completedSets}
               totalSets={totalSets}
               phase={state.phase}
               formatTime={formatTime}
             />
 
-            {/* ── Lista de blocos (navegação visual) */}
-            <div style={{
-              overflowX: 'auto', display: 'flex',
-              borderBottom: '1px solid #2a2a2a',
-            }}>
-              {workout.blocks.map((block, i) => {
-                const isActive    = i === state.currentBlockIndex;
-                const isCompleted = i < state.currentBlockIndex;
-                return (
-                  <div key={block.id} style={{ minWidth: 180 }}>
-                    <BlockBadge
-                      block={block}
-                      isActive={isActive}
-                      isCompleted={isCompleted}
-                      index={i}
-                    />
-                  </div>
-                );
-              })}
+            {/* ── Faixa horizontal de blocos (scroll) ── */}
+            <div style={{ overflowX: 'auto', display: 'flex', borderBottom: '1px solid #2a2a2a' }}>
+              {workout.blocks.map((block, i) => (
+                <div key={block.id} style={{ minWidth: 180 }}>
+                  <BlockBadge
+                    block={block}
+                    isActive={i === state.currentBlockIndex}
+                    isCompleted={i < state.currentBlockIndex}
+                    index={i}
+                  />
+                </div>
+              ))}
             </div>
 
-            {/* ── Progresso do bloco atual */}
+            {/* ── Progresso do bloco atual ── */}
             {currentBlock && (
-              <div style={{
-                padding: '14px 16px 10px',
-                borderBottom: '1px solid #2a2a2a',
-              }}>
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  marginBottom: 6,
-                }}>
-                  <span style={{ fontSize: 10, color: '#7a7068', letterSpacing: 2, fontFamily: 'var(--font-mono)' }}>
+              <div style={{ padding: '12px 16px 8px', borderBottom: '1px solid #2a2a2a' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                  <span style={{ fontSize: 9, color: '#7a7068', letterSpacing: 2, fontFamily: 'var(--font-mono)' }}>
                     {currentBlock.name}
                   </span>
-                  <span style={{ fontSize: 10, color: '#7a7068', fontFamily: 'var(--font-mono)' }}>
+                  <span style={{ fontSize: 9, color: '#7a7068', fontFamily: 'var(--font-mono)' }}>
                     {state.currentExerciseIndex + 1}/{currentBlock.exercises.length}
                   </span>
                 </div>
-                <div style={{ height: 2, background: '#2a2a2a', borderRadius: 99, overflow: 'hidden' }}>
+                {/* Barra de progresso do bloco */}
+                <div style={{ height: 2, background: '#2a2a2a', borderRadius: 99, overflow: 'hidden', marginBottom: 5 }}>
                   <div style={{
-                    height: '100%', borderRadius: 99,
-                    background: '#ff4520',
-                    width: `${((state.currentExerciseIndex) / currentBlock.exercises.length) * 100}%`,
+                    height: '100%', borderRadius: 99, background: '#ff4520',
+                    width: `${(state.currentExerciseIndex / currentBlock.exercises.length) * 100}%`,
                     transition: 'width .4s ease',
                   }}/>
                 </div>
                 {currentBlock.description && (
-                  <div style={{ fontSize: 11, color: '#4a4540', marginTop: 6, lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 10, color: '#4a4540', lineHeight: 1.4 }}>
                     {currentBlock.description}
                   </div>
                 )}
               </div>
             )}
 
-            {/* ── Conteúdo principal: exercício ou descanso */}
-            <div style={{ padding: '16px 0 32px' }}>
+            {/* ── Conteúdo principal ── */}
+            <div style={{ padding: '14px 0 40px' }}>
 
               {/* Timer de descanso */}
               {state.phase === 'rest' && currentExercise && (
@@ -213,60 +178,69 @@ export default function GymTrackerPage() {
                   <RestTimer
                     secondsLeft={state.restSecondsLeft}
                     totalSeconds={currentExercise.restSeconds}
-                    onSkip={skipRest}
+                    nextExerciseName={nextExerciseName}
                     formatTime={formatTime}
-                    nextExerciseName={nextExercise}
+                    onSkip={skipRest}
                   />
                 </div>
               )}
 
               {/* Card do exercício ativo */}
               {state.phase === 'exercise' && currentExercise && currentProgress && (
-                <div className="slide-up" key={`${currentExercise.id}-${state.currentSetIndex}`}>
+                <div
+                  className="slide-up"
+                  key={`${currentExercise.id}-${state.currentSetIndex}`}
+                >
                   <ExerciseCard
                     exercise={currentExercise}
                     progress={currentProgress}
                     currentSetIndex={state.currentSetIndex}
                     phase={state.phase}
+                    elapsedSeconds={state.elapsedSeconds}
+                    totalCompletedSets={completedSets}
+                    formatTime={formatTime}
                     onCompleteSet={completeSet}
+                    onSkipExercise={skipExercise}
                   />
                 </div>
               )}
 
-              {/* Lista dos próximos exercícios do bloco */}
-              {currentBlock && state.phase === 'exercise' && (
-                <div style={{ margin: '20px 16px 0' }}>
-                  <div style={{ fontSize: 9, color: '#4a4540', letterSpacing: 2, fontFamily: 'var(--font-mono)', marginBottom: 10 }}>
-                    PRÓXIMOS NESTE BLOCO
-                  </div>
-                  {currentBlock.exercises
-                    .slice(state.currentExerciseIndex + 1)
-                    .map((ex, i) => (
-                      <div key={ex.id} style={{
-                        display: 'flex', alignItems: 'center', gap: 12,
-                        padding: '10px 14px',
-                        background: '#161616',
-                        border: '1px solid #2a2a2a',
-                        borderRadius: 8,
-                        marginBottom: 6,
-                        opacity: 0.65,
-                      }}>
-                        <span style={{ fontSize: 18, flexShrink: 0 }}>{ex.emoji}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#f0ede8', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {ex.name}
-                          </div>
-                          <div style={{ fontSize: 10, color: '#4a4540', fontFamily: 'var(--font-mono)' }}>
-                            {ex.sets}× {ex.reps}
-                          </div>
-                        </div>
-                        <div style={{ fontSize: 10, color: '#7a7068', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-                          #{i + state.currentExerciseIndex + 2}
-                        </div>
+              {/* Lista dos próximos exercícios no bloco */}
+              {state.phase === 'exercise' && currentBlock && (
+                (() => {
+                  const upcoming = currentBlock.exercises.slice(state.currentExerciseIndex + 1);
+                  if (upcoming.length === 0) return null;
+                  return (
+                    <div style={{ margin: '18px 16px 0' }}>
+                      <div style={{ fontSize: 9, color: '#4a4540', letterSpacing: 2, fontFamily: 'var(--font-mono)', marginBottom: 8 }}>
+                        PRÓXIMOS NESTE BLOCO
                       </div>
-                    ))}
-                </div>
+                      {upcoming.map((ex, i) => (
+                        <div key={ex.id} style={{
+                          display: 'flex', alignItems: 'center', gap: 12,
+                          padding: '9px 13px',
+                          background: '#161616', border: '1px solid #2a2a2a',
+                          borderRadius: 8, marginBottom: 6, opacity: 0.6,
+                        }}>
+                          <span style={{ fontSize: 17, flexShrink: 0 }}>{ex.emoji}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#f0ede8', fontFamily: 'var(--font-display)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {ex.name}
+                            </div>
+                            <div style={{ fontSize: 9, color: '#4a4540', fontFamily: 'var(--font-mono)' }}>
+                              {ex.sets}× {ex.reps}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: 9, color: '#7a7068', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+                            #{i + state.currentExerciseIndex + 2}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
               )}
+
             </div>
           </>
         )}
