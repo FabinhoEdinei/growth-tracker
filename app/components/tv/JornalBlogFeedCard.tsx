@@ -49,7 +49,7 @@ export default function JornalBlogFeedCard({ relatorio }: JornalBlogFeedCardProp
         ].map(tab => {
           const ativo = aba === tab.key;
           const Icon  = tab.icone;
-          const cores = {
+          const cores: Record<string, { ativo: string; inativo: string }> = {
             blue:   { ativo: 'bg-blue-500/20 border-blue-500/50 text-blue-300',   inativo: 'bg-white/5 border-white/10 text-white/40 hover:text-white/70' },
             purple: { ativo: 'bg-purple-500/20 border-purple-500/50 text-purple-300', inativo: 'bg-white/5 border-white/10 text-white/40 hover:text-white/70' },
           };
