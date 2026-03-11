@@ -7,7 +7,7 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { TrendingUp, FileText, Activity, Code, Sparkles, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { TrendingUp, FileText, Activity, Code, Sparkles, Loader2, CheckCircle2, AlertTriangle, Download } from 'lucide-react';
 import type { DailyReport } from '@/app/utils/daily-report-generator';
 
 interface TvReport extends DailyReport {
@@ -33,21 +33,35 @@ export default function DailyReportCard({ relatorio }: DailyReportCardProps) {
   const [slugGerado, setSlugGerado] = useState<string | null>(null);
   const [personagem, setPersonagem] = useState<'fabio' | 'claudia'>('fabio');
 
-  // ── Gerar post do jornal ────────────────────────────────────────────────────
-  async function gerarPostJornal(forcar = false) {
+  // ── Gerar .md e iniciar download no browser ───────────────────────────────
+  async function gerarEBaixar() {
     setStatusGeracao('gerando');
+    setSlugGerado(null);
     try {
-      const res = await fetch(
-        `/api/tv-report?gerarJornal=true&personagem=${personagem}${forcar ? '&forcarJornal=true' : ''}`,
-      );
-      const data = await res.json();
+      const res = await fetch('/api/tv-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ personagem, tipo: 'fatos' }),
+      });
 
-      if (data.jornal?.slug) {
-        setSlugGerado(data.jornal.slug);
-        setStatusGeracao('sucesso');
-      } else {
-        setStatusGeracao('erro');
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      // Extrai o slug do header
+      const slug = res.headers.get('X-Slug') ?? 'jornal-post';
+
+      // Baixa o blob e dispara download no browser
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `${slug}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setSlugGerado(slug);
+      setStatusGeracao('sucesso');
     } catch {
       setStatusGeracao('erro');
     }
@@ -239,10 +253,10 @@ export default function DailyReportCard({ relatorio }: DailyReportCardProps) {
           <h4 className="text-sm font-bold text-purple-300 flex items-center gap-2 mb-4">
             <Sparkles className="w-4 h-4" />
             Gerar Post do Jornal
-            <span className="text-xs font-normal text-white/40">— cria um .md com a história do dia</span>
+            <span className="text-xs font-normal text-white/40">— baixa o .md para commitar no jornal</span>
           </h4>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap mb-3">
             {/* Seletor de personagem */}
             <div className="flex gap-2">
               {(['fabio', 'claudia'] as const).map(p => (
@@ -260,31 +274,26 @@ export default function DailyReportCard({ relatorio }: DailyReportCardProps) {
               ))}
             </div>
 
-            {/* Botão gerar */}
+            {/* Botão gerar + baixar */}
             <button
-              onClick={() => gerarPostJornal(false)}
+              onClick={gerarEBaixar}
               disabled={statusGeracao === 'gerando'}
               className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/40 rounded-xl text-white text-sm font-semibold transition-all"
             >
               {statusGeracao === 'gerando' ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Gerando...</>
               ) : (
-                <><Sparkles className="w-4 h-4" /> Gerar Agora</>
+                <><Download className="w-4 h-4" /> Gerar & Baixar .md</>
               )}
             </button>
-
-            {/* Forçar */}
-            {statusGeracao === 'sucesso' && (
-              <button
-                onClick={() => gerarPostJornal(true)}
-                className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/50 text-xs transition"
-              >
-                Regenerar
-              </button>
-            )}
           </div>
 
-          {/* Feedback */}
+          {/* Instrução */}
+          <p className="text-white/30 text-xs leading-relaxed">
+            Após baixar, adicione o arquivo em <code className="text-white/50">app/content/jornal/</code> e faça commit — ele aparecerá automaticamente no jornal.
+          </p>
+
+          {/* Feedback sucesso */}
           {statusGeracao === 'sucesso' && slugGerado && (
             <motion.div
               initial={{ opacity: 0, y: 6 }}
@@ -293,14 +302,15 @@ export default function DailyReportCard({ relatorio }: DailyReportCardProps) {
             >
               <p className="text-green-300 text-xs font-semibold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4" />
-                Post gerado! Slug: <code className="font-mono text-green-200">{slugGerado}</code>
+                Download iniciado! Arquivo: <code className="font-mono text-green-200">{slugGerado}.md</code>
               </p>
               <p className="text-green-400/50 text-xs mt-1">
-                Disponível em /jornal/{slugGerado}
+                Salve em <code>app/content/jornal/</code> e faça commit para publicar.
               </p>
             </motion.div>
           )}
 
+          {/* Feedback erro */}
           {statusGeracao === 'erro' && (
             <motion.div
               initial={{ opacity: 0, y: 6 }}
