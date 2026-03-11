@@ -80,7 +80,9 @@ export async function GET(request: Request) {
   }
 }
 
-// ── POST /api/tv-report — força geração do jornal com body customizado ────────
+// ── POST /api/tv-report — gera .md na memória e retorna para download ─────────
+// No Vercel o filesystem é read-only — não salvamos em disco.
+// Retornamos o conteúdo como download direto no browser.
 
 export async function POST(request: Request) {
   try {
@@ -91,17 +93,21 @@ export async function POST(request: Request) {
     const generator = new DailyReportGenerator();
     const relatorio = generator.gerarRelatorioDodia();
 
+    // salvarEmDisco: false — só gera na memória, sem tentar escrever no disco
     const resultado = gerarPostJornal(relatorio, {
       personagem,
       tipo,
-      salvarEmDisco: true,
+      salvarEmDisco: false,
     });
 
-    return NextResponse.json({
-      sucesso: true,
-      slug:           resultado.slug,
-      caminhoArquivo: resultado.caminhoArquivo,
-      preview:        resultado.conteudo.slice(0, 500) + '...',
+    // Retorna o arquivo .md como download direto
+    return new Response(resultado.conteudo, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/markdown; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${resultado.slug}.md"`,
+        'X-Slug': resultado.slug,
+      },
     });
   } catch (error) {
     console.error('Erro ao gerar post:', error);
