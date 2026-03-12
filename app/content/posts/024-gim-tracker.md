@@ -1,3 +1,18 @@
+---
+title: 'Documentação do Gim Tracker'
+slug:"documentaco-gim-tracker"
+date: "2026-03-12"
+author: "Fabio Edinei"
+character: "fabio"
+type: "fatos"
+category: "Relatório Diário"
+tags:
+  - relatório
+  - daily
+  - growth-tracker
+  - '2026-03-12'
+---
+
 # 🏋️ GYM TRACKER — Documentação Completa
 ### Uma série em 4 capítulos sobre a construção da tela de academia do Growth Tracker
 
