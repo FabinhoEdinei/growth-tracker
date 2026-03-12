@@ -1,19 +1,20 @@
+// app/api/etf-cota/route.ts
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { calcularBloco, gerarCota, type PostData } from '@/lib/etf-cota-engine';
+import { gerarCota, type PostData } from '@/lib/etf-cota-engine';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GET /api/etf-cota
-// Lê todos os posts reais e gera a cota ETF composta
-// ─────────────────────────────────────────────────────────────────────────────
+export const dynamic = 'force-dynamic';
 
-function lerPostsDir(dirPath: string, tipo: PostData['tipo']): PostData[] {
-  if (!fs.existsSync(dirPath)) return [];
-  return fs.readdirSync(dirPath)
-    .filter(f => f.endsWith('.md'))
-    .flatMap(arquivo => {
+// ── Tenta vários caminhos possíveis para os posts ────────────────────────────
+function lerPostsDirs(candidatos: string[], tipo: PostData['tipo']): PostData[] {
+  for (const dirPath of candidatos) {
+    if (!fs.existsSync(dirPath)) continue;
+    const arquivos = fs.readdirSync(dirPath).filter(f => f.endsWith('.md'));
+    if (arquivos.length === 0) continue;
+
+    return arquivos.flatMap(arquivo => {
       try {
         const raw = fs.readFileSync(path.join(dirPath, arquivo), 'utf8');
         const { data, content } = matter(raw);
@@ -27,19 +28,33 @@ function lerPostsDir(dirPath: string, tipo: PostData['tipo']): PostData[] {
         }] as PostData[];
       } catch { return []; }
     });
+  }
+  return []; // nenhum caminho funcionou → retorna vazio (não quebra)
 }
 
 export async function GET() {
   try {
     const base = process.cwd();
 
-    const postsBlog = [
-      ...lerPostsDir(path.join(base, 'app/content/post'), 'blog'),
-      ...lerPostsDir(path.join(base, 'app/content/posts'), 'blog'),
-    ];
-    const postsJornal = lerPostsDir(path.join(base, 'app/content/jornal'), 'jornal');
+    // ── Blog: tenta todos os caminhos comuns ─────────────────────────────────
+    const postsBlog = lerPostsDirs([
+      path.join(base, 'app', 'content', 'post'),
+      path.join(base, 'app', 'content', 'posts'),
+      path.join(base, 'content', 'post'),
+      path.join(base, 'content', 'posts'),
+      path.join(base, 'posts'),
+      path.join(base, 'public', 'posts'),
+    ], 'blog');
 
-    // TV: gera post sintético baseado na data atual (sem arquivos .md próprios)
+    // ── Jornal: tenta todos os caminhos comuns ────────────────────────────────
+    const postsJornal = lerPostsDirs([
+      path.join(base, 'app', 'content', 'jornal'),
+      path.join(base, 'content', 'jornal'),
+      path.join(base, 'jornal'),
+      path.join(base, 'public', 'jornal'),
+    ], 'jornal');
+
+    // ── TV: post sintético (sempre existe) ───────────────────────────────────
     const postsTv: PostData[] = [{
       titulo:   'TV Empresarial Growth Tracker',
       slug:     'tv-empresarial',
@@ -54,13 +69,23 @@ export async function GET() {
     return NextResponse.json({
       cota,
       resumo: {
-        totalPosts: postsBlog.length + postsJornal.length,
+        totalPosts:  postsBlog.length + postsJornal.length,
         postsBlog:   postsBlog.length,
         postsJornal: postsJornal.length,
-      }
+        // debug: mostra quais caminhos têm conteúdo (remove em produção)
+        _debug: {
+          cwd: base,
+          blogCount:   postsBlog.length,
+          jornalCount: postsJornal.length,
+        },
+      },
     });
-  } catch (error) {
-    console.error('ETF Cota API error:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+
+  } catch (error: any) {
+    console.error('[etf-cota] Erro:', error);
+    return NextResponse.json(
+      { error: error?.message ?? String(error) },
+      { status: 500 }
+    );
   }
 }
