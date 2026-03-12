@@ -163,7 +163,7 @@ function BlocoCard({ bloco, codigoVisivel }: { bloco: BlocoETF; codigoVisivel: b
       <div style={{ display:'flex', justifyContent:'space-between' }}>
         <div>
           <div style={{ fontSize:10, color:'rgba(255,255,255,0.3)', marginBottom:2 }}>POSTS</div>
-          <div style={{ fontSize:18, fontWeight:700, color, fontFamily:'Courier New,monospace' }}>
+          <div style={{ fontSize:18, fontWeight:700, color: cor, fontFamily:'Courier New,monospace' }}>
             {bloco.posts.length}
           </div>
         </div>
