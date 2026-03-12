@@ -40,9 +40,9 @@ export const MenuDropdown = () => {
       gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 168, 107, 0.2))',
     },
     {
-      icon: '📊',
-      label: 'Dashboard',
-      href: '/dashboard',
+      icon: '🧬',
+      label: 'Perfil',
+      href: '/Perdi',
       badge: 'Beta',
       badgeColor: '#00d4ff',
       gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
