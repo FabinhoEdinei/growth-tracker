@@ -1,10 +1,8 @@
 ---
-title: 'Documentação do Gim Tracker'
-slug:"documentaco-gim-tracker"
+title: "Documentação do Gim Tracker"
+slug: "documentaco-gim-tracker"
 date: "2026-03-12"
 author: "Fabio Edinei"
-character: "fabio"
-type: "fatos"
 category: "Relatório Diário"
 tags:
   - relatório
