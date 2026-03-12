@@ -111,10 +111,31 @@ function TokenCard({ cota, onComprar, onDownload }: { cota: CotaETF; onComprar:(
         </div>
       </div>
       {vendida&&cota.dono&&<div style={{marginBottom:8,padding:'4px 8px',background:'rgba(168,85,247,0.08)',borderRadius:6,fontSize:10,color:'#a855f7',fontFamily:"'Courier New',monospace"}}>👤 {cota.dono}</div>}
+
+      {/* ── VALOR com span "ob" (rascunho) ── */}
       <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
-        <div><div style={{fontSize:9,color:'rgba(255,255,255,0.2)',marginBottom:1}}>VALOR</div><div style={{fontSize:14,fontWeight:700,color:'#00ff88',fontFamily:"'Courier New',monospace"}}>R$3.600</div></div>
-        <div style={{textAlign:'right'}}><div style={{fontSize:9,color:'rgba(255,255,255,0.2)',marginBottom:1}}>POSTS</div><div style={{fontSize:14,fontWeight:700,color:vendida?'#a855f7':'#00d4ff',fontFamily:"'Courier New',monospace"}}>{cota.blocos.reduce((a,b)=>a+b.posts.length,0)}</div></div>
+        <div>
+          <div style={{fontSize:9,color:'rgba(255,255,255,0.2)',marginBottom:1}}>VALOR</div>
+          <div style={{display:'flex',alignItems:'baseline',gap:4}}>
+            <div style={{fontSize:14,fontWeight:700,color:'#00ff88',fontFamily:"'Courier New',monospace"}}>R$3.600</div>
+            <span style={{
+              fontSize:8,
+              color:'rgba(0,255,136,0.45)',
+              fontFamily:"'Courier New',monospace",
+              background:'rgba(0,255,136,0.07)',
+              padding:'1px 5px',
+              borderRadius:4,
+              letterSpacing:1,
+              border:'1px solid rgba(0,255,136,0.12)',
+            }}>ob</span>
+          </div>
+        </div>
+        <div style={{textAlign:'right'}}>
+          <div style={{fontSize:9,color:'rgba(255,255,255,0.2)',marginBottom:1}}>POSTS</div>
+          <div style={{fontSize:14,fontWeight:700,color:vendida?'#a855f7':'#00d4ff',fontFamily:"'Courier New',monospace"}}>{cota.blocos.reduce((a,b)=>a+b.posts.length,0)}</div>
+        </div>
       </div>
+
       <div style={{display:'flex',gap:4,marginBottom:12}}>
         {cota.blocos.map((b,i)=>(
           <div key={i} style={{flex:1,textAlign:'center',padding:'3px 2px',background:'rgba(0,0,0,0.25)',borderRadius:5,fontSize:8,color:'rgba(255,255,255,0.25)',fontFamily:"'Courier New',monospace"}}>
@@ -227,6 +248,9 @@ export default function PentaculosPage() {
   const [gerando,     setGerando]     = useState(false);
   const [toastMsg,    setToastMsg]    = useState('');
 
+  // ── NOVO: toggle visibilidade da grade ────────────────────────────────────
+  const [luzGrade, setLuzGrade] = useState(true);
+
   useEffect(() => { setHistorico(carregarHistorico()); }, []);
 
   function toast(msg: string) { setToastMsg(msg); setTimeout(()=>setToastMsg(''), 3500); }
@@ -238,6 +262,14 @@ export default function PentaculosPage() {
     const a=document.createElement('a');
     a.href=url; a.download=`certificado-${c.id}.html`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  // ── NOVO: baixar todos os certificados visíveis ───────────────────────────
+  function baixarTodosCerts() {
+    tokensVis.forEach((t, i) => {
+      setTimeout(() => baixarCert(t), i * 350);
+    });
+    toast(`${tokensVis.length} certificado(s) sendo baixados!`);
   }
 
   async function gerarNovoToken() {
@@ -290,7 +322,6 @@ export default function PentaculosPage() {
     const cv=venderCota(cota,dono,_empresa||undefined);
     setCotaFinal(cv); setModalAberto(false);
     baixarCert(cv);
-    // adiciona ao histórico também
     setHistorico(prev=>{const lista=[...prev,cv];salvarHistorico(lista);return lista;});
     setSucesso(true); setTimeout(()=>setSucesso(false),2500);
   }
@@ -416,39 +447,139 @@ export default function PentaculosPage() {
 
         {/* ══ GRADE DE TOKENS ══ */}
         <div style={{marginTop:36}}>
+
           {/* Cabeçalho da grade */}
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16,flexWrap:'wrap',gap:10}}>
             <h2 style={{fontSize:12,letterSpacing:3,color:'rgba(168,85,247,0.5)',margin:0,display:'flex',alignItems:'center',gap:8}}>
               ✦ TOKENS EMITIDOS
               <span style={{fontSize:10,background:'rgba(168,85,247,0.15)',color:'#a855f7',padding:'2px 8px',borderRadius:12}}>{historico.length}</span>
             </h2>
-            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+              {/* Filtros */}
               {(['todos','disponivel','vendida'] as const).map(f=>(
                 <button key={f} onClick={()=>setFiltroGrade(f)} style={{padding:'4px 12px',borderRadius:20,fontSize:10,cursor:'pointer',background:filtroGrade===f?'rgba(168,85,247,0.2)':'rgba(255,255,255,0.04)',border:`1px solid ${filtroGrade===f?'rgba(168,85,247,0.5)':'rgba(255,255,255,0.08)'}`,color:filtroGrade===f?'#a855f7':'rgba(255,255,255,0.35)',fontFamily:"'Courier New',monospace",letterSpacing:1,transition:'all 0.2s'}}>
                   {f==='todos'?`TODOS (${historico.length})`:f==='disponivel'?`DISP. (${totalDisp})`:`VEND. (${totalVend})`}
                 </button>
               ))}
+
+              {/* ── TOGGLE "LUZ DA GRADE" ── */}
+              <button
+                onClick={()=>setLuzGrade(v=>!v)}
+                title={luzGrade?'Desligar grade':'Ligar grade'}
+                style={{
+                  position:'relative',
+                  width:44, height:24,
+                  borderRadius:12,
+                  border:`1px solid ${luzGrade?'rgba(0,255,136,0.4)':'rgba(255,255,255,0.12)'}`,
+                  background:luzGrade?'rgba(0,255,136,0.15)':'rgba(255,255,255,0.04)',
+                  cursor:'pointer',
+                  transition:'all 0.3s',
+                  flexShrink:0,
+                }}
+              >
+                <div style={{
+                  position:'absolute',
+                  top:3,
+                  left: luzGrade ? 22 : 3,
+                  width:16, height:16,
+                  borderRadius:'50%',
+                  background:luzGrade?'#00ff88':'rgba(255,255,255,0.25)',
+                  boxShadow:luzGrade?'0 0 8px rgba(0,255,136,0.8)':'none',
+                  transition:'all 0.3s',
+                }}/>
+              </button>
+              <span style={{fontSize:10,color:luzGrade?'rgba(0,255,136,0.6)':'rgba(255,255,255,0.2)',fontFamily:"'Courier New',monospace",letterSpacing:1,minWidth:52}}>
+                {luzGrade?'LUZ ON':'LUZ OFF'}
+              </span>
             </div>
           </div>
 
-          {/* Grade */}
-          {historico.length===0?(
+          {/* ── Conteúdo condicional ── */}
+          {!luzGrade ? (
+            /* Estado OFF → ícone público */
+            <div style={{textAlign:'center',padding:'48px 20px',border:'1px dashed rgba(255,255,255,0.06)',borderRadius:16,animation:'fadeIn 0.4s ease-out'}}>
+              <div style={{fontSize:40,marginBottom:10,filter:'grayscale(1)',opacity:0.3}}>🔮</div>
+              <p style={{fontSize:11,color:'rgba(255,255,255,0.18)',fontFamily:"'Courier New',monospace",letterSpacing:2,margin:0}}>
+                GRADE DESLIGADA
+              </p>
+              <p style={{fontSize:10,color:'rgba(255,255,255,0.1)',marginTop:6,marginBottom:0}}>
+                Ligue para visualizar os tokens
+              </p>
+            </div>
+
+          ) : historico.length===0 ? (
             <div style={{textAlign:'center',padding:'40px 20px',color:'rgba(168,85,247,0.3)',fontSize:13,border:'1px dashed rgba(168,85,247,0.1)',borderRadius:16}}>
               <div style={{fontSize:32,marginBottom:10}}>🔮</div>
               <p>Nenhum token ainda — clique em <strong style={{color:'#00ff88'}}>+ Token</strong> para gerar</p>
             </div>
-          ):(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:14}}>
-              {tokensVis.map(t=>(
-                <TokenCard key={t.id} cota={t} onComprar={setModalToken} onDownload={baixarCert}/>
-              ))}
-            </div>
-          )}
 
-          {historico.length>0&&(
-            <div style={{textAlign:'center',marginTop:20,fontSize:10,color:'rgba(255,255,255,0.18)'}}>
-              {historico.length} token{historico.length!==1?'s':''} · Valor total: R$ {(historico.length*3600).toLocaleString('pt-BR')} · Salvo no dispositivo
-            </div>
+          ) : (
+            <>
+              {/* Cards */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:14}}>
+                {tokensVis.map(t=>(
+                  <TokenCard key={t.id} cota={t} onComprar={setModalToken} onDownload={baixarCert}/>
+                ))}
+              </div>
+
+              {/* ── Rodapé da grade: Quantidade Total + Download ── */}
+              <div style={{
+                marginTop:18,
+                display:'flex',
+                alignItems:'center',
+                justifyContent:'space-between',
+                flexWrap:'wrap',
+                gap:10,
+                padding:'14px 18px',
+                background:'rgba(0,0,0,0.25)',
+                border:'1px solid rgba(168,85,247,0.12)',
+                borderRadius:14,
+              }}>
+                <div style={{display:'flex',alignItems:'center',gap:10}}>
+                  <span style={{fontSize:10,color:'rgba(255,255,255,0.3)',letterSpacing:2,fontFamily:"'Courier New',monospace"}}>
+                    QUANTIDADE TOTAL
+                  </span>
+                  <span style={{
+                    fontSize:20,
+                    fontWeight:900,
+                    color:'#00ff88',
+                    fontFamily:"'Courier New',monospace",
+                    textShadow:'0 0 10px rgba(0,255,136,0.4)',
+                    lineHeight:1,
+                  }}>
+                    {historico.length}
+                  </span>
+                  <span style={{fontSize:10,color:'rgba(255,255,255,0.18)',fontFamily:"'Courier New',monospace"}}>
+                    · R$ {(historico.length*3600).toLocaleString('pt-BR')}
+                  </span>
+                </div>
+
+                <button
+                  onClick={baixarTodosCerts}
+                  disabled={tokensVis.length===0}
+                  style={{
+                    display:'flex',
+                    alignItems:'center',
+                    gap:6,
+                    padding:'8px 18px',
+                    background:'rgba(0,212,255,0.08)',
+                    border:'1px solid rgba(0,212,255,0.28)',
+                    borderRadius:10,
+                    color:'#00d4ff',
+                    fontSize:11,
+                    cursor:tokensVis.length?'pointer':'not-allowed',
+                    fontFamily:"'Courier New',monospace",
+                    letterSpacing:1,
+                    transition:'all 0.2s',
+                    opacity:tokensVis.length?1:0.4,
+                  }}
+                  onMouseEnter={e=>{if(tokensVis.length){e.currentTarget.style.background='rgba(0,212,255,0.16)';e.currentTarget.style.boxShadow='0 0 16px rgba(0,212,255,0.2)';}}}
+                  onMouseLeave={e=>{e.currentTarget.style.background='rgba(0,212,255,0.08)';e.currentTarget.style.boxShadow='none';}}
+                >
+                  <Download size={11}/> DOWNLOAD ({tokensVis.length})
+                </button>
+              </div>
+            </>
           )}
         </div>
 
