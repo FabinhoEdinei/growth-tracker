@@ -42,7 +42,7 @@ export const MenuDropdown = () => {
     {
       icon: '🧬',
       label: 'Perfil',
-      href: '/Perdi',
+      href: '/dashboard',
       badge: 'Beta',
       badgeColor: '#00d4ff',
       gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
