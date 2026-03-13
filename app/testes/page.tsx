@@ -2,548 +2,535 @@
 
 import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { Play, CheckCircle, XCircle, Clock, ChevronDown, ChevronRight, Terminal, RefreshCw } from 'lucide-react';
+import {
+  analisarTexto,
+  calcularValorPost,
+  calcularBloco,
+  gerarCota,
+  type PostData,
+  type CotaETF,
+} from '@/lib/etf-cota-engine';
 
-// ─── Tipos ───────────────────────────────────────────────────────────────────
-
+// ═════════════════════════════════════════════════════════════════════════════
+// TIPOS — Routes
+// ═════════════════════════════════════════════════════════════════════════════
 type RouteStatus = 'idle' | 'running' | 'pass' | 'fail' | 'warn' | 'skip';
 
 interface RouteTest {
-  id: string;
-  label: string;
-  path: string;
-  method?: string;
-  expectedStatus?: number; // se não informado, qualquer 2xx passa
-  expectRedirect?: boolean;
-  tags: string[];
+  id: string; label: string; path: string; method?: string;
+  expectedStatus?: number; tags: string[];
 }
 
-interface TestResult {
-  id: string;
-  label: string;
-  path: string;
-  tags: string[];
-  status: RouteStatus;
-  httpCode?: number;
-  expectedCode?: number;
-  latencyMs?: number;
-  retries: number;
+interface RouteResult {
+  id: string; label: string; path: string; tags: string[];
+  status: RouteStatus; httpCode?: number; expectedCode?: number;
+  latencyMs?: number; retries: number;
   headers?: Record<string, string>;
-  errorSnippet?: string; // primeiros 300 chars do body em caso de erro
-  redirectTo?: string;
-  timestamp: number;
+  errorSnippet?: string; redirectTo?: string; timestamp: number;
 }
 
-interface LogLine {
-  t: number;
-  text: string;
-  kind: 'info' | 'pass' | 'fail' | 'warn' | 'head';
+interface LogLine { t: number; text: string; kind: 'info' | 'pass' | 'fail' | 'warn' | 'head'; }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TIPOS — ETF Engine
+// ═════════════════════════════════════════════════════════════════════════════
+type EtfStatus = 'idle' | 'running' | 'pass' | 'fail';
+
+interface EtfResult {
+  status: EtfStatus; duracao: number;
+  entrada: unknown; saida: unknown;
+  erro?: string; detalhes: Record<string, unknown>;
 }
 
-// ─── Rotas a testar ───────────────────────────────────────────────────────────
+interface EtfTeste {
+  id: string; nome: string; descricao: string; icone: string; grupo: string;
+  fn: () => Promise<EtfResult>;
+}
 
+// ═════════════════════════════════════════════════════════════════════════════
+// ROTAS
+// ═════════════════════════════════════════════════════════════════════════════
 const ROUTE_TESTS: RouteTest[] = [
-  // Páginas
-  { id: 'home',      label: 'Home',           path: '/',                expectedStatus: 200, tags: ['page'] },
-  { id: 'dashboard', label: 'Dashboard',      path: '/dashboard',       expectedStatus: 200, tags: ['page'] },
-  { id: 'blog',      label: 'Blog (listagem)',path: '/blog',            expectedStatus: 200, tags: ['page'] },
-  { id: 'jornal',    label: 'Jornal',         path: '/jornal',          expectedStatus: 200, tags: ['page'] },
-  { id: 'tv',        label: 'TV Empresarial', path: '/tv-empresarial',  expectedStatus: 200, tags: ['page'] },
-  { id: 'testes',    label: 'Testes (self)',  path: '/testes',          expectedStatus: 200, tags: ['page'] },
-  // APIs
-  { id: 'api-code',  label: 'API /code-stats',path: '/api/code-stats',  expectedStatus: 200, method: 'GET', tags: ['api'] },
-  // 404 esperado (valida que a página de erro existe e retorna 404 correto)
+  { id: 'home',      label: 'Home',                  path: '/',                   expectedStatus: 200, tags: ['page'] },
+  { id: 'dashboard', label: 'Dashboard',             path: '/dashboard',          expectedStatus: 200, tags: ['page'] },
+  { id: 'blog',      label: 'Blog (listagem)',        path: '/blog',               expectedStatus: 200, tags: ['page'] },
+  { id: 'jornal',    label: 'Jornal',                path: '/jornal',             expectedStatus: 200, tags: ['page'] },
+  { id: 'tv',        label: 'TV Empresarial',        path: '/tv-empresarial',     expectedStatus: 200, tags: ['page'] },
+  { id: 'testes',    label: 'Testes (self)',          path: '/testes',             expectedStatus: 200, tags: ['page'] },
+  { id: 'pentaculos',label: 'Pentáculos',            path: '/pentaculos',         expectedStatus: 200, tags: ['page'] },
+  { id: 'api-code',  label: 'API /code-stats',       path: '/api/code-stats',     expectedStatus: 200, method: 'GET', tags: ['api'] },
+  { id: 'api-etf',   label: 'API /etf-cota',         path: '/api/etf-cota',       expectedStatus: 200, method: 'GET', tags: ['api', 'etf'] },
   { id: 'slug-404',  label: 'Blog slug inexistente', path: '/blog/__teste_404__', expectedStatus: 404, tags: ['page', '404'] },
 ];
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const RETRY_LIMIT = 2;
 const TIMEOUT_MS  = 8000;
 
-async function probeRoute(test: RouteTest): Promise<Omit<TestResult, 'timestamp'>> {
-  let lastError = '';
-  let retries   = 0;
-
+async function probeRoute(test: RouteTest): Promise<Omit<RouteResult, 'timestamp'>> {
+  let lastError = ''; let retries = 0;
   for (let attempt = 0; attempt <= RETRY_LIMIT; attempt++) {
     const t0 = Date.now();
     try {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-
-      const res = await fetch(test.path, {
-        method: test.method || 'GET',
-        redirect: 'manual',
-        cache: 'no-store',
-        signal: ctrl.signal,
-      });
+      const res = await fetch(test.path, { method: test.method || 'GET', redirect: 'manual', cache: 'no-store', signal: ctrl.signal });
       clearTimeout(timer);
-
-      const latencyMs = Date.now() - t0;
-      const code       = res.status;
-      const expected   = test.expectedStatus;
-
-      // Captura headers relevantes
+      const latencyMs = Date.now() - t0; const code = res.status;
       const headers: Record<string, string> = {};
-      ['content-type', 'cache-control', 'x-powered-by', 'location', 'x-deny-reason'].forEach(h => {
-        const v = res.headers.get(h);
-        if (v) headers[h] = v;
+      ['content-type','cache-control','x-powered-by','location','x-deny-reason'].forEach(h => {
+        const v = res.headers.get(h); if (v) headers[h] = v;
       });
-
       const redirectTo = headers['location'];
-
-      // Captura snippet do body só em casos de erro
       let errorSnippet: string | undefined;
-      if (code >= 400) {
-        try {
-          const text = await res.text();
-          // Remove tags HTML, pega texto puro
-          errorSnippet = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
-        } catch { /* ignore */ }
-      }
-
-      // Determina pass/fail/warn
-      let status: RouteStatus;
-      if (expected !== undefined) {
-        status = code === expected ? 'pass' : 'fail';
-      } else if (code >= 200 && code < 300) {
-        status = 'pass';
-      } else if (code >= 300 && code < 400) {
-        status = 'warn';
-      } else {
-        status = 'fail';
-      }
-
-      return {
-        id: test.id, label: test.label, path: test.path, tags: test.tags,
-        status, httpCode: code, expectedCode: expected,
-        latencyMs, retries, headers, errorSnippet, redirectTo,
-      };
-
+      if (code >= 400) { try { errorSnippet = (await res.text()).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,300); } catch {} }
+      const expected = test.expectedStatus;
+      const status: RouteStatus = expected !== undefined ? (code === expected ? 'pass' : 'fail') : code >= 200 && code < 300 ? 'pass' : code < 400 ? 'warn' : 'fail';
+      return { id: test.id, label: test.label, path: test.path, tags: test.tags, status, httpCode: code, expectedCode: expected, latencyMs, retries, headers, errorSnippet, redirectTo };
     } catch (e: any) {
       lastError = e?.name === 'AbortError' ? `Timeout (>${TIMEOUT_MS}ms)` : String(e?.message ?? e);
-      retries   = attempt;
+      retries = attempt;
       if (attempt < RETRY_LIMIT) await new Promise(r => setTimeout(r, 500));
     }
   }
-
-  return {
-    id: test.id, label: test.label, path: test.path, tags: test.tags,
-    status: 'fail', retries,
-    errorSnippet: lastError,
-  };
+  return { id: test.id, label: test.label, path: test.path, tags: test.tags, status: 'fail', retries, errorSnippet: lastError };
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// POSTS DE EXEMPLO
+// ═════════════════════════════════════════════════════════════════════════════
+const P_BLOG1: PostData = { titulo:'Como construir um sistema de crescimento digital', slug:'p1', date:'2024-03-15', category:'Estratégia', excerpt:'Um guia completo para rastrear e evoluir métricas empresariais usando tecnologia moderna.', tipo:'blog' };
+const P_BLOG2: PostData = { titulo:'Automação de relatórios com Next.js e TypeScript',  slug:'p2', date:'2024-06-01', category:'Tecnologia', excerpt:'Aprenda a criar pipelines de dados automatizados para monitorar o crescimento do seu negócio.', tipo:'blog' };
+const P_JORN:  PostData = { titulo:'Mercado digital em expansão: oportunidades para 2025', slug:'j1', date:'2024-11-20', category:'Economia', excerpt:'Análise das tendências do mercado digital e como posicionar sua empresa para o futuro.', tipo:'jornal' };
+const P_TV:    PostData = { titulo:'TV Empresarial Growth Tracker', slug:'tv', date: new Date().toISOString().split('T')[0], category:'TV', excerpt:'Dashboard de métricas e relatório diário do sistema de crescimento digital.', tipo:'tv' };
+const P_VAZIO: PostData = { titulo:'', slug:'vazio', date:'', category:'', excerpt:'', tipo:'blog' };
 
+// ═════════════════════════════════════════════════════════════════════════════
+// TESTES ETF
+// ═════════════════════════════════════════════════════════════════════════════
+function criarTestesEtf(): EtfTeste[] {
+  return [
+    // analisarTexto
+    { id:'t01', grupo:'analisarTexto()', icone:'🔤', nome:'Vogais peso 2x, consoantes 1x', descricao:'"aabb" → a=4, b=2',
+      fn: async () => { const t=performance.now(); const s=analisarTexto('aabb'); const d=performance.now()-t; const ok=s['a']===4&&s['b']===2; return { status:ok?'pass':'fail', duracao:d, entrada:'aabb', saida:s, erro:ok?undefined:`a=${s['a']} b=${s['b']}`, detalhes:{esperado:'a=4 b=2'} }; } },
+    { id:'t02', grupo:'analisarTexto()', icone:'🔤', nome:'Texto sem letras → {}', descricao:'"123 !@#" deve retornar objeto vazio',
+      fn: async () => { const t=performance.now(); const s=analisarTexto('123 !@#'); const d=performance.now()-t; const ok=Object.keys(s).length===0; return { status:ok?'pass':'fail', duracao:d, entrada:'123 !@#', saida:s, erro:ok?undefined:'Esperado {}', detalhes:{chaves:Object.keys(s)} }; } },
+    { id:'t03', grupo:'analisarTexto()', icone:'🔤', nome:'Acentos normalizados (á = a)', descricao:'analisarTexto("á") deve gerar mesmo resultado que analisarTexto("a")',
+      fn: async () => { const t=performance.now(); const s1=analisarTexto('a'); const s2=analisarTexto('á'); const d=performance.now()-t; const ok=s1['a']===s2['a']; return { status:ok?'pass':'fail', duracao:d, entrada:{a:'a',aacento:'á'}, saida:{s1,s2}, erro:ok?undefined:`a=${s1['a']} á=${s2['a']}`, detalhes:{} }; } },
+    { id:'t04', grupo:'analisarTexto()', icone:'🔤', nome:'Texto real do post blog', descricao:'Deve ter ≥10 letras únicas',
+      fn: async () => { const t=performance.now(); const txt=`${P_BLOG1.titulo} ${P_BLOG1.excerpt}`; const s=analisarTexto(txt); const d=performance.now()-t; const ok=Object.keys(s).length>=10; return { status:ok?'pass':'fail', duracao:d, entrada:txt.slice(0,60)+'...', saida:{ letrasUnicas:Object.keys(s).length, top5:Object.entries(s).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([l,v])=>`${l}=${v}`).join(' ') }, erro:ok?undefined:`Só ${Object.keys(s).length} letras`, detalhes:{} }; } },
+
+    // calcularValorPost
+    { id:'t05', grupo:'calcularValorPost()', icone:'🔢', nome:'Post real → valor > 0', descricao:'Deve retornar número positivo finito',
+      fn: async () => { const t=performance.now(); const s=calcularValorPost(P_BLOG1); const d=performance.now()-t; const ok=typeof s==='number'&&s>0&&Number.isFinite(s); return { status:ok?'pass':'fail', duracao:d, entrada:P_BLOG1.titulo, saida:s, erro:ok?undefined:`Valor inválido: ${s}`, detalhes:{tipo:typeof s} }; } },
+    { id:'t06', grupo:'calcularValorPost()', icone:'🔢', nome:'Posts diferentes → valores diferentes', descricao:'BLOG1 ≠ BLOG2',
+      fn: async () => { const t=performance.now(); const v1=calcularValorPost(P_BLOG1); const v2=calcularValorPost(P_BLOG2); const d=performance.now()-t; const ok=v1!==v2; return { status:ok?'pass':'fail', duracao:d, entrada:{p1:P_BLOG1.titulo.slice(0,30),p2:P_BLOG2.titulo.slice(0,30)}, saida:{v1,v2,diferenca:Math.abs(v1-v2)}, erro:ok?undefined:'Colisão! Valores iguais', detalhes:{} }; } },
+    { id:'t07', grupo:'calcularValorPost()', icone:'🔢', nome:'Post vazio → 0', descricao:'Sem texto deve retornar exatamente 0',
+      fn: async () => { const t=performance.now(); const s=calcularValorPost(P_VAZIO); const d=performance.now()-t; const ok=s===0; return { status:ok?'pass':'fail', duracao:d, entrada:P_VAZIO, saida:s, erro:ok?undefined:`Esperado 0, recebeu ${s}`, detalhes:{} }; } },
+    { id:'t08', grupo:'calcularValorPost()', icone:'🔢', nome:'Idempotência — mesmo resultado 2x', descricao:'Mesma entrada → mesmo valor sempre',
+      fn: async () => { const t=performance.now(); const v1=calcularValorPost(P_JORN); const v2=calcularValorPost(P_JORN); const d=performance.now()-t; const ok=v1===v2; return { status:ok?'pass':'fail', duracao:d, entrada:P_JORN.titulo, saida:{v1,v2}, erro:ok?undefined:`${v1} ≠ ${v2}`, detalhes:{} }; } },
+
+    // calcularBloco
+    { id:'t09', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco blog — peso 0.40 / contrib R$1.440', descricao:'Estrutura correta com 2 posts',
+      fn: async () => { const t=performance.now(); const s=calcularBloco([P_BLOG1,P_BLOG2],'blog'); const d=performance.now()-t; const ok=s.tipo==='blog'&&s.peso===0.40&&s.contribuicao===1440&&s.codigo.length===6&&s.posts.length===2; return { status:ok?'pass':'fail', duracao:d, entrada:{posts:2,tipo:'blog'}, saida:{tipo:s.tipo,peso:s.peso,contrib:s.contribuicao,codigo:s.codigo,posts:s.posts.length}, erro:ok?undefined:`peso=${s.peso} contrib=${s.contribuicao} codLen=${s.codigo.length}`, detalhes:{} }; } },
+    { id:'t10', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco jornal — peso 0.35 / contrib R$1.260', descricao:'',
+      fn: async () => { const t=performance.now(); const s=calcularBloco([P_JORN],'jornal'); const d=performance.now()-t; const ok=s.peso===0.35&&s.contribuicao===1260; return { status:ok?'pass':'fail', duracao:d, entrada:{posts:1,tipo:'jornal'}, saida:{peso:s.peso,contrib:s.contribuicao}, erro:ok?undefined:`peso=${s.peso} contrib=${s.contribuicao}`, detalhes:{} }; } },
+    { id:'t11', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco vazio — não quebra', descricao:'posts=[] → valor=0, código de 6 chars',
+      fn: async () => { const t=performance.now(); const s=calcularBloco([],'tv'); const d=performance.now()-t; const ok=s.valor===0&&s.codigo.length===6; return { status:ok?'pass':'fail', duracao:d, entrada:{posts:0,tipo:'tv'}, saida:{valor:s.valor,codigo:s.codigo}, erro:ok?undefined:`valor=${s.valor} codLen=${s.codigo.length}`, detalhes:{} }; } },
+    { id:'t12', grupo:'calcularBloco()', icone:'🧱', nome:'Código sem chars ambíguos (sem 0 O 1 I)', descricao:'Regex: /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/',
+      fn: async () => { const t=performance.now(); const s=calcularBloco([P_BLOG1,P_BLOG2],'blog').codigo; const d=performance.now()-t; const ok=/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(s); return { status:ok?'pass':'fail', duracao:d, entrada:'bloco com 2 posts', saida:s, erro:ok?undefined:`Chars inválidos em "${s}"`, detalhes:{regex:'/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/'} }; } },
+
+    // gerarCota
+    { id:'t13', grupo:'gerarCota()', icone:'💎', nome:'Estrutura completa (id, código, 3 blocos, R$3600)', descricao:'',
+      fn: async () => { const t=performance.now(); const s=gerarCota([P_BLOG1,P_BLOG2],[P_JORN],[P_TV]); const d=performance.now()-t; const ok=s.id.startsWith('GT')&&s.codigoCompleto.startsWith('GT-')&&s.blocos.length===3&&s.valorTotal===3600&&s.status==='disponivel'; return { status:ok?'pass':'fail', duracao:d, entrada:{blog:2,jornal:1,tv:1}, saida:{id:s.id,codigo:s.codigoCompleto,blocos:s.blocos.length,valor:s.valorTotal,status:s.status}, erro:ok?undefined:'Estrutura inválida', detalhes:{} }; } },
+    { id:'t14', grupo:'gerarCota()', icone:'💎', nome:'Formato GT-XXXXXX-XXXXXX-XXXXXX-XX', descricao:'5 partes separadas por hífen',
+      fn: async () => { const t=performance.now(); const s=gerarCota([P_BLOG1],[P_JORN],[P_TV]).codigoCompleto; const d=performance.now()-t; const partes=s.split('-'); const ok=partes.length===5&&partes[0]==='GT'&&partes[4].length===2; return { status:ok?'pass':'fail', duracao:d, entrada:'gerarCota', saida:s, erro:ok?undefined:`Partes=${partes.length} checksum="${partes[4]}"`, detalhes:{partes} }; } },
+    { id:'t15', grupo:'gerarCota()', icone:'💎', nome:'Soma dos pesos = 1.00 (100%)', descricao:'Blog 40% + Jornal 35% + TV 25%',
+      fn: async () => { const t=performance.now(); const c=gerarCota([P_BLOG1],[P_JORN],[P_TV]); const soma=c.blocos.reduce((a,b)=>a+b.peso,0); const d=performance.now()-t; const ok=Math.abs(soma-1)<0.001; return { status:ok?'pass':'fail', duracao:d, entrada:'blocos', saida:{soma,blocos:c.blocos.map(b=>({tipo:b.tipo,peso:b.peso}))}, erro:ok?undefined:`Soma=${soma}`, detalhes:{} }; } },
+    { id:'t16', grupo:'gerarCota()', icone:'💎', nome:'Soma das contribuições = R$3.600', descricao:'1440 + 1260 + 900 = 3600',
+      fn: async () => { const t=performance.now(); const c=gerarCota([P_BLOG1],[P_JORN],[P_TV]); const soma=c.blocos.reduce((a,b)=>a+b.contribuicao,0); const d=performance.now()-t; const ok=Math.abs(soma-3600)<0.01; return { status:ok?'pass':'fail', duracao:d, entrada:'blocos', saida:{soma,por:c.blocos.map(b=>({tipo:b.tipo,contrib:b.contribuicao}))}, erro:ok?undefined:`Soma=R$${soma}`, detalhes:{} }; } },
+    { id:'t17', grupo:'gerarCota()', icone:'💎', nome:'Cota vazia — não quebra', descricao:'gerarCota([], [], []) deve retornar cota válida',
+      fn: async () => { const t=performance.now(); let s:CotaETF|null=null; let erro:string|undefined; try{s=gerarCota([],[],[])}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=!erro&&s!==null&&s.blocos.length===3; return { status:ok?'pass':'fail', duracao:d, entrada:'[],[],[]', saida:s?{id:s.id,blocos:s.blocos.length}:null, erro, detalhes:{naoQuebrou:!erro} }; } },
+    { id:'t18', grupo:'gerarCota()', icone:'💎', nome:'IDs únicos entre chamadas', descricao:'Duas chamadas → IDs diferentes',
+      fn: async () => { const t=performance.now(); const c1=gerarCota([P_BLOG1],[P_JORN],[P_TV]); await new Promise(r=>setTimeout(r,2)); const c2=gerarCota([P_BLOG1],[P_JORN],[P_TV]); const d=performance.now()-t; const ok=c1.id!==c2.id; return { status:ok?'pass':'fail', duracao:d, entrada:'2x gerarCota()', saida:{id1:c1.id,id2:c2.id}, erro:ok?undefined:'Colisão de IDs!', detalhes:{} }; } },
+
+    // API
+    { id:'t19', grupo:'GET /api/etf-cota', icone:'🌐', nome:'HTTP 200', descricao:'Rota existe e responde',
+      fn: async () => { const t=performance.now(); let s:any=null,erro:string|undefined,st=0; try{const r=await fetch('/api/etf-cota');st=r.status;s=await r.json().catch(()=>r.text());}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=st===200&&!erro; return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:s, erro:ok?undefined:(erro??`HTTP ${st}`), detalhes:{httpStatus:st} }; } },
+    { id:'t20', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Campo "cota" com estrutura válida', descricao:'cota.codigoCompleto, cota.blocos, cota.status',
+      fn: async () => { const t=performance.now(); let s:any=null,erro:string|undefined; try{const r=await fetch('/api/etf-cota');s=await r.json();}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const c=s?.cota; const ok=!erro&&c&&c.codigoCompleto&&Array.isArray(c.blocos)&&c.status; return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:c??s, erro:ok?undefined:(erro??'Campo "cota" inválido'), detalhes:{temCodigo:!!c?.codigoCompleto,blocos:c?.blocos?.length,status:c?.status} }; } },
+    { id:'t21', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Campo "resumo" com postsBlog e postsJornal', descricao:'Contagens numéricas dos posts lidos do disco',
+      fn: async () => { const t=performance.now(); let s:any=null,erro:string|undefined; try{const r=await fetch('/api/etf-cota');s=await r.json();}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const res=s?.resumo; const ok=!erro&&res&&typeof res.postsBlog==='number'&&typeof res.postsJornal==='number'; return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:res??s, erro:ok?undefined:(erro??'"resumo" inválido'), detalhes:{postsBlog:res?.postsBlog,postsJornal:res?.postsJornal,debug:res?._debug} }; } },
+    { id:'t22', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Resposta em < 3s', descricao:'Latência da rota Next.js',
+      fn: async () => { const t=performance.now(); let erro:string|undefined; try{const r=await fetch('/api/etf-cota');await r.json();}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=!erro&&d<3000; return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:{ms:d.toFixed(0)+'ms'}, erro:ok?undefined:(erro??`Lento: ${d.toFixed(0)}ms`), detalhes:{limite:'3000ms'} }; } },
+  ];
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SHARED BADGE
+// ═════════════════════════════════════════════════════════════════════════════
 function Badge({ status }: { status: RouteStatus }) {
   const map: Record<RouteStatus, [string, string]> = {
-    idle:    ['#1e2235', '#4b5563'],
-    running: ['#0c1a2e', '#60a5fa'],
-    pass:    ['#052e16', '#4ade80'],
-    fail:    ['#2d0a0a', '#f87171'],
-    warn:    ['#1c1700', '#fbbf24'],
-    skip:    ['#1a1a1a', '#6b7280'],
+    idle: ['#1e2235','#4b5563'], running: ['#0c1a2e','#60a5fa'],
+    pass: ['#052e16','#4ade80'], fail: ['#2d0a0a','#f87171'],
+    warn: ['#1c1700','#fbbf24'], skip: ['#1a1a1a','#6b7280'],
   };
-  const labels: Record<RouteStatus, string> = {
-    idle: '—', running: 'RUN', pass: 'PASS', fail: 'FAIL', warn: 'WARN', skip: 'SKIP',
-  };
+  const labels: Record<RouteStatus, string> = { idle:'—', running:'RUN', pass:'PASS', fail:'FAIL', warn:'WARN', skip:'SKIP' };
   const [bg, fg] = map[status];
   return (
-    <span style={{
-      background: bg, color: fg, border: `1px solid ${fg}44`,
-      borderRadius: 5, padding: '2px 9px',
-      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-      fontSize: 11, fontWeight: 700, letterSpacing: 1,
-      display: 'inline-block', minWidth: 46, textAlign: 'center',
-    }}>
+    <span style={{ background:bg, color:fg, border:`1px solid ${fg}44`, borderRadius:5, padding:'2px 9px', fontFamily:"'JetBrains Mono','Fira Code',monospace", fontSize:11, fontWeight:700, letterSpacing:1, display:'inline-block', minWidth:46, textAlign:'center' }}>
       {labels[status]}
     </span>
   );
 }
 
-function HttpCode({ code, expected }: { code?: number; expected?: number }) {
-  if (!code) return null;
-  const match    = expected === undefined || code === expected;
-  const color    = match ? '#4ade80' : '#f87171';
-  return (
-    <span style={{
-      fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-      color, fontWeight: 700,
-    }}>
-      {code}{expected !== undefined && code !== expected && (
-        <span style={{ color: '#6b7280', fontWeight: 400 }}> (esperado {expected})</span>
-      )}
-    </span>
-  );
-}
-
-// ─── Page ────────────────────────────────────────────────────────────────────
-
+// ═════════════════════════════════════════════════════════════════════════════
+// PAGE
+// ═════════════════════════════════════════════════════════════════════════════
 export default function TestesPage() {
-  const [results,   setResults]   = useState<TestResult[]>([]);
-  const [log,       setLog]       = useState<LogLine[]>([]);
-  const [running,   setRunning]   = useState(false);
-  const [progress,  setProgress]  = useState({ current: 0, total: 0 });
-  const [expanded,  setExpanded]  = useState<string | null>(null);
-  const [filter,    setFilter]    = useState<'all' | 'fail' | 'pass' | 'warn'>('all');
+  const [aba, setAba] = useState<'routes' | 'etf'>('routes');
+
+  // ── Routes state ───────────────────────────────────────────────────────────
+  const [routeResults, setRouteResults] = useState<RouteResult[]>([]);
+  const [log,          setLog]          = useState<LogLine[]>([]);
+  const [routeRunning, setRouteRunning] = useState(false);
+  const [progress,     setProgress]     = useState({ current:0, total:0 });
+  const [expandedRoute,setExpandedRoute]= useState<string|null>(null);
+  const [filterRoute,  setFilterRoute]  = useState<'all'|'fail'|'pass'|'warn'>('all');
   const logRef = useRef<HTMLDivElement>(null);
 
+  // ── ETF state ──────────────────────────────────────────────────────────────
+  const testesEtf = criarTestesEtf();
+  const [etfResults,   setEtfResults]   = useState<Record<string, EtfResult>>({});
+  const [etfRunning,   setEtfRunning]   = useState<string|null>(null);
+  const [etfRunAll,    setEtfRunAll]    = useState(false);
+  const [expandedEtf,  setExpandedEtf]  = useState<string|null>(null);
+
+  // ── Routes helpers ─────────────────────────────────────────────────────────
   const pushLog = useCallback((text: string, kind: LogLine['kind'] = 'info') => {
-    const line: LogLine = { t: Date.now(), text, kind };
     setLog(prev => {
-      const next = [...prev, line];
-      setTimeout(() => logRef.current?.scrollTo({ top: 99999, behavior: 'smooth' }), 30);
+      const next = [...prev, { t:Date.now(), text, kind }];
+      setTimeout(() => logRef.current?.scrollTo({ top:99999, behavior:'smooth' }), 30);
       return next;
     });
   }, []);
 
-  const runAll = async () => {
-    setRunning(true);
-    setResults([]);
-    setLog([]);
-    setProgress({ current: 0, total: ROUTE_TESTS.length });
-
+  const runRoutes = async () => {
+    setRouteRunning(true); setRouteResults([]); setLog([]);
+    setProgress({ current:0, total:ROUTE_TESTS.length });
     pushLog('══════════════════════════════════════', 'head');
-    pushLog(` GROWTH TRACKER — ROUTE TEST SUITE`, 'head');
+    pushLog(' GROWTH TRACKER — ROUTE TEST SUITE', 'head');
     pushLog(` ${new Date().toLocaleString('pt-BR')}`, 'head');
     pushLog('══════════════════════════════════════', 'head');
     pushLog(`${ROUTE_TESTS.length} testes enfileirados`, 'info');
     pushLog('', 'info');
-
-    const session: TestResult[] = [];
-
-    for (let i = 0; i < ROUTE_TESTS.length; i++) {
+    const session: RouteResult[] = [];
+    for (let i=0; i<ROUTE_TESTS.length; i++) {
       const test = ROUTE_TESTS[i];
-      setProgress({ current: i + 1, total: ROUTE_TESTS.length });
-
-      // Marca como running
-      const pending: TestResult = {
-        ...test, status: 'running', retries: 0, timestamp: Date.now(),
-        expectedCode: test.expectedStatus,
-      };
-      setResults(prev => {
-        const exists = prev.find(r => r.id === test.id);
-        return exists ? prev.map(r => r.id === test.id ? pending : r) : [...prev, pending];
-      });
-
-      pushLog(`→ [${i + 1}/${ROUTE_TESTS.length}] ${test.label} (${test.path})`, 'info');
-
-      const raw    = await probeRoute(test);
-      const result: TestResult = { ...raw, timestamp: Date.now() };
-
+      setProgress({ current:i+1, total:ROUTE_TESTS.length });
+      const pending: RouteResult = { ...test, status:'running', retries:0, timestamp:Date.now(), expectedCode:test.expectedStatus };
+      setRouteResults(prev => { const e=prev.find(r=>r.id===test.id); return e?prev.map(r=>r.id===test.id?pending:r):[...prev,pending]; });
+      pushLog(`→ [${i+1}/${ROUTE_TESTS.length}] ${test.label} (${test.path})`, 'info');
+      const raw = await probeRoute(test);
+      const result: RouteResult = { ...raw, timestamp:Date.now() };
       session.push(result);
-      setResults(prev => prev.map(r => r.id === result.id ? result : r));
-
-      if (result.status === 'pass') {
-        pushLog(`  ✓ PASS ${result.httpCode} — ${result.latencyMs}ms${result.retries ? ` (retry ×${result.retries})` : ''}`, 'pass');
-      } else if (result.status === 'warn') {
-        pushLog(`  ⚠ WARN ${result.httpCode}${result.redirectTo ? ` → ${result.redirectTo}` : ''}`, 'warn');
-      } else {
-        pushLog(`  ✗ FAIL ${result.httpCode ?? 'NETWORK'} (esperado ${result.expectedCode ?? '2xx'})`, 'fail');
-        if (result.errorSnippet) {
-          pushLog(`    └ ${result.errorSnippet.slice(0, 120)}`, 'fail');
-        }
-      }
+      setRouteResults(prev => prev.map(r=>r.id===result.id?result:r));
+      if (result.status==='pass') pushLog(`  ✓ PASS ${result.httpCode} — ${result.latencyMs}ms${result.retries?` (retry ×${result.retries})`:''}`, 'pass');
+      else if (result.status==='warn') pushLog(`  ⚠ WARN ${result.httpCode}${result.redirectTo?` → ${result.redirectTo}`:''}`, 'warn');
+      else { pushLog(`  ✗ FAIL ${result.httpCode??'NETWORK'} (esperado ${result.expectedCode??'2xx'})`, 'fail'); if (result.errorSnippet) pushLog(`    └ ${result.errorSnippet.slice(0,120)}`, 'fail'); }
     }
-
-    // Sumário
-    const passed  = session.filter(r => r.status === 'pass').length;
-    const failed  = session.filter(r => r.status === 'fail').length;
-    const warned  = session.filter(r => r.status === 'warn').length;
-    const avgMs   = Math.round(session.reduce((s, r) => s + (r.latencyMs ?? 0), 0) / session.length);
-
+    const passed=session.filter(r=>r.status==='pass').length, failed=session.filter(r=>r.status==='fail').length, warned=session.filter(r=>r.status==='warn').length;
+    const avgMs=Math.round(session.reduce((s,r)=>s+(r.latencyMs??0),0)/session.length);
     pushLog('', 'info');
     pushLog('──────────────────────────────────────', 'head');
-    pushLog(` ✓ ${passed} passed   ✗ ${failed} failed   ⚠ ${warned} warn`, failed > 0 ? 'fail' : 'pass');
+    pushLog(` ✓ ${passed} passed   ✗ ${failed} failed   ⚠ ${warned} warn`, failed>0?'fail':'pass');
     pushLog(` latência média: ${avgMs}ms`, 'info');
     pushLog('──────────────────────────────────────', 'head');
-
-    setRunning(false);
+    setRouteRunning(false);
   };
 
-  const shown = results.filter(r =>
-    filter === 'all' ? true :
-    filter === 'fail' ? r.status === 'fail' :
-    filter === 'pass' ? r.status === 'pass' :
-    r.status === 'warn'
-  );
+  // ── ETF helpers ────────────────────────────────────────────────────────────
+  const rodarEtf = useCallback(async (teste: EtfTeste) => {
+    setEtfRunning(teste.id);
+    setEtfResults(prev => ({ ...prev, [teste.id]: { status:'running', duracao:0, entrada:null, saida:null, detalhes:{} } }));
+    try { const r = await teste.fn(); setEtfResults(prev => ({ ...prev, [teste.id]: r })); }
+    catch (e:any) { setEtfResults(prev => ({ ...prev, [teste.id]: { status:'fail', duracao:0, entrada:null, saida:null, erro:e?.message??String(e), detalhes:{} } })); }
+    setEtfRunning(null);
+  }, []);
 
-  const passed  = results.filter(r => r.status === 'pass').length;
-  const failed  = results.filter(r => r.status === 'fail').length;
-  const warned  = results.filter(r => r.status === 'warn').length;
-  const pct     = results.length > 0 ? Math.round((passed / results.length) * 100) : null;
+  const rodarTodosEtf = useCallback(async () => {
+    setEtfRunAll(true);
+    for (const t of testesEtf) { await rodarEtf(t); await new Promise(r=>setTimeout(r,80)); }
+    setEtfRunAll(false);
+  }, [testesEtf, rodarEtf]);
 
-  const S = {
-    page: {
-      minHeight: '100vh', background: '#080b12',
-      fontFamily: "'DM Sans', system-ui, sans-serif",
-      color: '#e2e8f0',
-      display: 'grid', gridTemplateColumns: '1fr',
-    } as React.CSSProperties,
-    wrap: {
-      maxWidth: 820, margin: '0 auto', padding: '32px 20px',
-    } as React.CSSProperties,
-    topBar: {
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      marginBottom: 32,
-    } as React.CSSProperties,
-    title: {
-      margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: -0.5,
-      display: 'flex', alignItems: 'center', gap: 10,
-    } as React.CSSProperties,
-    back: {
-      color: '#4b5563', fontSize: 13, textDecoration: 'none',
-      padding: '6px 14px', border: '1px solid #1e2235', borderRadius: 8,
-    } as React.CSSProperties,
+  // ── Derived ────────────────────────────────────────────────────────────────
+  const rShown = routeResults.filter(r => filterRoute==='all'?true:r.status===filterRoute);
+  const rPass  = routeResults.filter(r=>r.status==='pass').length;
+  const rFail  = routeResults.filter(r=>r.status==='fail').length;
+  const rWarn  = routeResults.filter(r=>r.status==='warn').length;
+  const rPct   = routeResults.length>0 ? Math.round((rPass/routeResults.length)*100) : null;
+
+  const etfGrupos = [...new Set(testesEtf.map(t=>t.grupo))];
+  const etfPass   = testesEtf.filter(t=>etfResults[t.id]?.status==='pass').length;
+  const etfFail   = testesEtf.filter(t=>etfResults[t.id]?.status==='fail').length;
+  const etfTotal  = testesEtf.length;
+
+  const etfStatusCor = (s: EtfStatus) => ({ idle:'rgba(255,255,255,0.18)', running:'#00d4ff', pass:'#00ff88', fail:'#ff4d6d' }[s]);
+
+  const EtfIcon = ({ s }: { s: EtfStatus }) => {
+    if (s==='running') return <RefreshCw size={13} style={{ animation:'spin 0.8s linear infinite', color:'#00d4ff' }}/>;
+    if (s==='pass')    return <CheckCircle size={13} style={{ color:'#00ff88' }}/>;
+    if (s==='fail')    return <XCircle size={13} style={{ color:'#ff4d6d' }}/>;
+    return <div style={{ width:13, height:13, borderRadius:'50%', border:'2px solid rgba(255,255,255,0.12)' }}/>;
   };
+
+  // ─── ABA BADGE (contador de falhas) ───────────────────────────────────────
+  const AbaBadge = ({ n, cor }: { n: number; cor: string }) => n > 0 ? (
+    <span style={{ marginLeft:6, background:cor+'22', color:cor, borderRadius:10, fontSize:10, padding:'1px 6px', fontWeight:700 }}>{n}</span>
+  ) : null;
 
   return (
-    <div style={S.page}>
-      <div style={S.wrap}>
+    <div style={{ minHeight:'100vh', background:'#080b12', fontFamily:"'DM Sans',system-ui,sans-serif", color:'#e2e8f0' }}>
+      <div style={{ maxWidth:820, margin:'0 auto', padding:'28px 16px 60px' }}>
 
         {/* Top bar */}
-        <div style={S.topBar}>
-          <h1 style={S.title}>
-            <span style={{ fontSize: 18 }}>🛰️</span> Route Test Suite
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24 }}>
+          <h1 style={{ margin:0, fontSize:20, fontWeight:700, display:'flex', alignItems:'center', gap:10 }}>
+            <span>🛰️</span> Test Suite
           </h1>
-          <Link href="/" style={S.back}>← Voltar</Link>
+          <Link href="/" style={{ color:'#4b5563', fontSize:13, textDecoration:'none', padding:'6px 14px', border:'1px solid #1e2235', borderRadius:8 }}>← Voltar</Link>
         </div>
 
-        {/* Scoreboard */}
-        {results.length > 0 && (
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 10, marginBottom: 20,
-          }}>
-            {[
-              { label: 'Passed',  val: passed,  color: '#4ade80' },
-              { label: 'Failed',  val: failed,  color: '#f87171' },
-              { label: 'Warned',  val: warned,  color: '#fbbf24' },
-              { label: 'Taxa',    val: pct !== null ? `${pct}%` : '—', color: pct === 100 ? '#4ade80' : pct !== null && pct < 70 ? '#f87171' : '#fbbf24' },
-            ].map(s => (
-              <div key={s.label} style={{
-                background: '#0d1117', border: '1px solid #1e2235',
-                borderRadius: 10, padding: '14px 18px', textAlign: 'center',
-              }}>
-                <div style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: 'monospace' }}>{s.val}</div>
-                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Progress bar */}
-        {running && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{
-              height: 3, background: '#1e2235', borderRadius: 99, overflow: 'hidden',
+        {/* Abas */}
+        <div style={{ display:'flex', gap:4, marginBottom:24, borderBottom:'1px solid #1e2235', paddingBottom:0 }}>
+          {([
+            { key:'routes', label:'🛰️ Rotas HTTP', fail:rFail },
+            { key:'etf',    label:'⚙️ ETF Engine',  fail:etfFail },
+          ] as const).map(({ key, label, fail }) => (
+            <button key={key} onClick={()=>setAba(key)} style={{
+              padding:'9px 18px', fontSize:13, fontWeight:700, cursor:'pointer', border:'none',
+              background:'none', borderBottom:aba===key?'2px solid #6366f1':'2px solid transparent',
+              color:aba===key?'#e2e8f0':'#4b5563', transition:'all 0.2s', display:'flex', alignItems:'center',
             }}>
-              <div style={{
-                height: '100%', borderRadius: 99,
-                background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
-                width: `${(progress.current / progress.total) * 100}%`,
-                transition: 'width .3s ease',
-              }} />
-            </div>
-            <div style={{ fontSize: 12, color: '#4b5563', marginTop: 6, fontFamily: 'monospace' }}>
-              {progress.current}/{progress.total} — testando rotas...
-            </div>
-          </div>
-        )}
-
-        {/* Controls */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-          <button
-            onClick={runAll}
-            disabled={running}
-            style={{
-              background: running ? '#1e2235' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
-              color: running ? '#4b5563' : '#fff',
-              border: 'none', borderRadius: 10,
-              padding: '11px 24px', fontWeight: 700, fontSize: 14,
-              cursor: running ? 'not-allowed' : 'pointer',
-              letterSpacing: 0.3,
-            }}
-          >
-            {running ? `⏳ Executando ${progress.current}/${progress.total}...` : '▶ Executar Todos os Testes'}
-          </button>
-
-          {results.length > 0 && (['all', 'pass', 'fail', 'warn'] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{
-              background: filter === f ? '#1e2235' : 'transparent',
-              color: filter === f ? '#e2e8f0' : '#4b5563',
-              border: `1px solid ${filter === f ? '#374151' : '#1e2235'}`,
-              borderRadius: 8, padding: '8px 16px', fontSize: 12,
-              cursor: 'pointer', fontWeight: 600, textTransform: 'uppercase',
-              letterSpacing: 0.8,
-            }}>
-              {f === 'all' ? `Todos (${results.length})` :
-               f === 'pass' ? `✓ ${passed}` :
-               f === 'fail' ? `✗ ${failed}` : `⚠ ${warned}`}
+              {label}<AbaBadge n={fail} cor="#f87171"/>
             </button>
           ))}
         </div>
 
-        {/* Results list */}
-        {shown.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
-            {shown.map(r => (
-              <div
-                key={r.id}
-                onClick={() => setExpanded(expanded === r.id ? null : r.id)}
-                style={{
-                  background: '#0d1117',
-                  border: `1px solid ${r.status === 'fail' ? '#f8717133' : r.status === 'pass' ? '#4ade8022' : r.status === 'warn' ? '#fbbf2422' : '#1e2235'}`,
-                  borderRadius: 10, padding: '14px 18px',
-                  cursor: 'pointer', transition: 'border .15s',
-                }}
-              >
-                {/* Row */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-                    <Badge status={r.status} />
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{r.label}</div>
-                      <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#4b5563', marginTop: 1 }}>{r.path}</div>
-                    </div>
+        {/* ══ ABA ROUTES ════════════════════════════════════════════════════ */}
+        {aba === 'routes' && (
+          <>
+            {routeResults.length > 0 && (
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:20 }}>
+                {[
+                  { label:'Passed', val:rPass,  color:'#4ade80' },
+                  { label:'Failed', val:rFail,  color:'#f87171' },
+                  { label:'Warned', val:rWarn,  color:'#fbbf24' },
+                  { label:'Taxa',   val:rPct!==null?`${rPct}%`:'—', color:rPct===100?'#4ade80':rPct!==null&&rPct<70?'#f87171':'#fbbf24' },
+                ].map(s => (
+                  <div key={s.label} style={{ background:'#0d1117', border:'1px solid #1e2235', borderRadius:10, padding:'14px 18px', textAlign:'center' }}>
+                    <div style={{ fontSize:22, fontWeight:800, color:s.color, fontFamily:'monospace' }}>{s.val}</div>
+                    <div style={{ fontSize:11, color:'#6b7280', marginTop:2, textTransform:'uppercase', letterSpacing:1 }}>{s.label}</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
-                    <HttpCode code={r.httpCode} expected={r.expectedCode} />
-                    {r.latencyMs !== undefined && (
-                      <span style={{ fontFamily: 'monospace', fontSize: 12, color: r.latencyMs > 2000 ? '#fbbf24' : '#6b7280' }}>
-                        {r.latencyMs}ms
-                      </span>
-                    )}
-                    {r.retries > 0 && (
-                      <span style={{ fontSize: 11, color: '#fbbf24' }}>retry ×{r.retries}</span>
-                    )}
-                    <span style={{ color: '#374151', fontSize: 12 }}>{expanded === r.id ? '▲' : '▼'}</span>
-                  </div>
+                ))}
+              </div>
+            )}
+
+            {routeRunning && (
+              <div style={{ marginBottom:16 }}>
+                <div style={{ height:3, background:'#1e2235', borderRadius:99, overflow:'hidden' }}>
+                  <div style={{ height:'100%', borderRadius:99, background:'linear-gradient(90deg,#6366f1,#8b5cf6)', width:`${(progress.current/progress.total)*100}%`, transition:'width .3s ease' }}/>
                 </div>
+                <div style={{ fontSize:12, color:'#4b5563', marginTop:6, fontFamily:'monospace' }}>{progress.current}/{progress.total} — testando rotas...</div>
+              </div>
+            )}
 
-                {/* Expanded details */}
-                {expanded === r.id && (
-                  <div style={{
-                    marginTop: 14, paddingTop: 14,
-                    borderTop: '1px solid #1e2235',
-                    display: 'flex', flexDirection: 'column', gap: 8,
-                  }}>
-                    {/* Tags */}
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      {r.tags.map(t => (
-                        <span key={t} style={{
-                          background: '#1e2235', color: '#6b7280',
-                          borderRadius: 4, padding: '2px 8px', fontSize: 11,
-                          fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: 0.8,
-                        }}>{t}</span>
-                      ))}
-                    </div>
+            <div style={{ display:'flex', gap:10, marginBottom:20, flexWrap:'wrap' }}>
+              <button onClick={runRoutes} disabled={routeRunning} style={{ background:routeRunning?'#1e2235':'linear-gradient(135deg,#6366f1,#7c3aed)', color:routeRunning?'#4b5563':'#fff', border:'none', borderRadius:10, padding:'11px 24px', fontWeight:700, fontSize:14, cursor:routeRunning?'not-allowed':'pointer' }}>
+                {routeRunning ? `⏳ ${progress.current}/${progress.total}...` : '▶ Executar Todos'}
+              </button>
+              {routeResults.length > 0 && (['all','pass','fail','warn'] as const).map(f => (
+                <button key={f} onClick={()=>setFilterRoute(f)} style={{ background:filterRoute===f?'#1e2235':'transparent', color:filterRoute===f?'#e2e8f0':'#4b5563', border:`1px solid ${filterRoute===f?'#374151':'#1e2235'}`, borderRadius:8, padding:'8px 16px', fontSize:12, cursor:'pointer', fontWeight:600, textTransform:'uppercase', letterSpacing:0.8 }}>
+                  {f==='all'?`Todos (${routeResults.length})`:f==='pass'?`✓ ${rPass}`:f==='fail'?`✗ ${rFail}`:`⚠ ${rWarn}`}
+                </button>
+              ))}
+            </div>
 
-                    {/* Headers */}
-                    {r.headers && Object.keys(r.headers).length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Headers</div>
-                        {Object.entries(r.headers).map(([k, v]) => (
-                          <div key={k} style={{ fontFamily: 'monospace', fontSize: 12, color: '#9ca3af' }}>
-                            <span style={{ color: '#6366f1' }}>{k}:</span> {v}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Redirect */}
-                    {r.redirectTo && (
-                      <div style={{ fontFamily: 'monospace', fontSize: 12 }}>
-                        <span style={{ color: '#fbbf24' }}>→ Redireciona para: </span>
-                        <span style={{ color: '#e2e8f0' }}>{r.redirectTo}</span>
-                      </div>
-                    )}
-
-                    {/* Error body snippet */}
-                    {r.errorSnippet && (
-                      <div>
-                        <div style={{ fontSize: 11, color: '#4b5563', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Resposta / Erro</div>
-                        <div style={{
-                          background: '#140a0a', border: '1px solid #f8717122',
-                          borderRadius: 6, padding: '10px 12px',
-                          fontFamily: 'monospace', fontSize: 12, color: '#fca5a5',
-                          whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                          maxHeight: 120, overflowY: 'auto',
-                        }}>
-                          {r.errorSnippet}
+            {rShown.length > 0 && (
+              <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:24 }}>
+                {rShown.map(r => (
+                  <div key={r.id} onClick={()=>setExpandedRoute(expandedRoute===r.id?null:r.id)} style={{ background:'#0d1117', border:`1px solid ${r.status==='fail'?'#f8717133':r.status==='pass'?'#4ade8022':r.status==='warn'?'#fbbf2422':'#1e2235'}`, borderRadius:10, padding:'14px 18px', cursor:'pointer' }}>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:12, minWidth:0 }}>
+                        <Badge status={r.status}/>
+                        <div>
+                          <div style={{ fontWeight:600, fontSize:14 }}>{r.label}</div>
+                          <div style={{ fontFamily:'monospace', fontSize:11, color:'#4b5563', marginTop:1 }}>{r.path}</div>
                         </div>
                       </div>
-                    )}
-
-                    <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#374151' }}>
-                      {new Date(r.timestamp).toLocaleTimeString('pt-BR')}
+                      <div style={{ display:'flex', alignItems:'center', gap:16, flexShrink:0 }}>
+                        {r.httpCode && <span style={{ fontFamily:'monospace', fontSize:12, color:r.expectedCode===undefined||r.httpCode===r.expectedCode?'#4ade80':'#f87171', fontWeight:700 }}>{r.httpCode}{r.expectedCode!==undefined&&r.httpCode!==r.expectedCode&&<span style={{ color:'#6b7280', fontWeight:400 }}> (esp {r.expectedCode})</span>}</span>}
+                        {r.latencyMs!==undefined && <span style={{ fontFamily:'monospace', fontSize:12, color:r.latencyMs>2000?'#fbbf24':'#6b7280' }}>{r.latencyMs}ms</span>}
+                        {r.retries>0 && <span style={{ fontSize:11, color:'#fbbf24' }}>retry ×{r.retries}</span>}
+                        <span style={{ color:'#374151', fontSize:12 }}>{expandedRoute===r.id?'▲':'▼'}</span>
+                      </div>
                     </div>
+                    {expandedRoute===r.id && (
+                      <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid #1e2235', display:'flex', flexDirection:'column', gap:8 }}>
+                        <div style={{ display:'flex', gap:6 }}>{r.tags.map(t=><span key={t} style={{ background:'#1e2235', color:'#6b7280', borderRadius:4, padding:'2px 8px', fontSize:11, fontFamily:'monospace', textTransform:'uppercase', letterSpacing:0.8 }}>{t}</span>)}</div>
+                        {r.headers && Object.keys(r.headers).length > 0 && (
+                          <div>{Object.entries(r.headers).map(([k,v])=><div key={k} style={{ fontFamily:'monospace', fontSize:12, color:'#9ca3af' }}><span style={{ color:'#6366f1' }}>{k}:</span> {v}</div>)}</div>
+                        )}
+                        {r.redirectTo && <div style={{ fontFamily:'monospace', fontSize:12 }}><span style={{ color:'#fbbf24' }}>→ </span><span>{r.redirectTo}</span></div>}
+                        {r.errorSnippet && (
+                          <div style={{ background:'#140a0a', border:'1px solid #f8717122', borderRadius:6, padding:'10px 12px', fontFamily:'monospace', fontSize:12, color:'#fca5a5', whiteSpace:'pre-wrap', wordBreak:'break-word', maxHeight:120, overflowY:'auto' }}>{r.errorSnippet}</div>
+                        )}
+                        <div style={{ fontFamily:'monospace', fontSize:11, color:'#374151' }}>{new Date(r.timestamp).toLocaleTimeString('pt-BR')}</div>
+                      </div>
+                    )}
                   </div>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+
+            {routeResults.length===0 && !routeRunning && (
+              <div style={{ background:'#0d1117', border:'1px dashed #1e2235', borderRadius:12, padding:'48px 24px', textAlign:'center' }}>
+                <div style={{ fontSize:32, marginBottom:12 }}>🔬</div>
+                <div style={{ fontWeight:600, marginBottom:6 }}>Nenhum teste executado</div>
+                <div style={{ color:'#4b5563', fontSize:13 }}>Clique em <strong style={{ color:'#6366f1' }}>▶ Executar</strong> para verificar todas as rotas</div>
+              </div>
+            )}
+
+            {log.length > 0 && (
+              <div style={{ marginTop:8 }}>
+                <div style={{ fontSize:11, color:'#4b5563', textTransform:'uppercase', letterSpacing:1, marginBottom:8 }}>Log de execução</div>
+                <div ref={logRef} style={{ background:'#050709', border:'1px solid #1e2235', borderRadius:10, padding:'14px 16px', fontFamily:"'JetBrains Mono','Fira Code',monospace", fontSize:12, lineHeight:1.7, maxHeight:300, overflowY:'auto' }}>
+                  {log.map((l,i)=>(
+                    <div key={i} style={{ color:l.kind==='pass'?'#4ade80':l.kind==='fail'?'#f87171':l.kind==='warn'?'#fbbf24':l.kind==='head'?'#6366f1':'#6b7280' }}>{l.text||'\u00a0'}</div>
+                  ))}
+                  {routeRunning && <div style={{ color:'#60a5fa' }}>▌</div>}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Empty state */}
-        {results.length === 0 && !running && (
-          <div style={{
-            background: '#0d1117', border: '1px dashed #1e2235',
-            borderRadius: 12, padding: '48px 24px', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>🔬</div>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Nenhum teste executado</div>
-            <div style={{ color: '#4b5563', fontSize: 13 }}>
-              Clique em <strong style={{ color: '#6366f1' }}>▶ Executar</strong> para verificar todas as rotas
-            </div>
-          </div>
-        )}
-
-        {/* Terminal log */}
-        {log.length > 0 && (
-          <div style={{ marginTop: 8 }}>
-            <div style={{
-              fontSize: 11, color: '#4b5563', textTransform: 'uppercase',
-              letterSpacing: 1, marginBottom: 8,
-            }}>Log de execução</div>
-            <div
-              ref={logRef}
-              style={{
-                background: '#050709', border: '1px solid #1e2235',
-                borderRadius: 10, padding: '14px 16px',
-                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                fontSize: 12, lineHeight: 1.7,
-                maxHeight: 300, overflowY: 'auto',
-              }}
-            >
-              {log.map((l, i) => (
-                <div key={i} style={{
-                  color: l.kind === 'pass' ? '#4ade80' :
-                         l.kind === 'fail' ? '#f87171' :
-                         l.kind === 'warn' ? '#fbbf24' :
-                         l.kind === 'head' ? '#6366f1' : '#6b7280',
-                }}>
-                  {l.text || '\u00a0'}
+        {/* ══ ABA ETF ═══════════════════════════════════════════════════════ */}
+        {aba === 'etf' && (
+          <>
+            {/* Placar ETF */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:20 }}>
+              {[
+                { label:'TOTAL',   val:etfTotal,              cor:'rgba(255,255,255,0.6)' },
+                { label:'PASSOU',  val:etfPass,               cor:'#00ff88' },
+                { label:'FALHOU',  val:etfFail,               cor:'#ff4d6d' },
+                { label:'PENDENTE',val:etfTotal-etfPass-etfFail, cor:'rgba(255,255,255,0.3)' },
+              ].map(({ label, val, cor }) => (
+                <div key={label} style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, padding:'14px 10px', textAlign:'center' }}>
+                  <div style={{ fontSize:22, fontWeight:900, color:cor, fontFamily:'monospace', lineHeight:1 }}>{val}</div>
+                  <div style={{ fontSize:9, color:'rgba(255,255,255,0.3)', letterSpacing:2, marginTop:4 }}>{label}</div>
                 </div>
               ))}
-              {running && (
-                <div style={{ color: '#60a5fa', animation: 'pulse 1s infinite' }}>▌</div>
-              )}
             </div>
-          </div>
+
+            {etfTotal > 0 && (etfPass+etfFail) > 0 && (
+              <div style={{ height:4, background:'rgba(255,255,255,0.06)', borderRadius:2, marginBottom:20, overflow:'hidden' }}>
+                <div style={{ height:'100%', width:`${(etfPass/etfTotal)*100}%`, background:'linear-gradient(90deg,#00ff88,#00d4ff)', borderRadius:2, transition:'width 0.5s ease' }}/>
+              </div>
+            )}
+
+            <div style={{ display:'flex', gap:8, marginBottom:24 }}>
+              <button onClick={rodarTodosEtf} disabled={etfRunAll} style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 20px', background:etfRunAll?'rgba(0,212,255,0.10)':'rgba(0,255,136,0.12)', border:`1px solid ${etfRunAll?'rgba(0,212,255,0.4)':'rgba(0,255,136,0.40)'}`, borderRadius:20, color:etfRunAll?'#00d4ff':'#00ff88', fontSize:12, cursor:etfRunAll?'not-allowed':'pointer', fontWeight:700, letterSpacing:1 }}>
+                <Play size={11} style={{ animation:etfRunAll?'spin 1s linear infinite':'none' }}/>{etfRunAll?'RODANDO...':'▶ RODAR TODOS'}
+              </button>
+            </div>
+
+            {/* Grupos */}
+            {etfGrupos.map(grupo => {
+              const lista = testesEtf.filter(t=>t.grupo===grupo);
+              const gPass = lista.filter(t=>etfResults[t.id]?.status==='pass').length;
+              const gFail = lista.filter(t=>etfResults[t.id]?.status==='fail').length;
+              return (
+                <div key={grupo} style={{ marginBottom:18 }}>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8, padding:'7px 14px', background:'rgba(99,102,241,0.07)', border:'1px solid rgba(99,102,241,0.18)', borderRadius:9 }}>
+                    <span style={{ fontSize:12, color:'#818cf8', fontWeight:700, letterSpacing:1, fontFamily:'monospace' }}>{grupo}</span>
+                    <div style={{ display:'flex', gap:8 }}>
+                      {gPass>0 && <span style={{ fontSize:10, color:'#00ff88', fontWeight:700 }}>{gPass} ✓</span>}
+                      {gFail>0 && <span style={{ fontSize:10, color:'#ff4d6d', fontWeight:700 }}>{gFail} ✗</span>}
+                      <span style={{ fontSize:10, color:'rgba(255,255,255,0.25)' }}>{lista.length} testes</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+                    {lista.map(teste => {
+                      const res = etfResults[teste.id];
+                      const st: EtfStatus = res?.status ?? 'idle';
+                      const cor = etfStatusCor(st);
+                      const isExp = expandedEtf === teste.id;
+                      return (
+                        <div key={teste.id} style={{ border:`1px solid ${st==='idle'?'rgba(255,255,255,0.07)':cor+'40'}`, borderRadius:9, overflow:'hidden', background:st==='fail'?'rgba(255,77,109,0.04)':st==='pass'?'rgba(0,255,136,0.03)':'rgba(255,255,255,0.02)' }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'11px 14px' }}>
+                            <EtfIcon s={st}/>
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:600 }}>{teste.icone} {teste.nome}</div>
+                              {teste.descricao && <div style={{ fontSize:10, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{teste.descricao}</div>}
+                            </div>
+                            {res?.duracao>0 && <div style={{ fontSize:9, color:'rgba(255,255,255,0.25)', whiteSpace:'nowrap' }}><Clock size={8} style={{ display:'inline', marginRight:3 }}/>{res.duracao.toFixed(1)}ms</div>}
+                            <div style={{ display:'flex', gap:5 }}>
+                              <button onClick={()=>rodarEtf(teste)} disabled={etfRunning===teste.id||etfRunAll} style={{ padding:'4px 10px', background:'rgba(0,255,136,0.08)', border:'1px solid rgba(0,255,136,0.25)', borderRadius:6, color:'#00ff88', fontSize:10, cursor:'pointer', display:'flex', alignItems:'center', gap:4, fontWeight:700 }}>
+                                <Play size={8}/> RUN
+                              </button>
+                              {res && <button onClick={()=>setExpandedEtf(isExp?null:teste.id)} style={{ padding:'4px 8px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.10)', borderRadius:6, color:'rgba(255,255,255,0.5)', fontSize:10, cursor:'pointer' }}>
+                                {isExp?<ChevronDown size={10}/>:<ChevronRight size={10}/>}
+                              </button>}
+                            </div>
+                          </div>
+
+                          {st==='fail' && res?.erro && !isExp && (
+                            <div style={{ padding:'5px 14px 10px', fontSize:10, color:'#ff4d6d', borderTop:'1px solid rgba(255,77,109,0.15)' }}>⚠ {res.erro}</div>
+                          )}
+
+                          {isExp && res && (
+                            <div style={{ borderTop:`1px solid ${cor}25`, padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
+                              {res.erro && <div style={{ padding:'7px 10px', background:'rgba(255,77,109,0.08)', border:'1px solid rgba(255,77,109,0.25)', borderRadius:6, fontSize:11, color:'#ff4d6d' }}>⚠ {res.erro}</div>}
+                              {[
+                                { label:'📥 ENTRADA', valor:res.entrada },
+                                { label:'📤 SAÍDA',   valor:res.saida },
+                                { label:'🔍 DETALHES',valor:res.detalhes },
+                              ].map(({ label, valor }) => (
+                                <div key={label}>
+                                  <div style={{ fontSize:9, color:'rgba(255,255,255,0.3)', letterSpacing:2, marginBottom:4 }}>{label}</div>
+                                  <pre style={{ margin:0, padding:'9px 11px', background:'rgba(0,0,0,0.45)', borderRadius:6, fontSize:10, color:'rgba(255,255,255,0.7)', overflowX:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all', lineHeight:1.6 }}>{JSON.stringify(valor,null,2)}</pre>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </>
         )}
 
-        {/* Add routes hint */}
-        <div style={{
-          marginTop: 28, padding: '12px 16px',
-          background: '#0d1117', border: '1px solid #1e2235',
-          borderRadius: 8, fontSize: 12, color: '#4b5563',
-        }}>
-          💡 Para adicionar rotas, edite o array <code style={{ color: '#6366f1', background: '#12162a', padding: '1px 6px', borderRadius: 4 }}>ROUTE_TESTS</code> no topo deste arquivo.
-          Cada teste aceita <code style={{ color: '#6366f1', background: '#12162a', padding: '1px 6px', borderRadius: 4 }}>expectedStatus</code> para validar o código HTTP exato.
+        {/* Dica inferior */}
+        <div style={{ marginTop:28, padding:'12px 16px', background:'#0d1117', border:'1px solid #1e2235', borderRadius:8, fontSize:12, color:'#4b5563' }}>
+          {aba==='routes'
+            ? <>💡 Edite o array <code style={{ color:'#6366f1', background:'#12162a', padding:'1px 6px', borderRadius:4 }}>ROUTE_TESTS</code> para adicionar rotas. Use <code style={{ color:'#6366f1', background:'#12162a', padding:'1px 6px', borderRadius:4 }}>expectedStatus</code> para validar o código HTTP exato.</>
+            : <>⚙️ Testa cada função do <code style={{ color:'#00ff88', background:'#081408', padding:'1px 6px', borderRadius:4 }}>etf-cota-engine.ts</code> + a rota <code style={{ color:'#00ff88', background:'#081408', padding:'1px 6px', borderRadius:4 }}>/api/etf-cota</code> em tempo real.</>
+          }
         </div>
-
       </div>
+
+      <style jsx global>{`
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width:4px; height:4px; }
+        ::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.3); border-radius:2px; }
+      `}</style>
     </div>
   );
 }
