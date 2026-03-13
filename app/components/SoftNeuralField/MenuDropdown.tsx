@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { AlgaeIcon } from '../Blog/AlgaeIcon';
 import { BlogIcon } from '../Blog/BlogIcon';
@@ -16,572 +17,203 @@ interface MenuItem {
   gradient: string;
 }
 
+const menuItems: MenuItem[] = [
+  { icon: <BlogIcon size={22} />,   label: 'Blog',             href: '/blog',           badge: 'Hot',  badgeColor: '#00ff88', gradient: 'linear-gradient(135deg,rgba(0,255,136,0.25),rgba(45,90,61,0.2))' },
+  { icon: <AlgaeIcon size={22} />,  label: 'Dashboard Algas',  href: '/dashboard-algas',badge: 'Beta', badgeColor: '#00ff88', gradient: 'linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,168,107,0.2))' },
+  { icon: '🧬',                     label: 'Perfil',            href: '/dashboard',      badge: 'Beta', badgeColor: '#00d4ff', gradient: 'linear-gradient(135deg,rgba(0,212,255,0.2),rgba(148,0,211,0.2))' },
+  { icon: <TVIcon size={22} />,     label: 'TV Empresarial',   href: '/tv-empresarial',                                       gradient: 'linear-gradient(135deg,rgba(138,43,226,0.2),rgba(75,0,130,0.2))' },
+  { icon: '💼',                     label: 'Finanças',          href: '/financas',       badge: 'Pro',  badgeColor: '#ff6b9d', gradient: 'linear-gradient(135deg,rgba(255,107,157,0.2),rgba(138,43,226,0.2))' },
+  { icon: '💪',                     label: 'Gim Tracker',      href: '/gim',                                                  gradient: 'linear-gradient(135deg,rgba(0,212,255,0.2),rgba(75,0,130,0.2))' },
+  { icon: '📰',                     label: 'Jornal',            href: '/jornal',         badge: 'Soon', badgeColor: '#a855f7', gradient: 'linear-gradient(135deg,rgba(168,85,247,0.2),rgba(219,39,119,0.2))' },
+  { icon: '🔮',                     label: 'Pentáculos',       href: '/pentaculos',     badge: 'New',  badgeColor: '#3b82f6', gradient: 'linear-gradient(135deg,rgba(59,130,246,0.2),rgba(147,51,234,0.2))' },
+  { icon: '🧪',                     label: 'Testes',           href: '/testes',         badge: 'Dev',  badgeColor: '#ff0066', gradient: 'linear-gradient(135deg,rgba(255,0,102,0.2),rgba(255,170,0,0.2))' },
+  { icon: '⚙️',                     label: 'Configurações',    href: '/config',                                               gradient: 'linear-gradient(135deg,rgba(255,0,255,0.2),rgba(0,212,255,0.2))' },
+];
+
 export const MenuDropdown = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [isOpen,  setIsOpen]  = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
-  const menuItems: MenuItem[] = [
-    {
-      icon: <BlogIcon size={22} />,
-      label: 'Blog',
-      href: '/blog',
-      badge: 'Hot',
-      badgeColor: '#00ff88',
-      gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(45, 90, 61, 0.2))',
-    },
-    {
-      icon: <AlgaeIcon size={22} />,
-      label: 'Dashboard Algas',
-      href: '/dashboard-algas',
-      badge: 'Beta',
-      badgeColor: '#00ff88',
-      gradient: 'linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 168, 107, 0.2))',
-    },
-    {
-      icon: '🧬',
-      label: 'Perfil',
-      href: '/dashboard',
-      badge: 'Beta',
-      badgeColor: '#00d4ff',
-      gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(148, 0, 211, 0.2))',
-    },
-    {
-      icon: <TVIcon size={22} />,
-      label: 'TV Empresarial',
-      href: '/tv-empresarial',
-      gradient: 'linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(75, 0, 130, 0.2))',
-    },
-    {
-      icon: '💼',
-      label: 'Finanças',
-      href: '/financas',
-      badge: 'Pro',
-      badgeColor: '#ff6b9d',
-      gradient: 'linear-gradient(135deg, rgba(255, 107, 157, 0.2), rgba(138, 43, 226, 0.2))',
-    },
-    {
-      icon: '💪',
-      label: 'Gim Tracker',
-      href: '/gim',
-      gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(75, 0, 130, 0.2))',
-    },
-    {
-      icon: '📰',
-      label: 'Jornal',
-      href: '/jornal',
-      badge: 'Soon',
-      badgeColor: '#a855f7',
-      gradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(219, 39, 119, 0.2))',
-    },
-    {
-      icon: '🔮',
-      label: 'Pentáculos',
-      href: '/pentaculos',
-      badge: 'New',
-      badgeColor: '#3b82f6',
-      gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))',
-    },
-    {
-      icon: '🧪',
-      label: 'Testes',
-      href: '/testes',
-      badge: 'Dev',
-      badgeColor: '#ff0066',
-      gradient: 'linear-gradient(135deg, rgba(255, 0, 102, 0.2), rgba(255, 170, 0, 0.2))',
-    },
-    {
-      icon: '⚙️',
-      label: 'Configurações',
-      href: '/config',
-      gradient: 'linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(0, 212, 255, 0.2))',
-    },
-  ];
+  // Só usa portal depois de montar no cliente
+  useEffect(() => { setMounted(true); }, []);
 
-  // Bloqueia scroll do body quando o menu mobile está aberto
+  // Trava o scroll do body enquanto o sheet está aberto
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  const close = () => setIsOpen(false);
 
   const handleItemClick = (item: MenuItem, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (item.onClick) {
-      item.onClick();
-    } else {
-      router.push(item.href);
-    }
-    setIsOpen(false);
+    close();
+    setTimeout(() => {
+      if (item.onClick) item.onClick();
+      else router.push(item.href);
+    }, 160);
   };
+
+  // ── Portal content ────────────────────────────────────────────────────────
+  const sheet = (
+    <>
+      {/* Overlay */}
+      <div
+        onClick={close}
+        style={{
+          position:  'fixed',
+          inset:     0,
+          zIndex:    9998,
+          background:'rgba(0,0,0,0.72)',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          animation: 'gtFade .2s ease',
+        }}
+      />
+
+      {/* Sheet */}
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          position:   'fixed',
+          bottom:     0,
+          left:       0,
+          right:      0,
+          zIndex:     9999,
+          maxHeight:  '88dvh',
+          display:    'flex',
+          flexDirection: 'column',
+          background: 'linear-gradient(180deg,rgba(16,6,38,.99) 0%,rgba(28,8,52,.99) 100%)',
+          borderRadius: '22px 22px 0 0',
+          boxShadow:  '0 -6px 50px rgba(0,212,255,.3), 0 -1px 0 rgba(0,212,255,.5)',
+          animation:  'gtUp .32s cubic-bezier(.32,1.25,.64,1)',
+          paddingBottom: 'env(safe-area-inset-bottom,0px)',
+        }}
+      >
+        {/* Alça */}
+        <div style={{ width:44, height:5, background:'rgba(255,255,255,.22)', borderRadius:3, margin:'12px auto 0', flexShrink:0 }} />
+
+        {/* Header */}
+        <div style={{ display:'flex', alignItems:'center', gap:10, padding:'14px 20px 14px', borderBottom:'1px solid rgba(0,212,255,.2)', flexShrink:0, background:'linear-gradient(90deg,rgba(0,212,255,.1),rgba(255,0,255,.1))' }}>
+          <span style={{ fontSize:20, filter:'drop-shadow(0 0 8px rgba(0,212,255,.9))', animation:'gtFloat 3s ease-in-out infinite' }}>🚀</span>
+          <span style={{ fontFamily:"'Courier New',monospace", fontSize:11, letterSpacing:2.5, fontWeight:'bold', background:'linear-gradient(135deg,#00d4ff,#ff00ff)', WebkitBackgroundClip:'text', backgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+            GROWTH MODULES
+          </span>
+          <button
+            onClick={close}
+            style={{ marginLeft:'auto', background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.14)', borderRadius:8, color:'rgba(255,255,255,.55)', fontSize:15, cursor:'pointer', padding:'3px 10px' }}
+          >✕</button>
+        </div>
+
+        {/* ── Lista scrollável ── */}
+        <div style={{ flex:1, overflowY:'auto', overflowX:'hidden', padding:'10px 14px 4px', WebkitOverflowScrolling:'touch' }}>
+          {menuItems.map((item, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={e => handleItemClick(item, e)}
+              onTouchStart={e => { const el = e.currentTarget; el.style.transform='scale(.97)'; el.style.opacity='.8'; }}
+              onTouchEnd={e   => { const el = e.currentTarget; el.style.transform=''; el.style.opacity=''; }}
+              style={{
+                display:    'flex',
+                alignItems: 'center',
+                gap:        14,
+                width:      '100%',
+                padding:    '12px 14px',
+                marginBottom: 8,
+                background: item.gradient,
+                border:     '1.5px solid rgba(0,212,255,.14)',
+                borderRadius: 14,
+                color:      'rgba(255,255,255,.95)',
+                fontFamily: "'Courier New',monospace",
+                fontSize:   14,
+                fontWeight: 'bold',
+                cursor:     'pointer',
+                textAlign:  'left',
+                minHeight:  54,
+                transition: 'transform .15s,opacity .15s',
+                animation:  `gtItem .35s ${i * .045}s cubic-bezier(.34,1.2,.64,1) backwards`,
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              {/* Ícone */}
+              <div style={{ width:42, height:42, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,.35)', borderRadius:11, border:'1.5px solid rgba(0,212,255,.22)', flexShrink:0 }}>
+                <span style={{ fontSize:22, filter:'drop-shadow(0 0 6px rgba(255,255,255,.6))' }}>
+                  {typeof item.icon === 'string' ? item.icon : item.icon}
+                </span>
+              </div>
+
+              {/* Label */}
+              <span style={{ flex:1, letterSpacing:.4 }}>{item.label}</span>
+
+              {/* Badge */}
+              {item.badge && (
+                <span style={{ padding:'3px 10px', background:item.badgeColor, boxShadow:`0 0 10px ${item.badgeColor}`, color:'#000', fontSize:9, fontWeight:'bold', borderRadius:6, letterSpacing:1.5, flexShrink:0 }}>
+                  {item.badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:20, padding:'13px 20px', borderTop:'1px solid rgba(0,212,255,.18)', background:'linear-gradient(90deg,rgba(0,212,255,.08),rgba(255,0,255,.08))', fontFamily:"'Courier New',monospace", flexShrink:0 }}>
+          {[{val: String(menuItems.length), label:'módulos'}, {val:'∞', label:'crescimento'}].map((s,i) => (
+            <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+              <span style={{ fontSize:20, fontWeight:'bold', background:'linear-gradient(135deg,#00d4ff,#ff00ff)', WebkitBackgroundClip:'text', backgroundClip:'text', WebkitTextFillColor:'transparent' }}>{s.val}</span>
+              <span style={{ fontSize:8, color:'rgba(255,255,255,.4)', letterSpacing:1.5, textTransform:'uppercase' }}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Keyframes injetados uma única vez no head via <style> global */}
+      <style>{`
+        @keyframes gtFade  { from{opacity:0}                                   to{opacity:1} }
+        @keyframes gtUp    { from{transform:translateY(100%);opacity:.4}        to{transform:translateY(0);opacity:1} }
+        @keyframes gtItem  { from{opacity:0;transform:translateX(-18px)}        to{opacity:1;transform:translateX(0)} }
+        @keyframes gtFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+      `}</style>
+    </>
+  );
 
   return (
     <>
-      {/* Overlay escuro — cobre tudo atrás do painel no mobile */}
-      {isOpen && (
-        <div
-          className="menu-overlay"
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+      {/* ── Botão ── */}
+      <button
+        onClick={() => setIsOpen(true)}
+        aria-label="Menu"
+        aria-expanded={isOpen}
+        type="button"
+        style={{
+          display:    'flex',
+          alignItems: 'center',
+          gap:        6,
+          padding:    '6px 16px',
+          background: 'linear-gradient(135deg,rgba(255,170,0,.2),rgba(255,107,157,.2))',
+          border:     '1.5px solid rgba(255,170,0,.55)',
+          borderRadius: 6,
+          color:      '#ffaa00',
+          fontFamily: "'Courier New',monospace",
+          fontSize:   10,
+          fontWeight: 'bold',
+          letterSpacing: 1.5,
+          cursor:     'pointer',
+          WebkitTapHighlightColor: 'transparent',
+          transition: 'transform .2s,box-shadow .2s',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform='scale(1.05)'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform=''; }}
+      >
+        <span style={{ fontSize:14, filter:'drop-shadow(0 0 8px rgba(255,170,0,.8))' }}>🗂️</span>
+        <span>Menu</span>
+        <span style={{ fontSize:8, marginLeft:2, display:'inline-block', transform:isOpen?'rotate(180deg)':'none', transition:'transform .3s' }}>▲</span>
+      </button>
 
-      <div className="menu-dropdown" ref={menuRef}>
-        <button
-          className="menu-button"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Menu"
-          aria-expanded={isOpen}
-          type="button"
-        >
-          <span className="menu-icon">🗂️</span>
-          <span className="menu-text">Menu</span>
-          <span className={`arrow ${isOpen ? 'open' : ''}`}>▲</span>
-        </button>
-
-        {isOpen && (
-          <div className="dropdown-panel" role="menu">
-            <div className="panel-glow" />
-
-            {/* Alça de arraste visual (mobile) */}
-            <div className="drag-handle" />
-
-            <div className="dropdown-header">
-              <span className="header-icon">🚀</span>
-              <span className="header-text">GROWTH MODULES</span>
-              <button
-                className="close-btn"
-                onClick={() => setIsOpen(false)}
-                aria-label="Fechar menu"
-              >✕</button>
-            </div>
-
-            <div className="menu-items">
-              {menuItems.map((item, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  role="menuitem"
-                  className="menu-item"
-                  onClick={(e) => handleItemClick(item, e)}
-                  style={{
-                    background: item.gradient,
-                    animationDelay: `${index * 0.05}s`,
-                  }}
-                >
-                  <div className="item-icon-wrapper">
-                    <span className="item-icon">
-                      {typeof item.icon === 'string' ? item.icon : item.icon}
-                    </span>
-                    <div className="icon-glow" />
-                  </div>
-                  <span className="item-label">{item.label}</span>
-                  {item.badge && (
-                    <span
-                      className="item-badge"
-                      style={{
-                        background: item.badgeColor,
-                        boxShadow: `0 0 12px ${item.badgeColor}`,
-                      }}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <div className="dropdown-footer">
-              <div className="footer-stat">
-                <span className="stat-value">{menuItems.length}</span>
-                <span className="stat-label">módulos</span>
-              </div>
-              <span className="footer-separator">•</span>
-              <div className="footer-stat">
-                <span className="stat-value">∞</span>
-                <span className="stat-label">crescimento</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <style jsx>{`
-        /* ── Overlay ─────────────────────────────────────────────────── */
-        .menu-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.65);
-          backdrop-filter: blur(4px);
-          z-index: 998;
-          animation: fadeIn 0.2s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-
-        /* ── Wrapper ─────────────────────────────────────────────────── */
-        .menu-dropdown {
-          position: relative;
-          display: inline-block;
-          pointer-events: auto;
-        }
-
-        /* ── Botão ───────────────────────────────────────────────────── */
-        .menu-button {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 16px;
-          background: linear-gradient(135deg, rgba(255,170,0,0.2), rgba(255,107,157,0.2));
-          border: 1.5px solid rgba(255,170,0,0.5);
-          border-radius: 6px;
-          color: #ffaa00;
-          font-family: 'Courier New', monospace;
-          font-size: 10px;
-          font-weight: bold;
-          letter-spacing: 1.5px;
-          cursor: pointer;
-          transition: all 0.3s;
-          pointer-events: auto;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .menu-button:hover {
-          border-color: rgba(255,170,0,0.8);
-          box-shadow: 0 0 20px rgba(255,170,0,0.4), inset 0 0 20px rgba(255,170,0,0.1);
-          transform: scale(1.05);
-        }
-
-        .menu-icon { font-size: 14px; filter: drop-shadow(0 0 8px rgba(255,170,0,0.8)); }
-        .menu-text  { font-weight: bold; }
-        .arrow      { font-size: 8px; transition: transform 0.3s; margin-left: 2px; }
-        .arrow.open { transform: rotate(180deg); }
-
-        /* ── Painel — Desktop ────────────────────────────────────────── */
-        .dropdown-panel {
-          position: absolute;
-          top: calc(100% + 12px);
-          left: 50%;
-          transform: translateX(-50%);
-          width: 320px;
-          background: linear-gradient(135deg, rgba(10,5,30,0.98), rgba(30,10,50,0.98));
-          backdrop-filter: blur(20px);
-          border: 2px solid transparent;
-          border-radius: 16px;
-          box-shadow:
-            0 0 40px rgba(0,212,255,0.3),
-            0 0 80px rgba(255,0,255,0.2),
-            0 20px 60px rgba(0,0,0,0.9);
-          z-index: 999;
-          overflow: hidden;
-          animation: dropdownSlide 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-          /* borda gradiente via outline trick */
-          outline: 2px solid transparent;
-          background-clip: padding-box;
-        }
-
-        /* borda colorida */
-        .dropdown-panel::after {
-          content: '';
-          position: absolute;
-          inset: -2px;
-          border-radius: 18px;
-          background: linear-gradient(135deg, rgba(0,212,255,0.5), rgba(255,0,255,0.5), rgba(0,212,255,0.5));
-          z-index: -1;
-        }
-
-        @keyframes dropdownSlide {
-          from { opacity: 0; transform: translateX(-50%) translateY(-16px) scale(0.96); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0)     scale(1);    }
-        }
-
-        .drag-handle { display: none; }
-
-        .close-btn {
-          display: none;
-          margin-left: auto;
-          background: none;
-          border: none;
-          color: rgba(255,255,255,0.5);
-          font-size: 16px;
-          cursor: pointer;
-          padding: 2px 6px;
-          border-radius: 6px;
-          transition: color 0.2s;
-        }
-        .close-btn:hover { color: #fff; }
-
-        /* ── Painel — Mobile (bottom sheet) ─────────────────────────── */
-        @media (max-width: 768px) {
-          .dropdown-panel {
-            /* Ocupa a tela de baixo pra cima — nunca sai da tela */
-            position: fixed;
-            top: auto;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            max-width: 100%;
-            transform: none;
-            border-radius: 20px 20px 0 0;
-            /* remove a animação de desktop */
-            animation: bottomSheetSlide 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-            /* garante que não passe do topo da tela */
-            max-height: 88dvh;
-            display: flex;
-            flex-direction: column;
-          }
-
-          .dropdown-panel::after {
-            border-radius: 22px 22px 0 0;
-          }
-
-          @keyframes bottomSheetSlide {
-            from { transform: translateY(100%); opacity: 0.6; }
-            to   { transform: translateY(0);    opacity: 1;   }
-          }
-
-          /* Alça de arraste */
-          .drag-handle {
-            display: block;
-            width: 40px;
-            height: 4px;
-            background: rgba(255,255,255,0.25);
-            border-radius: 2px;
-            margin: 10px auto 0;
-            flex-shrink: 0;
-          }
-
-          /* Botão fechar visível no mobile */
-          .close-btn { display: block; }
-
-          .menu-items {
-            /* Preenche o espaço disponível com scroll */
-            flex: 1;
-            max-height: none !important;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-          }
-
-          .menu-item {
-            font-size: 14px;
-            padding: 13px 14px;
-            /* toque mais fácil */
-            min-height: 52px;
-          }
-
-          .item-icon-wrapper {
-            width: 38px;
-            height: 38px;
-          }
-
-          .item-icon { font-size: 20px; }
-        }
-
-        /* ── Glow do painel ──────────────────────────────────────────── */
-        .panel-glow {
-          position: absolute;
-          inset: -2px;
-          background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(255,0,255,0.08));
-          filter: blur(20px);
-          z-index: -1;
-          animation: glowPulse 3s ease-in-out infinite;
-          pointer-events: none;
-        }
-
-        @keyframes glowPulse {
-          0%, 100% { opacity: 0.5; }
-          50%       { opacity: 1;   }
-        }
-
-        /* ── Header ──────────────────────────────────────────────────── */
-        .dropdown-header {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 14px 20px;
-          background: linear-gradient(90deg, rgba(0,212,255,0.15), rgba(255,0,255,0.15));
-          border-bottom: 2px solid rgba(0,212,255,0.3);
-          flex-shrink: 0;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .dropdown-header::before {
-          content: '';
-          position: absolute;
-          top: 0; left: -100%;
-          width: 100%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-          animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-          0%   { left: -100%; }
-          100% { left: 200%;  }
-        }
-
-        .header-icon {
-          font-size: 20px;
-          filter: drop-shadow(0 0 10px rgba(0,212,255,0.8));
-          animation: iconFloat 3s ease-in-out infinite;
-          flex-shrink: 0;
-        }
-
-        @keyframes iconFloat {
-          0%, 100% { transform: translateY(0);    }
-          50%       { transform: translateY(-4px); }
-        }
-
-        .header-text {
-          font-family: 'Courier New', monospace;
-          font-size: 11px;
-          letter-spacing: 2.5px;
-          background: linear-gradient(135deg, #00d4ff, #ff00ff);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          font-weight: bold;
-        }
-
-        /* ── Items ───────────────────────────────────────────────────── */
-        .menu-items {
-          padding: 12px;
-          max-height: 380px;
-          overflow-y: auto;
-          overflow-x: hidden;
-        }
-
-        .menu-items::-webkit-scrollbar       { width: 6px; }
-        .menu-items::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); border-radius: 10px; }
-        .menu-items::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #00d4ff, #ff00ff);
-          border-radius: 10px;
-        }
-
-        .menu-item {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 13px 16px;
-          margin-bottom: 7px;
-          border: 2px solid transparent;
-          border-radius: 12px;
-          color: rgba(255,255,255,0.95);
-          font-family: 'Courier New', monospace;
-          font-size: 14px;
-          font-weight: bold;
-          transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-          animation: itemSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
-          width: 100%;
-          text-align: left;
-        }
-
-        @keyframes itemSlideIn {
-          from { opacity: 0; transform: translateX(-20px); }
-          to   { opacity: 1; transform: translateX(0);     }
-        }
-
-        .menu-item:hover {
-          border-color: rgba(0,212,255,0.6);
-          box-shadow: 0 0 24px rgba(0,212,255,0.35), inset 0 0 16px rgba(0,212,255,0.08);
-          transform: translateX(4px) scale(1.01);
-        }
-
-        /* Toque ativo no mobile */
-        .menu-item:active {
-          transform: scale(0.97);
-          opacity: 0.85;
-        }
-
-        .item-icon-wrapper {
-          position: relative;
-          width: 40px; height: 40px;
-          display: flex; align-items: center; justify-content: center;
-          background: rgba(0,0,0,0.4);
-          border-radius: 10px;
-          border: 1.5px solid rgba(0,212,255,0.3);
-          flex-shrink: 0;
-        }
-
-        .item-icon {
-          font-size: 22px;
-          position: relative; z-index: 2;
-          filter: drop-shadow(0 0 8px rgba(255,255,255,0.7));
-        }
-
-        .icon-glow {
-          position: absolute; inset: -4px;
-          background: radial-gradient(circle, rgba(0,212,255,0.4), transparent);
-          filter: blur(10px);
-          opacity: 0; transition: opacity 0.3s;
-        }
-
-        .menu-item:hover .icon-glow { opacity: 1; }
-
-        .item-label {
-          flex: 1;
-          letter-spacing: 0.5px;
-          text-shadow: 0 0 10px rgba(0,212,255,0.25);
-        }
-
-        .item-badge {
-          padding: 3px 9px;
-          color: #000;
-          font-size: 9px;
-          font-weight: bold;
-          border-radius: 6px;
-          letter-spacing: 1.5px;
-          border: 1.5px solid rgba(255,255,255,0.25);
-          flex-shrink: 0;
-        }
-
-        /* ── Footer ──────────────────────────────────────────────────── */
-        .dropdown-footer {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 16px;
-          padding: 14px 20px;
-          background: linear-gradient(90deg, rgba(0,212,255,0.1), rgba(255,0,255,0.1));
-          border-top: 2px solid rgba(0,212,255,0.3);
-          font-family: 'Courier New', monospace;
-          flex-shrink: 0;
-          /* espaço seguro iOS/Android */
-          padding-bottom: max(14px, env(safe-area-inset-bottom));
-        }
-
-        .footer-stat      { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .stat-value       { font-size: 18px; font-weight: bold; background: linear-gradient(135deg,#00d4ff,#ff00ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-        .stat-label       { font-size: 8px; color: rgba(255,255,255,0.45); letter-spacing: 1.5px; text-transform: uppercase; }
-        .footer-separator { color: rgba(255,0,255,0.6); font-size: 14px; animation: separatorPulse 2s ease-in-out infinite; }
-
-        @keyframes separatorPulse {
-          0%, 100% { opacity: 0.4; transform: scale(1);   }
-          50%       { opacity: 1;   transform: scale(1.3); }
-        }
-      `}</style>
+      {/* Portal — fora de qualquer contexto de stacking do componente pai */}
+      {mounted && isOpen && createPortal(sheet, document.body)}
     </>
   );
 };
