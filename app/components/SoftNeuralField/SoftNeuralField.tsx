@@ -11,7 +11,7 @@ import { AgendaModule } from './AgendaModule';
 import { orbitalSystem, INITIAL_ORBITAL_PAYLOADS } from './OrbitalSystem';
 import { OrbitalInfoCard } from './OrbitalInfoCard';
 import type { OrbitalParticle } from './orbitalTypes';
-import { useGrowthSync } from '@/hooks/useGrowthSync';
+import { useGrowthSync } from '../../../hooks/useGrowthSync';
 
 // ── Indicador de sync (canto inferior direito) ────────────────────────────────
 function SyncIndicator({

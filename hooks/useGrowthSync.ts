@@ -8,8 +8,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { orbitalSystem, SyncResult } from '@/app/components/OrbitalSystem';
-import type { OrbitalPayload } from '@/app/components/orbitalTypes';
+import { orbitalSystem, SyncResult } from '@/app/components/SoftNeuralField/OrbitalSystem';
+import type { OrbitalPayload } from '@/app/components/SoftNeuralField/orbitalTypes';
 
 // ── Tipos retornados pelas APIs ───────────────────────────────────────────────
 
