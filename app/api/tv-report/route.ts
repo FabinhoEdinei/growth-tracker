@@ -1,165 +1,190 @@
 import { NextResponse } from 'next/server';
-import { DailyReportGenerator } from '@/app/utils/daily-report-generator';
-import { gerarPostJornal, postJornalJaGeradoHoje } from '@/app/utils/jornal-md-generator';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/tv-report
-// Retorna o relatório diário enriquecido com metadados extras para a TV.
-// Query params:
-//   ?gerarJornal=true  → gera e salva o .md do jornal se ainda não existe
-//   ?personagem=fabio|claudia
-//   ?forcarJornal=true → força geração mesmo que já exista
+// Versão robusta para Vercel — não usa fs diretamente
+// Consome /api/etf-cota e /api/code-stats internamente
 // ─────────────────────────────────────────────────────────────────────────────
 
+export const dynamic = 'force-dynamic';
+
+// ── Tipos ─────────────────────────────────────────────────────────────────────
+
+interface PostItem {
+  titulo:   string;
+  slug:     string;
+  date:     string;
+  category: string;
+  excerpt?: string;
+  tipo:     'blog' | 'jornal' | 'tv';
+}
+
+interface EtfResponse {
+  cota?: {
+    codigoCompleto: string;
+    valorTotal:     number;
+    status:         'disponivel' | 'vendida';
+    blocos:         { tipo: string; contribuicao: number }[];
+  };
+  resumo?: {
+    postsBlog:   number;
+    postsJornal: number;
+    totalPosts:  number;
+  };
+}
+
+interface CodeStatsResponse {
+  posts?: PostItem[];
+}
+
+// ── Helper — fetch interno com timeout ───────────────────────────────────────
+async function fetchInternal<T>(url: string, baseUrl: string): Promise<T | null> {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const res   = await fetch(`${baseUrl}${url}`, {
+      cache:  'no-store',
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    return res.json() as Promise<T>;
+  } catch {
+    return null;
+  }
+}
+
+// ── Score de saúde baseado nos dados reais ────────────────────────────────────
+function calcularScore(postsBlog: number, postsJornal: number, temEtf: boolean): number {
+  let score = 0;
+  score += Math.min(postsBlog   * 8, 40);  // até 40pts
+  score += Math.min(postsJornal * 10, 30); // até 30pts
+  if (temEtf) score += 20;                 // 20pts
+  score += 10;                             // base sempre
+  return Math.min(score, 100);
+}
+
+function calcularTendencia(score: number): 'crescendo' | 'estável' | 'atenção' {
+  if (score >= 75) return 'crescendo';
+  if (score >= 45) return 'estável';
+  return 'atenção';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const deveGerarJornal = searchParams.get('gerarJornal') === 'true';
-    const forcarJornal    = searchParams.get('forcarJornal') === 'true';
-    const personagem      = (searchParams.get('personagem') ?? 'fabio') as 'fabio' | 'claudia';
+    const baseUrl = new URL(request.url).origin;
 
-    // ── Gerar relatório base ──────────────────────────────────────────────
-    const generator = new DailyReportGenerator();
-    const relatorio = generator.gerarRelatorioDodia();
+    // ── Busca paralela nas duas APIs que já funcionam ─────────────────────
+    const [etfData, codeData] = await Promise.all([
+      fetchInternal<EtfResponse>('/api/etf-cota',   baseUrl),
+      fetchInternal<CodeStatsResponse>('/api/code-stats', baseUrl),
+    ]);
 
-    // ── Enriquecer com metadados para a TV ───────────────────────────────
-    const totalConteudo = relatorio.resumo.postsJornal + relatorio.resumo.postsBlog;
-    const scoreSaude    = calcularScoreSaude(relatorio);
-    const tendencia     = calcularTendencia(relatorio);
+    // ── Extrai posts ──────────────────────────────────────────────────────
+    const allPosts  = codeData?.posts ?? [];
+    const blogPosts = allPosts.filter(p => p.tipo === 'blog');
+    const jornalPosts = allPosts.filter(p => p.tipo === 'jornal');
 
-    const relatorioEnriquecido = {
-      ...relatorio,
+    // ── Dados do ETF ──────────────────────────────────────────────────────
+    const cota = etfData?.cota ?? null;
+    const resumoEtf = etfData?.resumo;
+
+    // Usa contagem do ETF como fallback se code-stats não retornar posts
+    const totalBlog   = blogPosts.length   || resumoEtf?.postsBlog   || 0;
+    const totalJornal = jornalPosts.length || resumoEtf?.postsJornal || 0;
+    const totalPosts  = totalBlog + totalJornal;
+
+    // ── Métricas calculadas ───────────────────────────────────────────────
+    const score     = calcularScore(totalBlog, totalJornal, !!cota);
+    const tendencia = calcularTendencia(score);
+
+    const alertas: string[] = [];
+    const destaques: string[] = [];
+
+    if (totalPosts === 0)  alertas.push('Nenhuma publicação encontrada — verifique as APIs de conteúdo');
+    if (!cota)             alertas.push('Cota ETF não gerada — acesse Pentáculos para minerar');
+    if (cota?.status === 'disponivel') destaques.push(`🔮 Cota ${cota.codigoCompleto} disponível para venda`);
+    if (totalBlog >= 3)    destaques.push(`📝 ${totalBlog} posts no blog`);
+    if (totalJornal >= 1)  destaques.push(`📰 ${totalJornal} edição(ões) no jornal`);
+    if (score >= 80)       destaques.push('🚀 App em excelente forma!');
+
+    // ── Monta relatório no formato que os cards esperam ───────────────────
+    const relatorio = {
+      data: new Date().toLocaleDateString('pt-BR'),
+
+      resumo: {
+        postsBlog:           totalBlog,
+        postsJornal:         totalJornal,
+        arquivosModificados: 0,
+        duracaoTotal:        '—',
+      },
+
+      testes: {
+        total:  0,
+        passou: 0,
+        falhou: 0,
+        taxa:   '—',
+      },
+
+      conteudo: {
+        blog:   blogPosts.slice(0, 5).map(p => ({
+          titulo:  p.titulo,
+          slug:    p.slug,
+          data:    p.date,
+          excerpt: p.excerpt ?? '',
+        })),
+        jornal: jornalPosts.slice(0, 5).map(p => ({
+          titulo:  p.titulo,
+          slug:    p.slug,
+          data:    p.date,
+          excerpt: p.excerpt ?? '',
+        })),
+      },
+
+      metricas: {
+        linhasDeCodigo: 0,
+        arquivos:       0,
+        arquivosPorTipo: {},
+      },
+
+      // ── Dados extras para a TV ────────────────────────────────────────
       tv: {
-        scoreSaude,
+        scoreSaude:        score,
         tendencia,
-        totalConteudo,
-        statusApp: totalConteudo > 0 ? 'ativo' : 'aguardando',
+        totalConteudo:     totalPosts,
+        statusApp:         totalPosts > 0 ? 'ativo' : 'aguardando',
         ultimaAtualizacao: new Date().toISOString(),
-        alertas: gerarAlertas(relatorio),
-        destaques: gerarDestaques(relatorio),
+        alertas,
+        destaques,
+        // Dados do ETF direto na resposta
+        etf: cota ? {
+          codigo:   cota.codigoCompleto,
+          valor:    cota.valorTotal,
+          status:   cota.status,
+          blocos:   cota.blocos,
+        } : null,
+        // Últimos posts para exibir no card
+        ultimosBlog:   blogPosts.slice(0, 3),
+        ultimosJornal: jornalPosts.slice(0, 3),
       },
     };
 
-    // ── Gerar .md do jornal (opcional) ────────────────────────────────────
-    let jornalGerado = null;
-    if (deveGerarJornal) {
-      const jaExiste = postJornalJaGeradoHoje();
+    return NextResponse.json({ relatorio, jornal: null });
 
-      if (!jaExiste || forcarJornal) {
-        try {
-          jornalGerado = gerarPostJornal(relatorio, {
-            personagem,
-            tipo: 'fatos',
-            salvarEmDisco: true,
-          });
-          // Não retorna o conteúdo completo na resposta (pode ser grande)
-          jornalGerado = {
-            slug:           jornalGerado.slug,
-            caminhoArquivo: jornalGerado.caminhoArquivo,
-            gerado:         true,
-          };
-        } catch (err) {
-          console.error('Erro ao gerar post do jornal:', err);
-          jornalGerado = { gerado: false, erro: String(err) };
-        }
-      } else {
-        jornalGerado = { gerado: false, motivo: 'já existe post do jornal para hoje' };
-      }
-    }
-
-    return NextResponse.json({
-      relatorio: relatorioEnriquecido,
-      jornal: jornalGerado,
-    });
   } catch (error) {
-    console.error('Erro no tv-report:', error);
+    console.error('[tv-report] Erro:', error);
     return NextResponse.json(
-      { error: 'Erro ao gerar TV report' },
+      { error: 'Erro ao gerar TV report', detalhe: String(error) },
       { status: 500 }
     );
   }
 }
 
-// ── POST /api/tv-report — gera .md na memória e retorna para download ─────────
-// No Vercel o filesystem é read-only — não salvamos em disco.
-// Retornamos o conteúdo como download direto no browser.
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json().catch(() => ({}));
-    const personagem = (body.personagem ?? 'fabio') as 'fabio' | 'claudia';
-    const tipo       = body.tipo ?? 'fatos';
-
-    const generator = new DailyReportGenerator();
-    const relatorio = generator.gerarRelatorioDodia();
-
-    // salvarEmDisco: false — só gera na memória, sem tentar escrever no disco
-    const resultado = gerarPostJornal(relatorio, {
-      personagem,
-      tipo,
-      salvarEmDisco: false,
-    });
-
-    // Retorna o arquivo .md como download direto
-    return new Response(resultado.conteudo, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/markdown; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${resultado.slug}.md"`,
-        'X-Slug': resultado.slug,
-      },
-    });
-  } catch (error) {
-    console.error('Erro ao gerar post:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
-  }
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function calcularScoreSaude(relatorio: ReturnType<DailyReportGenerator['gerarRelatorioDodia']>): number {
-  let score = 0;
-  // Testes: até 40 pts
-  const taxaTestes = parseInt(relatorio.testes.taxa) || 0;
-  score += Math.round(taxaTestes * 0.4);
-  // Conteúdo publicado: até 30 pts
-  const totalPosts = relatorio.resumo.postsJornal + relatorio.resumo.postsBlog;
-  score += Math.min(totalPosts * 10, 30);
-  // Arquivos de código: até 30 pts
-  score += Math.min(Math.round(relatorio.metricas.arquivos / 10), 30);
-  return Math.min(score, 100);
-}
-
-function calcularTendencia(relatorio: ReturnType<DailyReportGenerator['gerarRelatorioDodia']>): 'crescendo' | 'estável' | 'atenção' {
-  const taxa = parseInt(relatorio.testes.taxa) || 0;
-  const posts = relatorio.resumo.postsJornal + relatorio.resumo.postsBlog;
-  if (taxa >= 80 && posts >= 1) return 'crescendo';
-  if (taxa >= 60) return 'estável';
-  return 'atenção';
-}
-
-function gerarAlertas(relatorio: ReturnType<DailyReportGenerator['gerarRelatorioDodia']>): string[] {
-  const alertas: string[] = [];
-  if (relatorio.testes.falhou > 0) {
-    alertas.push(`${relatorio.testes.falhou} teste(s) falhando — revisar antes do deploy`);
-  }
-  if (relatorio.resumo.postsJornal === 0 && relatorio.resumo.postsBlog === 0) {
-    alertas.push('Nenhuma publicação hoje — considere criar conteúdo');
-  }
-  if (relatorio.resumo.arquivosModificados > 20) {
-    alertas.push('Alto volume de modificações — verificar consistência');
-  }
-  return alertas;
-}
-
-function gerarDestaques(relatorio: ReturnType<DailyReportGenerator['gerarRelatorioDodia']>): string[] {
-  const destaques: string[] = [];
-  const taxa = parseInt(relatorio.testes.taxa) || 0;
-  if (taxa === 100) destaques.push('💯 100% dos testes passando!');
-  const total = relatorio.resumo.postsJornal + relatorio.resumo.postsBlog;
-  if (total >= 3) destaques.push(`📚 Dia produtivo: ${total} publicações`);
-  if (relatorio.metricas.linhasDeCodigo > 10000) {
-    destaques.push(`⚡ ${(relatorio.metricas.linhasDeCodigo / 1000).toFixed(1)}k linhas de código no projeto`);
-  }
-  return destaques;
+// ── POST — mantido para compatibilidade, retorna erro informativo ─────────────
+export async function POST() {
+  return NextResponse.json(
+    { error: 'Geração de jornal via POST desabilitada nesta versão. Use a página Pentáculos.' },
+    { status: 501 }
+  );
 }
