@@ -20,6 +20,14 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { icon: <BlogIcon size={22} />,   label: 'Blog',             href: '/blog',           badge: 'Hot',  badgeColor: '#00ff88', gradient: 'linear-gradient(135deg,rgba(0,255,136,0.25),rgba(45,90,61,0.2))' },
   { icon: <AlgaeIcon size={22} />,  label: 'Dashboard Algas',  href: '/dashboard-algas',badge: 'Beta', badgeColor: '#00ff88', gradient: 'linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,168,107,0.2))' },
+{
+  icon: '🎬',
+  label: 'TV Config',
+  href: '/tv-empresarial/config',
+  badge: 'Dev',
+  badgeColor: '#ff8c42',
+  gradient: 'linear-gradient(135deg,rgba(255,140,66,0.2),rgba(168,85,247,0.2))',
+},
   { icon: '🧬',                     label: 'Perfil',            href: '/dashboard',      badge: 'Beta', badgeColor: '#00d4ff', gradient: 'linear-gradient(135deg,rgba(0,212,255,0.2),rgba(148,0,211,0.2))' },
   { icon: <TVIcon size={22} />,     label: 'TV Empresarial',   href: '/tv-empresarial',                                       gradient: 'linear-gradient(135deg,rgba(138,43,226,0.2),rgba(75,0,130,0.2))' },
   { icon: '💼',                     label: 'Finanças',          href: '/financas',       badge: 'Pro',  badgeColor: '#ff6b9d', gradient: 'linear-gradient(135deg,rgba(255,107,157,0.2),rgba(138,43,226,0.2))' },
