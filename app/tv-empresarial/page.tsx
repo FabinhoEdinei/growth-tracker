@@ -22,7 +22,7 @@ import JornalBlogFeedCard from '@/app/components/tv/JornalBlogFeedCard';
 import CodeHealthCard     from '@/app/components/tv/CodeHealthCard';
 
 // 🆕 Faixa de notícias ao vivo
-import { GTNewsTicker } from '@/app/components/GTNewsTicker';
+import { GTNewsTicker } from '@/app/components/tv/GTNewsTicker';
 
 import type { DailyReport } from '@/app/utils/daily-report-generator';
 
