@@ -292,8 +292,24 @@ export default function TvEmpresarial() {
     return () => window.removeEventListener('keydown', h);
   }, [goNext, goPrev, nudgeUI]);
 
-  // ── Aguarda localStorage carregar ─────────────────────────────────────────
-  if (!loaded || total === 0) return <TvLoading />;
+  // ── Aguarda localStorage carregar — mas nunca trava para sempre ─────────
+  // Se loaded=true mas total=0 (todos desativados), mostra aviso em vez de spinner
+  if (!loaded) return <TvLoading />;
+  if (total === 0) return (
+    <div style={{ position:'fixed', inset:0, background:'#060410', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16 }}>
+      <span style={{ fontSize:48 }}>📺</span>
+      <div style={{ fontFamily:"'Courier New',monospace", fontSize:13, color:'rgba(255,255,255,.5)', letterSpacing:2, textAlign:'center' }}>
+        NENHUM SLIDE ATIVO
+      </div>
+      <div style={{ fontSize:11, color:'rgba(255,255,255,.3)', marginBottom:8 }}>
+        Ative pelo menos um slide no editor
+      </div>
+      <Link href="/tv-empresarial/config" style={{ padding:'8px 20px', background:'rgba(255,140,66,.15)', border:'1px solid rgba(255,140,66,.4)', borderRadius:10, color:'#ff8c42', fontSize:11, textDecoration:'none', fontFamily:"'Courier New',monospace", letterSpacing:1 }}>
+        ⚙️ ABRIR EDITOR
+      </Link>
+      <style>{`@keyframes gtFade{from{opacity:.3}to{opacity:1}}`}</style>
+    </div>
+  );
 
   const enterFrom = dir === 'left' ? '100%'  : '-100%';
   const exitTo    = dir === 'left' ? '-100%' : '100%';
