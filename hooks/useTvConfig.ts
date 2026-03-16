@@ -102,7 +102,9 @@ export const DEFAULT_SLIDES: SlideConfig[] = [
   },
 ];
 
-const LS_KEY = 'gt_tv_config_v2';
+const LS_KEY     = 'gt_tv_config_v2';
+const LS_VERSION = 3; // ← incrementar aqui quando DEFAULT_SLIDES mudar
+const LS_VER_KEY = 'gt_tv_config_version';
 
 // ── Valida se o dado do localStorage é utilizável ─────────────────────────────
 function isValidConfig(data: unknown): data is SlideConfig[] {
@@ -118,6 +120,17 @@ function isValidConfig(data: unknown): data is SlideConfig[] {
   );
 }
 
+// ── Garante que slides builtin ausentes sejam adicionados ─────────────────────
+function mergeComDefaults(saved: SlideConfig[]): SlideConfig[] {
+  const savedIds = new Set(saved.map(s => s.id));
+  const faltando = DEFAULT_SLIDES.filter(d => !savedIds.has(d.id));
+  if (faltando.length === 0) return saved;
+  // Adiciona os novos no fim com order após os existentes
+  const maxOrder = Math.max(...saved.map(s => s.order), saved.length - 1);
+  const novos = faltando.map((s, i) => ({ ...s, order: maxOrder + 1 + i }));
+  return [...saved, ...novos];
+}
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 export function useTvConfig() {
   const [slides, setSlides] = useState<SlideConfig[]>(DEFAULT_SLIDES);
@@ -126,11 +139,25 @@ export function useTvConfig() {
   useEffect(() => {
     let resolved = false;
     try {
+      const savedVersion = parseInt(localStorage.getItem(LS_VER_KEY) ?? '0', 10);
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
+
+      if (raw && savedVersion >= LS_VERSION) {
+        // Versão atual — usa os dados salvos
         const parsed = JSON.parse(raw);
         if (isValidConfig(parsed)) {
           setSlides(parsed);
+          resolved = true;
+        }
+      } else if (raw && savedVersion < LS_VERSION) {
+        // Versão antiga — faz merge: mantém dados do usuário + adiciona slides novos
+        const parsed = JSON.parse(raw);
+        if (isValidConfig(parsed)) {
+          const merged = mergeComDefaults(parsed);
+          setSlides(merged);
+          // Salva já atualizado
+          localStorage.setItem(LS_KEY, JSON.stringify(merged));
+          localStorage.setItem(LS_VER_KEY, String(LS_VERSION));
           resolved = true;
         }
       }
@@ -138,16 +165,22 @@ export function useTvConfig() {
       // JSON corrompido — usa defaults
     }
 
-    // Se não resolveu com dados salvos, garante que os defaults estão ativos
     if (!resolved) {
       setSlides(DEFAULT_SLIDES);
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(DEFAULT_SLIDES));
+        localStorage.setItem(LS_VER_KEY, String(LS_VERSION));
+      } catch {}
     }
 
-    setLoaded(true); // ← sempre vira true, nunca trava
+    setLoaded(true);
   }, []);
 
   const persist = (next: SlideConfig[]) => {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch {}
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(next));
+      localStorage.setItem(LS_VER_KEY, String(LS_VERSION));
+    } catch {}
   };
 
   const updateSlide = useCallback((id: string, patch: Partial<SlideConfig>) => {
