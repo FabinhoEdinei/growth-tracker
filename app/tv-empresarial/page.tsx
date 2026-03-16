@@ -241,13 +241,26 @@ export default function TvEmpresarial() {
             ))}
           </div>
 
-          {/* Voltar */}
-          <Link href="/" style={{
-            fontFamily:"'Courier New',monospace",
-            fontSize:9, color:'rgba(255,255,255,.45)', textDecoration:'none',
-            padding:'4px 11px', border:'1px solid rgba(255,255,255,.14)',
-            borderRadius:12, letterSpacing:1,
-          }}>← VOLTAR</Link>
+          {/* Ações do header */}
+          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+            {/* ⚙️ Editar programação */}
+            <Link href="/tv-empresarial/config" style={{
+              fontFamily:"'Courier New',monospace",
+              fontSize:9, color:'#ff8c42', textDecoration:'none',
+              padding:'4px 10px',
+              background:'rgba(255,140,66,.12)',
+              border:'1px solid rgba(255,140,66,.35)',
+              borderRadius:12, letterSpacing:1, fontWeight:700,
+            }}>⚙️ EDITAR</Link>
+
+            {/* Voltar */}
+            <Link href="/" style={{
+              fontFamily:"'Courier New',monospace",
+              fontSize:9, color:'rgba(255,255,255,.45)', textDecoration:'none',
+              padding:'4px 11px', border:'1px solid rgba(255,255,255,.14)',
+              borderRadius:12, letterSpacing:1,
+            }}>← VOLTAR</Link>
+          </div>
         </div>
 
         {/* ── Setas laterais ── */}
