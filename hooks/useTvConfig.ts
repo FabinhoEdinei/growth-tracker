@@ -95,6 +95,11 @@ export const DEFAULT_SLIDES: SlideConfig[] = [
     icon:'🌤️', color:'#38bdf8', active:true, order:4,
     clima:{ cidade:'São Paulo', temperatura:24, condicao:'Parcialmente nublado', umidade:68, vento:14 },
   },
+  // ✅ Card de dados reais do app — consome /api/tv-report
+  {
+    id:'app-growth', type:'builtin', label:'Status do App',
+    icon:'📡', color:'#00ff88', active:true, order:5,
+  },
 ];
 
 const LS_KEY = 'gt_tv_config_v2';
