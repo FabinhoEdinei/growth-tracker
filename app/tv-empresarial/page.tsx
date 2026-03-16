@@ -3,19 +3,23 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // app/tv-empresarial/page.tsx
 // TV Empresarial — Slideshow fullscreen automático
-// Cards trocam a cada 8s com slide horizontal
-// Pausa ao clicar · Direção ajustável · GTNewsTicker fixo na base
+// ✅ Conectado ao useTvConfig — lê slides do localStorage
+// Cards trocam a cada 8s · Pausa ao clicar · Direção ajustável
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { GTNewsTicker } from '@/app/components/tv/GTNewsTicker';
 
+// Cards builtin
 import MetaCard       from '@/app/components/tv/MetaCard';
 import ProducaoCard   from '@/app/components/tv/ProducaoCard';
 import RankingCard    from '@/app/components/tv/RankingCard';
 import ComunicadoCard from '@/app/components/tv/ComunicadoCard';
 import ClimaCard      from '@/app/components/tv/ClimaCard';
+
+// ✅ Hook de configuração — fonte única da verdade
+import { useTvConfig, type SlideConfig } from '@/hooks/useTvConfig';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 const SLIDE_MS = 8000;
@@ -23,31 +27,109 @@ const TICKER_H = 44;
 
 type Dir = 'left' | 'right';
 
-interface Slide { id: string; label: string; icon: string; color: string; }
-
-const SLIDES: Slide[] = [
-  { id:'metas',      label:'Metas do Dia',         icon:'🎯', color:'#00ff88' },
-  { id:'producao',   label:'Produção de Conteúdo', icon:'✍️', color:'#00d4ff' },
-  { id:'ranking',    label:'Ranking',              icon:'🏆', color:'#ffd700' },
-  { id:'comunicado', label:'Comunicado',           icon:'📢', color:'#a855f7' },
-  { id:'clima',      label:'Clima',                icon:'🌤️', color:'#38bdf8' },
-];
-
-// ── Conteúdo de cada slide ────────────────────────────────────────────────────
-function SlideContent({ id }: { id: string }) {
-  switch (id) {
-    case 'metas':      return <MetaCard />;
-    case 'producao':   return <ProducaoCard />;
-    case 'ranking':    return <RankingCard />;
-    case 'comunicado': return <ComunicadoCard />;
-    case 'clima':      return <ClimaCard />;
-    default:           return null;
+// ─────────────────────────────────────────────────────────────────────────────
+// SlideContent — renderiza qualquer tipo de slide
+// ─────────────────────────────────────────────────────────────────────────────
+function SlideContent({ slide }: { slide: SlideConfig }) {
+  // ── Builtin ───────────────────────────────────────────────────────────────
+  if (slide.type === 'builtin') {
+    switch (slide.id) {
+      case 'metas':      return <MetaCard />;
+      case 'producao':   return <ProducaoCard />;
+      case 'ranking':    return <RankingCard />;
+      case 'comunicado': return <ComunicadoCard />;
+      case 'clima':      return <ClimaCard />;
+      default:           return null;
+    }
   }
+
+  // ── Blog / Jornal — lista de posts selecionados ───────────────────────────
+  if (slide.type === 'blog' || slide.type === 'jornal') {
+    const slugs = slide.selectedSlugs ?? [];
+    const cor   = slide.color;
+    return (
+      <div style={{ width:'100%' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:20 }}>
+          <span style={{ fontSize:28 }}>{slide.icon}</span>
+          <div>
+            <h2 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff' }}>{slide.label}</h2>
+            <div style={{ fontSize:11, color:'rgba(255,255,255,.4)', marginTop:2, letterSpacing:1 }}>
+              {slide.type === 'blog' ? 'BLOG · GROWTH TRACKER' : 'JORNAL · EDIÇÕES'}
+            </div>
+          </div>
+        </div>
+
+        {slugs.length === 0 ? (
+          <div style={{ color:'rgba(255,255,255,.3)', fontSize:13, fontStyle:'italic', padding:'20px 0' }}>
+            Nenhum post selecionado — edite no ⚙️ editor
+          </div>
+        ) : (
+          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+            {slugs.map((slug, i) => (
+              <div key={slug} style={{
+                padding:'12px 16px',
+                background:'rgba(255,255,255,.04)',
+                border:`1px solid ${cor}25`,
+                borderLeft:`3px solid ${cor}`,
+                borderRadius:10,
+                animation:`gtFade .3s ${i*0.08}s ease backwards`,
+              }}>
+                <div style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,.85)', marginBottom:3 }}>
+                  {slug.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase())}
+                </div>
+                <div style={{ fontSize:10, color:`${cor}99`, letterSpacing:1 }}>
+                  {slide.type.toUpperCase()} · {slug}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Custom — conteúdo livre ───────────────────────────────────────────────
+  if (slide.type === 'custom') {
+    const d = slide.custom;
+    if (!d) return null;
+    return (
+      <div style={{ width:'100%', textAlign:'center' }}>
+        <div style={{ fontSize:48, marginBottom:16 }}>{slide.icon}</div>
+        {d.subtitulo && (
+          <div style={{ fontSize:11, color:slide.color, letterSpacing:3, marginBottom:8, fontFamily:"'Courier New',monospace", fontWeight:700 }}>
+            {d.subtitulo.toUpperCase()}
+          </div>
+        )}
+        <h2 style={{ margin:'0 0 20px', fontSize:clamp(20, 32), fontWeight:900, color:'#fff', lineHeight:1.2 }}>
+          {d.titulo}
+        </h2>
+        {d.corpo && (
+          <p style={{ fontSize:14, color:'rgba(255,255,255,.7)', lineHeight:1.7, maxWidth:480, margin:'0 auto 20px', whiteSpace:'pre-wrap' }}>
+            {d.corpo}
+          </p>
+        )}
+        {d.rodape && (
+          <div style={{ fontSize:10, color:'rgba(255,255,255,.35)', letterSpacing:1.5, fontFamily:"'Courier New',monospace" }}>
+            {d.rodape}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }
 
-// ── Barra de progresso animada ────────────────────────────────────────────────
+// Utilitário simples de clamp para font-size
+function clamp(min: number, max: number) {
+  return `clamp(${min}px, 4vw, ${max}px)` as unknown as number;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ProgressBar
+// ─────────────────────────────────────────────────────────────────────────────
 function ProgressBar({ color, paused, slideKey }: { color: string; paused: boolean; slideKey: string }) {
-  const [pct, setPct] = useState(0);
+  const [pct,    setPct]    = useState(0);
   const rafRef   = useRef<number>();
   const startRef = useRef<number>(0);
   const pausedMs = useRef<number>(0);
@@ -57,22 +139,31 @@ function ProgressBar({ color, paused, slideKey }: { color: string; paused: boole
     setPct(0);
     startRef.current = performance.now();
     pausedMs.current = 0;
+    pauseAt.current  = 0;
 
     const tick = (now: number) => {
-      if (paused) { pauseAt.current = now; rafRef.current = requestAnimationFrame(tick); return; }
-      if (pauseAt.current) { pausedMs.current += now - pauseAt.current; pauseAt.current = 0; }
+      if (paused) {
+        if (!pauseAt.current) pauseAt.current = now;
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+      if (pauseAt.current) {
+        pausedMs.current += now - pauseAt.current;
+        pauseAt.current = 0;
+      }
       const elapsed = now - startRef.current - pausedMs.current;
       const p = Math.min((elapsed / SLIDE_MS) * 100, 100);
       setPct(p);
       if (p < 100) rafRef.current = requestAnimationFrame(tick);
     };
+
     rafRef.current = requestAnimationFrame(tick);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slideKey, paused]);
 
   return (
-    <div style={{ height:3, background:'rgba(255,255,255,.08)', position:'relative' }}>
+    <div style={{ height:3, background:'rgba(255,255,255,.08)', position:'relative', flexShrink:0 }}>
       <div style={{
         position:'absolute', left:0, top:0, height:'100%',
         width:`${pct}%`, background:color,
@@ -83,40 +174,102 @@ function ProgressBar({ color, paused, slideKey }: { color: string; paused: boole
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CardShell — wrapper visual de cada slide
+// ─────────────────────────────────────────────────────────────────────────────
+function CardShell({ slide, paused, hideBar }: { slide: SlideConfig; paused: boolean; hideBar?: boolean }) {
+  return (
+    <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column' }}>
+      {/* Glow */}
+      <div style={{
+        position:'absolute', inset:0, pointerEvents:'none',
+        background:`radial-gradient(ellipse at 50% 35%, ${slide.color}12 0%, transparent 65%)`,
+      }}/>
+
+      {/* Conteúdo */}
+      <div style={{
+        flex:1, display:'flex', alignItems:'center', justifyContent:'center',
+        padding:'56px 24px 16px',
+        overflow:'hidden', position:'relative', zIndex:1,
+      }}>
+        <div style={{ width:'100%', maxWidth:560 }}>
+          <SlideContent slide={slide} />
+        </div>
+      </div>
+
+      {/* Barra de progresso */}
+      {!hideBar && (
+        <ProgressBar color={slide.color} paused={paused} slideKey={slide.id} />
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Loading screen enquanto localStorage carrega
+// ─────────────────────────────────────────────────────────────────────────────
+function TvLoading() {
+  return (
+    <div style={{
+      position:'fixed', inset:0, background:'#060410',
+      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16,
+    }}>
+      <span style={{ fontSize:48, animation:'gtFade 1s ease-in-out infinite alternate' }}>📺</span>
+      <div style={{ fontFamily:"'Courier New',monospace", fontSize:11, color:'rgba(255,255,255,.4)', letterSpacing:3 }}>
+        CARREGANDO PROGRAMAÇÃO...
+      </div>
+      <style>{`@keyframes gtFade{from{opacity:.3}to{opacity:1}}`}</style>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PÁGINA PRINCIPAL
 // ═════════════════════════════════════════════════════════════════════════════
 export default function TvEmpresarial() {
-  const [cur,       setCur]       = useState(0);
-  const [outgoing,  setOutgoing]  = useState<number | null>(null);
-  const [dir,       setDir]       = useState<Dir>('left');
-  const [paused,    setPaused]    = useState(false);
-  const [busy,      setBusy]      = useState(false);
-  const [showUI,    setShowUI]    = useState(true);
-  const timerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
-  const uiRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // ✅ Fonte única da verdade — vem do localStorage via useTvConfig
+  const { activeSlides, loaded } = useTvConfig();
 
-  const total = SLIDES.length;
-  const slide = SLIDES[cur];
+  const [cur,      setCur]      = useState(0);
+  const [outgoing, setOutgoing] = useState<number | null>(null);
+  const [dir,      setDir]      = useState<Dir>('left');
+  const [paused,   setPaused]   = useState(false);
+  const [busy,     setBusy]     = useState(false);
+  const [showUI,   setShowUI]   = useState(true);
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const uiRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Garante que cur nunca ultrapasse o total de slides disponíveis
+  const total = activeSlides.length;
+  const safeCur = total > 0 ? cur % total : 0;
+  const slide   = activeSlides[safeCur];
+
+  // Reseta cur quando slides mudam (ex: volta do editor)
+  useEffect(() => {
+    if (total > 0 && cur >= total) setCur(0);
+  }, [total, cur]);
 
   // ── Transição ─────────────────────────────────────────────────────────────
   const goTo = useCallback((idx: number, d: Dir) => {
-    if (busy || idx === cur) return;
+    if (busy || idx === safeCur || total === 0) return;
     setBusy(true);
-    setOutgoing(cur);
+    setOutgoing(safeCur);
     setDir(d);
     setCur(idx);
     setTimeout(() => { setOutgoing(null); setBusy(false); }, 480);
-  }, [busy, cur]);
+  }, [busy, safeCur, total]);
 
-  const goNext = useCallback(() => goTo((cur + 1) % total, 'left'),  [cur, total, goTo]);
-  const goPrev = useCallback(() => goTo((cur - 1 + total) % total, 'right'), [cur, total, goTo]);
+  const goNext = useCallback(() => goTo((safeCur + 1) % total, 'left'),           [safeCur, total, goTo]);
+  const goPrev = useCallback(() => goTo((safeCur - 1 + total) % total, 'right'),  [safeCur, total, goTo]);
 
   // ── Auto-avanço ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (paused) return;
+    if (paused || total === 0) return;
     timerRef.current = setInterval(goNext, SLIDE_MS);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused, goNext]);
+  }, [paused, goNext, total]);
 
   // ── UI timeout ────────────────────────────────────────────────────────────
   const nudgeUI = useCallback(() => {
@@ -139,7 +292,9 @@ export default function TvEmpresarial() {
     return () => window.removeEventListener('keydown', h);
   }, [goNext, goPrev, nudgeUI]);
 
-  // Direção de animação
+  // ── Aguarda localStorage carregar ─────────────────────────────────────────
+  if (!loaded || total === 0) return <TvLoading />;
+
   const enterFrom = dir === 'left' ? '100%'  : '-100%';
   const exitTo    = dir === 'left' ? '-100%' : '100%';
 
@@ -150,22 +305,22 @@ export default function TvEmpresarial() {
       onTouchStart={nudgeUI}
     >
 
-      {/* ════ ÁREA DE SLIDES (acima do ticker) ════ */}
+      {/* ════ ÁREA DE SLIDES ════ */}
       <div style={{ position:'absolute', inset:0, bottom:TICKER_H }}>
 
         {/* Slide saindo */}
-        {outgoing !== null && (
+        {outgoing !== null && activeSlides[outgoing] && (
           <div key={`out-${outgoing}`} style={{
             position:'absolute', inset:0, zIndex:1,
             animation:`gtExit 480ms cubic-bezier(.4,0,.2,1) forwards`,
             ['--gt-exit' as any]: exitTo,
           }}>
-            <CardShell slide={SLIDES[outgoing]} paused={false} hideBar />
+            <CardShell slide={activeSlides[outgoing]} paused={false} hideBar />
           </div>
         )}
 
-        {/* Slide entrando — clique pausa/retoma */}
-        <div key={`in-${cur}`} style={{
+        {/* Slide entrando */}
+        <div key={`in-${safeCur}`} style={{
           position:'absolute', inset:0, zIndex:2,
           animation:`gtEnter 480ms cubic-bezier(.4,0,.2,1) forwards`,
           ['--gt-enter' as any]: enterFrom,
@@ -176,7 +331,7 @@ export default function TvEmpresarial() {
           <CardShell slide={slide} paused={paused} />
         </div>
 
-        {/* Overlay de pausa */}
+        {/* Overlay pausa */}
         {paused && (
           <div style={{
             position:'absolute', inset:0, zIndex:5,
@@ -189,7 +344,7 @@ export default function TvEmpresarial() {
               background:'rgba(0,0,0,.75)',
               border:`1.5px solid ${slide.color}`,
               borderRadius:14, backdropFilter:'blur(10px)',
-              animation:'gtFade .2s ease',
+              animation:'gtFadeIn .2s ease',
             }}>
               <span style={{ fontSize:26 }}>⏸</span>
               <div>
@@ -201,15 +356,14 @@ export default function TvEmpresarial() {
         )}
       </div>
 
-      {/* ════ HUD — aparece/desaparece com inatividade ════ */}
+      {/* ════ HUD ════ */}
       <div style={{
         position:'absolute', inset:0, bottom:TICKER_H,
         zIndex:10, pointerEvents:'none',
         opacity: showUI ? 1 : 0,
         transition:'opacity .7s ease',
       }}>
-
-        {/* ── Header ── */}
+        {/* Header */}
         <div style={{
           position:'absolute', top:0, left:0, right:0,
           padding:'12px 16px 16px',
@@ -228,22 +382,21 @@ export default function TvEmpresarial() {
             )}
           </div>
 
-          {/* Dots de navegação */}
+          {/* Dots — um por slide ativo */}
           <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-            {SLIDES.map((s, i) => (
-              <button key={s.id} onClick={() => { goTo(i, i > cur ? 'left' : 'right'); nudgeUI(); }} style={{
-                width: i===cur ? 22 : 7, height:7, borderRadius:4,
-                background: i===cur ? slide.color : 'rgba(255,255,255,.2)',
+            {activeSlides.map((s, i) => (
+              <button key={s.id} onClick={() => { goTo(i, i > safeCur ? 'left' : 'right'); nudgeUI(); }} style={{
+                width: i===safeCur ? 22 : 7, height:7, borderRadius:4,
+                background: i===safeCur ? slide.color : 'rgba(255,255,255,.2)',
                 border:'none', cursor:'pointer', padding:0,
-                boxShadow: i===cur ? `0 0 8px ${slide.color}` : 'none',
+                boxShadow: i===safeCur ? `0 0 8px ${slide.color}` : 'none',
                 transition:'all .35s',
               }}/>
             ))}
           </div>
 
-          {/* Ações do header */}
+          {/* Ações */}
           <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            {/* ⚙️ Editar programação */}
             <Link href="/tv-empresarial/config" style={{
               fontFamily:"'Courier New',monospace",
               fontSize:9, color:'#ff8c42', textDecoration:'none',
@@ -253,7 +406,6 @@ export default function TvEmpresarial() {
               borderRadius:12, letterSpacing:1, fontWeight:700,
             }}>⚙️ EDITAR</Link>
 
-            {/* Voltar */}
             <Link href="/" style={{
               fontFamily:"'Courier New',monospace",
               fontSize:9, color:'rgba(255,255,255,.45)', textDecoration:'none',
@@ -263,7 +415,7 @@ export default function TvEmpresarial() {
           </div>
         </div>
 
-        {/* ── Setas laterais ── */}
+        {/* Setas laterais */}
         {(['prev','next'] as const).map(side => (
           <button key={side}
             onClick={() => { side==='prev' ? goPrev() : goNext(); nudgeUI(); }}
@@ -272,25 +424,23 @@ export default function TvEmpresarial() {
               [side==='prev'?'left':'right']: 10,
               width:42, height:42, borderRadius:'50%',
               background:'rgba(0,0,0,.65)',
-              border:`1px solid rgba(255,255,255,.18)`,
+              border:'1px solid rgba(255,255,255,.18)',
               color:'rgba(255,255,255,.7)', fontSize:15,
               cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
               backdropFilter:'blur(8px)', pointerEvents:'auto',
-              transition:'background .2s',
-              fontFamily:'monospace',
+              transition:'background .2s', fontFamily:'monospace',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background='rgba(255,255,255,.18)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background='rgba(0,0,0,.65)'; }}
           >{side==='prev' ? '◀' : '▶'}</button>
         ))}
 
-        {/* ── Controles base ── */}
+        {/* Barra inferior */}
         <div style={{
           position:'absolute', bottom:8, left:0, right:0,
           display:'flex', alignItems:'center', justifyContent:'space-between',
           padding:'0 14px', pointerEvents:'auto',
         }}>
-          {/* Nome do card */}
           <div style={{ display:'flex', alignItems:'center', gap:7 }}>
             <span style={{ fontSize:14 }}>{slide.icon}</span>
             <span style={{ fontFamily:"'Courier New',monospace", fontSize:9, color:'rgba(255,255,255,.5)', letterSpacing:1.5, fontWeight:700 }}>
@@ -298,19 +448,15 @@ export default function TvEmpresarial() {
             </span>
           </div>
 
-          {/* Direção + contador */}
           <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <button
-              onClick={() => setDir(d => d==='left'?'right':'left')}
-              style={{
-                fontFamily:"'Courier New',monospace",
-                padding:'3px 9px', fontSize:8, letterSpacing:1,
-                background:'rgba(0,0,0,.65)',
-                border:`1px solid ${slide.color}55`,
-                borderRadius:7, color:slide.color,
-                cursor:'pointer', backdropFilter:'blur(8px)',
-              }}
-            >{dir==='left' ? '→ DIRETA' : '← ESQUERDA'}</button>
+            <button onClick={() => setDir(d => d==='left'?'right':'left')} style={{
+              fontFamily:"'Courier New',monospace",
+              padding:'3px 9px', fontSize:8, letterSpacing:1,
+              background:'rgba(0,0,0,.65)',
+              border:`1px solid ${slide.color}55`,
+              borderRadius:7, color:slide.color,
+              cursor:'pointer', backdropFilter:'blur(8px)',
+            }}>{dir==='left' ? '→ DIREITA' : '← ESQUERDA'}</button>
 
             <div style={{
               fontFamily:"'Courier New',monospace",
@@ -318,7 +464,7 @@ export default function TvEmpresarial() {
               background:'rgba(0,0,0,.65)',
               border:'1px solid rgba(255,255,255,.12)',
               borderRadius:7, color:'rgba(255,255,255,.4)',
-            }}>{cur+1}/{total}</div>
+            }}>{safeCur+1}/{total}</div>
           </div>
         </div>
       </div>
@@ -328,48 +474,13 @@ export default function TvEmpresarial() {
         <GTNewsTicker speed={80} height={TICKER_H} controls={false} />
       </div>
 
-      {/* ════ KEYFRAMES ════ */}
       <style>{`
-        @keyframes gtEnter {
-          from { transform:translateX(var(--gt-enter)); opacity:.5; }
-          to   { transform:translateX(0);              opacity:1;  }
-        }
-        @keyframes gtExit {
-          from { transform:translateX(0);             opacity:1;  }
-          to   { transform:translateX(var(--gt-exit)); opacity:.3; }
-        }
-        @keyframes gtBlink { 0%,100%{opacity:1} 50%{opacity:0} }
-        @keyframes gtFade  { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+        @keyframes gtEnter  { from{transform:translateX(var(--gt-enter));opacity:.5} to{transform:translateX(0);opacity:1} }
+        @keyframes gtExit   { from{transform:translateX(0);opacity:1} to{transform:translateX(var(--gt-exit));opacity:.3} }
+        @keyframes gtBlink  { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes gtFadeIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+        @keyframes gtFade   { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
-    </div>
-  );
-}
-
-// ── Wrapper visual de cada slide ──────────────────────────────────────────────
-function CardShell({ slide, paused, hideBar }: { slide: Slide; paused: boolean; hideBar?: boolean }) {
-  return (
-    <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column' }}>
-      {/* Glow de fundo */}
-      <div style={{
-        position:'absolute', inset:0, pointerEvents:'none',
-        background:`radial-gradient(ellipse at 50% 35%, ${slide.color}12 0%, transparent 65%)`,
-      }}/>
-
-      {/* Conteúdo centralizado */}
-      <div style={{
-        flex:1, display:'flex', alignItems:'center', justifyContent:'center',
-        padding:`${56}px 24px 16px`,
-        overflow:'hidden', position:'relative', zIndex:1,
-      }}>
-        <div style={{ width:'100%', maxWidth:560 }}>
-          <SlideContent id={slide.id} />
-        </div>
-      </div>
-
-      {/* Barra de progresso */}
-      {!hideBar && (
-        <ProgressBar color={slide.color} paused={paused} slideKey={slide.id} />
-      )}
     </div>
   );
 }
