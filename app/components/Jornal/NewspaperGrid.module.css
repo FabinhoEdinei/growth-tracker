@@ -1,80 +1,103 @@
 .newspaperGridContainer {
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  /* Remove padding lateral e faixa preta */
+  padding: 6px 4px 16px;
+  background: #f5f0e8;
 }
 
 .newspaperGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  gap: 5px;
+
+  /* Layout assimétrico estilo jornal:
+     card-0  = destaque full width
+     card-1 + card-2 = par (metade cada)
+     card-3 + card-4 + card-5 = trio (terço cada)
+     card-6  = destaque full width
+     card-7 + card-8 = par
+     card-9 + card-10 + card-11 = trio
+  */
+  grid-template-columns: 1fr 1fr 1fr;
   grid-template-areas:
-    "header header header"
-    "card-1 card-2 card-3"
-    "card-4 card-5 card-6"
-    "card-7 card-8 card-9"
+    "header  header  header"
+    "card-1  card-2  card-3"
+    "card-4  card-5  card-6"
+    "card-7  card-8  card-9"
     "card-10 card-11 card-12";
 }
 
-/* Cards pequenos estilo jornal antigo */
+/* ── Grid areas individuais ── */
+.newspaperGrid > :nth-child(1)  { grid-area: header;  }
+.newspaperGrid > :nth-child(2)  { grid-area: card-1;  }
+.newspaperGrid > :nth-child(3)  { grid-area: card-2;  }
+.newspaperGrid > :nth-child(4)  { grid-area: card-3;  }
+.newspaperGrid > :nth-child(5)  { grid-area: card-4;  }
+.newspaperGrid > :nth-child(6)  { grid-area: card-5;  }
+.newspaperGrid > :nth-child(7)  { grid-area: card-6;  }
+.newspaperGrid > :nth-child(8)  { grid-area: card-7;  }
+.newspaperGrid > :nth-child(9)  { grid-area: card-8;  }
+.newspaperGrid > :nth-child(10) { grid-area: card-9;  }
+.newspaperGrid > :nth-child(11) { grid-area: card-10; }
+.newspaperGrid > :nth-child(12) { grid-area: card-11; }
+
+/* ── Estilo vintage para cards pequenos ── */
 .newspaperCardSmall {
   background: #fff8dc;
   border: 2px solid #8b7355;
-  padding: 12px;
-  font-size: 0.75rem;
+  padding: 8px;
+  font-size: 0.7rem;
   line-height: 1.3;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
   transition: transform 0.2s;
   cursor: pointer;
 }
 
 .newspaperCardSmall:hover {
   transform: translateY(-2px);
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
 }
 
 .newspaperCardSmall h3 {
-  font-size: 0.9rem;
-  margin: 0 0 8px 0;
+  font-size: 0.8rem;
+  margin: 0 0 5px 0;
   font-weight: bold;
   border-bottom: 1px solid #8b7355;
-  padding-bottom: 5px;
+  padding-bottom: 4px;
 }
 
 .newspaperCardSmall p {
-  margin: 5px 0;
+  margin: 4px 0;
   color: #5a4a3a;
 }
 
 .newspaperCardSmall .date {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: #8b7355;
   font-style: italic;
 }
 
-/* Card destaque maior */
+/* ── Card destaque ── */
 .cardDestaque {
   grid-column: span 2;
   background: #f5f0e8;
   border: 3px solid #6b5344;
-  padding: 20px;
+  padding: 14px;
 }
 
 .cardDestaque h3 {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
-/* Header do jornal */
+/* ── Header do jornal ── */
 .newspaperHeader {
   grid-area: header;
   text-align: center;
   border-bottom: 3px double #6b5344;
-  padding-bottom: 15px;
-  margin-bottom: 15px;
+  padding-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .newspaperHeader h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: bold;
   letter-spacing: 3px;
   margin: 0;
@@ -82,12 +105,12 @@
 }
 
 .newspaperHeader .subtitle {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #6b5344;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
-/* Estilo vintage */
+/* ── Borda vintage ── */
 .vintageBorder {
   border: 2px solid #8b7355;
   position: relative;
@@ -96,73 +119,69 @@
 .vintageBorder::before {
   content: '';
   position: absolute;
-  top: 3px;
-  left: 3px;
-  right: 3px;
-  bottom: 3px;
+  top: 3px; left: 3px; right: 3px; bottom: 3px;
   border: 1px solid #a09070;
   pointer-events: none;
 }
 
-/* Mobile - 2 colunas */
+/* ════════════════════════════════════════
+   MOBILE — layout assimétrico adaptado
+   ════════════════════════════════════════ */
 @media (max-width: 768px) {
+  .newspaperGridContainer {
+    padding: 4px 3px 12px;
+  }
+
   .newspaperGrid {
-    grid-template-columns: repeat(2, 1fr);
+    /* Padrão mobile:
+       destaque (full) → par (2 cols) → trio (3 cols) → repetir */
+    grid-template-columns: 1fr 1fr 1fr;
     grid-template-areas:
-      "header header"
-      "card-1 card-2"
-      "card-3 card-4"
-      "card-5 card-6"
-      "card-7 card-8"
-      "card-9 card-10"
-      "card-11 card-12";
-    gap: 10px;
+      "header  header  header"
+      "card-1  card-1  card-2"
+      "card-3  card-4  card-5"
+      "card-6  card-6  card-7"
+      "card-8  card-9  card-10"
+      "card-11 card-11 card-12";
+    gap: 4px;
   }
 
-  .newspaperCardSmall {
-    padding: 10px;
-    font-size: 0.7rem;
-  }
+  /* Destaque ocupa 2/3 da largura */
+  .newspaperGrid > :nth-child(1)  { grid-area: header;  }
+  .newspaperGrid > :nth-child(2)  { grid-area: card-1;  }
+  .newspaperGrid > :nth-child(3)  { grid-area: card-2;  }
+  .newspaperGrid > :nth-child(4)  { grid-area: card-3;  }
+  .newspaperGrid > :nth-child(5)  { grid-area: card-4;  }
+  .newspaperGrid > :nth-child(6)  { grid-area: card-5;  }
+  .newspaperGrid > :nth-child(7)  { grid-area: card-6;  }
+  .newspaperGrid > :nth-child(8)  { grid-area: card-7;  }
+  .newspaperGrid > :nth-child(9)  { grid-area: card-8;  }
+  .newspaperGrid > :nth-child(10) { grid-area: card-9;  }
+  .newspaperGrid > :nth-child(11) { grid-area: card-10; }
+  .newspaperGrid > :nth-child(12) { grid-area: card-11; }
 
-  .newspaperCardSmall h3 {
-    font-size: 0.8rem;
-  }
-
-  .cardDestaque {
-    grid-column: span 2;
-    padding: 15px;
-  }
-
-  .newspaperHeader h1 {
-    font-size: 1.8rem;
-  }
+  .newspaperCardSmall { padding: 6px; font-size: 0.65rem; }
+  .newspaperCardSmall h3 { font-size: 0.72rem; }
+  .cardDestaque { grid-column: span 2; padding: 10px; }
+  .newspaperHeader h1 { font-size: 1.4rem; }
 }
 
-/* Mobile pequeno - 1 coluna */
-@media (max-width: 480px) {
+/* ════════════════════════════════════════
+   MOBILE PEQUENO — 2 colunas simples
+   ════════════════════════════════════════ */
+@media (max-width: 380px) {
   .newspaperGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-areas:
-      "header"
-      "card-1"
-      "card-2"
-      "card-3"
-      "card-4"
-      "card-5"
-      "card-6"
-      "card-7"
-      "card-8"
-      "card-9"
-      "card-10"
-      "card-11"
-      "card-12";
+      "header  header"
+      "card-1  card-2"
+      "card-3  card-4"
+      "card-5  card-6"
+      "card-7  card-8"
+      "card-9  card-10"
+      "card-11 card-12";
   }
 
-  .cardDestaque {
-    grid-column: span 1;
-  }
-
-  .newspaperHeader h1 {
-    font-size: 1.5rem;
-  }
+  .cardDestaque { grid-column: span 2; }
+  .newspaperHeader h1 { font-size: 1.2rem; }
 }
