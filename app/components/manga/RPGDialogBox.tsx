@@ -70,41 +70,47 @@ function AvatarFallback({ nome, cor, size }: { nome: string; cor: string; size: 
 }
 
 // ── Avatar com fallback automático ────────────────────────────────────────────
-function Avatar({ src, nome, cor, size = 58 }: { src?: string; nome: string; cor: string; size?: number }) {
-  const [erro, setErro] = useState(false);
+function Avatar({ src, nome, cor, size = 62 }: { src?: string; nome: string; cor: string; size?: number }) {
+  const [erro,     setErro]     = useState(false);
+  const [carregou, setCarregou] = useState(false);
 
-  // Reset se src mudar
-  useEffect(() => { setErro(false); }, [src]);
+  useEffect(() => { setErro(false); setCarregou(false); }, [src]);
 
   if (!src || erro) return <AvatarFallback nome={nome} cor={cor} size={size} />;
 
   return (
     <div style={{
-      width:        size, height: size,
-      borderRadius: 10,
-      overflow:     'hidden',
-      border:       `2px solid ${cor}66`,
-      boxShadow:    `0 0 14px ${cor}44, inset 0 0 8px rgba(0,0,0,0.4)`,
-      flexShrink:   0,
-      position:     'relative',
-      background:   'rgba(0,0,0,0.3)',
+      width:         size, height: size,
+      borderRadius:  12,
+      overflow:      'hidden',
+      border:        `2px solid ${cor}88`,
+      boxShadow:     `0 0 16px ${cor}55, 0 0 4px ${cor}33`,
+      flexShrink:    0,
+      position:      'relative',
+      background:    `linear-gradient(135deg, ${cor}18, rgba(0,0,0,0.5))`,
     }}>
+      {/* Fallback visível enquanto carrega */}
+      {!carregou && (
+        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <AvatarFallback nome={nome} cor={cor} size={size - 4} />
+        </div>
+      )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={nome}
-        onError={() => setErro(true)}
+        onLoad={()  => setCarregou(true)}
+        onError={() => { setErro(true); }}
         style={{
-          width: '100%', height: '100%',
-          objectFit: 'cover',
-          display: 'block',
+          position:       'absolute', inset: 0,
+          width:          '100%', height: '100%',
+          objectFit:      'cover',
+          objectPosition: 'top center',
+          display:        carregou ? 'block' : 'none',
         }}
       />
-      {/* Brilho de canto no avatar */}
-      <div style={{
-        position:   'absolute', inset: 0, pointerEvents: 'none',
-        background: `linear-gradient(135deg, ${cor}22 0%, transparent 50%)`,
-      }}/>
+      {/* Brilho de canto */}
+      <div style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:1, background:`linear-gradient(135deg, ${cor}28 0%, transparent 55%)`, borderRadius:'inherit' }}/>
     </div>
   );
 }
