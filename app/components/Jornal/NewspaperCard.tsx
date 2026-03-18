@@ -63,19 +63,16 @@ export const NewspaperCard: React.FC<NewspaperCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
-  const style = cardStyles[type];
+  const style = cardStyles[type] ?? cardStyles.fatos;
 
-  const handleClick = () => {
-    router.push(`/jornal/${slug}`);
-  };
+  const handleClick = () => router.push(`/jornal/${slug}`);
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
+    try {
+      return new Date(dateStr).toLocaleDateString('pt-BR', {
+        day: '2-digit', month: 'short',
+      });
+    } catch { return dateStr; }
   };
 
   return (
@@ -87,139 +84,165 @@ export const NewspaperCard: React.FC<NewspaperCardProps> = ({
       style={{
         gridArea,
         background: style.background,
-        transform: isHovered ? 'scale(1.02) translateY(-4px)' : 'scale(1)',
+        transform: isHovered ? 'scale(1.01) translateY(-2px)' : 'scale(1)',
       }}
     >
-      {/* Moldura Vintage */}
       <VintageFrame
         variant={style.frameVariant}
         color={style.frameColor}
         size="medium"
       >
-        {/* Conteúdo do card */}
         <div className="card-inner">
-          {/* Ornamento superior */}
+
+          {/* Ornamento — menor e mais discreto */}
           <div className="card-ornament-top">
             {type === 'publicidade' && '⚜ ⚜ ⚜'}
-            {type === 'fabio' && '★ ★ ★'}
-            {type === 'claudia' && '❀ ❀ ❀'}
-            {type === 'fatos' && '◆ ◆ ◆'}
-            {type === 'lugares' && '⚑ ⚑ ⚑'}
+            {type === 'fabio'       && '★ ★ ★'}
+            {type === 'claudia'     && '❀ ❀ ❀'}
+            {type === 'fatos'       && '◆ ◆ ◆'}
+            {type === 'lugares'     && '⚑ ⚑ ⚑'}
           </div>
 
-          {/* Cabeçalho */}
+          {/* Cabeçalho: ícone + label + data na mesma linha */}
           <div className="card-header">
             <span className="card-icon">{style.icon}</span>
             <div className="card-label" style={{ color: style.accentColor }}>
-              {type === 'fabio' && 'AVENTURAS DE FABIO'}
-              {type === 'claudia' && 'DIÁRIO DE CLÁUDIA'}
+              {type === 'fabio'       && 'AVENTURAS DE FABIO'}
+              {type === 'claudia'     && 'DIÁRIO DE CLÁUDIA'}
               {type === 'publicidade' && 'ANÚNCIO ESPECIAL'}
-              {type === 'fatos' && 'FATOS DO DIA'}
-              {type === 'lugares' && 'TERRAS EXPLORADAS'}
+              {type === 'fatos'       && 'FATOS DO DIA'}
+              {type === 'lugares'     && 'TERRAS EXPLORADAS'}
             </div>
+            {/* Data compacta na mesma linha do label */}
+            <span className="card-date-inline">{formatDate(date)}</span>
           </div>
 
-          {/* Título */}
+          {/* Título — menor e com clamp */}
           <h3 className="card-title">{title}</h3>
 
-          {/* Data */}
-          <div className="card-date">{formatDate(date)}</div>
-
-          {/* Linha decorativa */}
+          {/* Divider */}
           <div className="card-divider" style={{ borderColor: style.accentColor }} />
 
-          {/* Excerpt */}
+          {/* Excerpt — 2 linhas máximo */}
           <p className="card-excerpt">{excerpt}</p>
 
-          {/* Footer */}
+          {/* Footer compacto */}
           <div className="card-footer">
             <span className="read-more" style={{ color: style.accentColor }}>
-              LER HISTÓRIA COMPLETA →
+              LER →
             </span>
           </div>
         </div>
       </VintageFrame>
 
-      {/* Textura vintage */}
-      <div className="vintage-texture"></div>
+      <div className="vintage-texture" />
 
       <style jsx>{`
         .newspaper-card {
           position: relative;
           cursor: pointer;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.3s ease;
           overflow: hidden;
-          box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
-          min-height: 250px;
+          box-shadow: 1px 1px 5px rgba(0,0,0,0.12);
+          /* ✅ Era 250px — reduzido para caber 12+ na tela */
+          min-height: 140px;
         }
 
         .newspaper-card:hover {
-          box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.25);
+          box-shadow: 3px 3px 10px rgba(0,0,0,0.2);
         }
 
         .card-inner {
           height: 100%;
           display: flex;
           flex-direction: column;
+          /* ✅ Padding interno menor */
+          padding: 2px 0;
         }
 
         .card-ornament-top {
           text-align: center;
-          font-size: 10px;
-          color: rgba(0, 0, 0, 0.3);
-          margin-bottom: 8px;
-          letter-spacing: 4px;
+          /* ✅ Era 10px */
+          font-size: 8px;
+          color: rgba(0,0,0,0.25);
+          /* ✅ Era 8px */
+          margin-bottom: 4px;
+          letter-spacing: 3px;
         }
 
         .card-header {
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-bottom: 12px;
+          gap: 5px;
+          /* ✅ Era 12px */
+          margin-bottom: 5px;
         }
 
         .card-icon {
-          font-size: 20px;
+          /* ✅ Era 20px */
+          font-size: 13px;
+          flex-shrink: 0;
         }
 
         .card-label {
-          font-size: 9px;
+          /* ✅ Era 9px */
+          font-size: 7.5px;
           font-weight: bold;
-          letter-spacing: 2px;
+          letter-spacing: 1.5px;
           text-transform: uppercase;
           font-family: 'Courier New', monospace;
+          flex: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        /* ✅ Data compacta ao lado do label */
+        .card-date-inline {
+          font-size: 7px;
+          font-style: italic;
+          color: rgba(0,0,0,0.4);
+          font-family: 'Georgia', serif;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
 
         .card-title {
-          font-size: 18px;
+          /* ✅ Era 18px */
+          font-size: 12px;
           font-weight: bold;
-          line-height: 1.2;
-          margin: 0 0 10px 0;
+          line-height: 1.25;
+          margin: 0 0 4px 0;
           color: #2a1810;
           font-family: 'Georgia', serif;
-        }
-
-        .card-date {
-          font-size: 11px;
-          font-style: italic;
-          color: rgba(0, 0, 0, 0.5);
-          margin-bottom: 12px;
-          font-family: 'Georgia', serif;
+          /* ✅ Máximo 2 linhas */
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .card-divider {
           border-top: 1px solid;
-          margin: 12px 0;
-          opacity: 0.4;
+          /* ✅ Era 12px 0 */
+          margin: 4px 0;
+          opacity: 0.35;
         }
 
         .card-excerpt {
-          font-size: 13px;
-          line-height: 1.6;
+          /* ✅ Era 13px */
+          font-size: 10px;
+          line-height: 1.45;
           color: #3a2820;
-          margin-bottom: 16px;
+          /* ✅ Era 16px */
+          margin-bottom: 4px;
           font-family: 'Georgia', serif;
           flex: 1;
+          /* ✅ Máximo 2 linhas */
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .card-footer {
@@ -228,41 +251,36 @@ export const NewspaperCard: React.FC<NewspaperCardProps> = ({
         }
 
         .read-more {
-          font-size: 11px;
+          /* ✅ Era 11px */
+          font-size: 8px;
           font-weight: bold;
-          letter-spacing: 1px;
+          letter-spacing: 0.8px;
           font-family: 'Courier New', monospace;
-          transition: transform 0.3s;
+          transition: transform 0.2s;
           display: inline-block;
         }
 
         .newspaper-card:hover .read-more {
-          transform: translateX(4px);
+          transform: translateX(3px);
         }
 
         .vintage-texture {
           position: absolute;
           inset: 0;
           background-image: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 2px,
-            rgba(0, 0, 0, 0.02) 2px,
-            rgba(0, 0, 0, 0.02) 4px
+            0deg, transparent, transparent 2px,
+            rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px
           );
           pointer-events: none;
           opacity: 0.3;
           z-index: 0;
         }
 
+        /* ✅ Mobile ainda mais compacto */
         @media (max-width: 768px) {
-          .card-title {
-            font-size: 16px;
-          }
-
-          .card-excerpt {
-            font-size: 12px;
-          }
+          .newspaper-card { min-height: 120px; }
+          .card-title     { font-size: 11px; }
+          .card-excerpt   { font-size: 9px; -webkit-line-clamp: 1; }
         }
       `}</style>
     </div>
