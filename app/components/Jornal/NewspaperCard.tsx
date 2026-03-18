@@ -212,47 +212,81 @@ export const NewspaperCard: React.FC<NewspaperCardProps> = ({
         .card-footer   { text-align: right; margin-top: auto; }
 
         .read-more {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 2px;
   font-family: 'Courier New', Courier, monospace;
   text-transform: uppercase;
-  color: #1a1a1a;
-  background: #f5f5dc; /* papel amarelado */
-  border: 2px double #333; /* borda dupla clássica de jornal */
-  padding: 6px 12px;
+  color: #d4af37; /* dourado base */
+  background: rgba(212, 175, 55, 0.08); /* translúcido dourado bem tênue */
+  backdrop-filter: blur(2px); /* efeito vidro fosco (opcional, remove se não quiser) */
+  border: 1px solid rgba(212, 175, 55, 0.4); /* borda dourada semi-transparente */
+  border-radius: 5px; /* bordas bem redondas */
+  padding: 8px 16px;
   position: relative;
   display: inline-block;
+  cursor: pointer;
+  
+  /* Efeito 3D de sair do papel + Neon dourado */
   box-shadow: 
-    2px 2px 0px rgba(0,0,0,0.1),
-    inset 0 0 10px rgba(139, 69, 19, 0.05); /* textura sutil de papel */
-  transition: all 0.2s ease;
+    0 4px 6px rgba(0, 0, 0, 0.1), /* sombra base suave */
+    0 1px 3px rgba(0, 0, 0, 0.08), /* profundidade extra */
+    inset 0 1px 0 rgba(255, 255, 255, 0.2), /* brilho interno topo */
+    0 0 15px rgba(212, 175, 55, 0.3), /* halo neon dourado externo */
+    0 0 30px rgba(212, 175, 55, 0.1); /* glow difuso */
+  
+  text-shadow: 
+    0 0 5px rgba(212, 175, 55, 0.8), /* brilho no texto */
+    0 0 10px rgba(212, 175, 55, 0.4);
+  
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
 }
 
-.read-more::before {
-  content: "[";
-  margin-right: 4px;
-  opacity: 0.6;
-}
-
+/* Seta com glow também */
 .read-more::after {
-  content: "]";
-  margin-left: 4px;
-  opacity: 0.6;
+  content: "→";
+  margin-left: 6px;
+  display: inline-block;
+  text-shadow: 0 0 5px rgba(212, 175, 55, 0.8);
+  transition: transform 0.3s ease;
 }
 
+/* Hover - intensifica o neon e eleva mais */
 .newspaper-card:hover .read-more {
-  background: #1a1a1a;
-  color: #f5f5dc; /* inverte as cores */
-  box-shadow: 3px 3px 0px rgba(0,0,0,0.2);
-  transform: translateX(3px);
+  background: rgba(212, 175, 55, 0.15); /* mais opaco no hover */
+  color: #ffd700; /* dourado mais brilhante */
+  border-color: rgba(255, 215, 0, 0.6);
+  
+  /* Eleva + intensifica neon */
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.15), /* sombra maior = mais alto */
+    0 4px 10px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(212, 175, 55, 0.6), /* neon mais forte */
+    0 0 40px rgba(212, 175, 55, 0.3),
+    0 0 60px rgba(212, 175, 55, 0.1);
+  
+  text-shadow: 
+    0 0 10px rgba(255, 215, 0, 1),
+    0 0 20px rgba(212, 175, 55, 0.8),
+    0 0 30px rgba(212, 175, 55, 0.4);
 }
 
-/* Efeito de "carimbo" ao clicar */
-.newspaper-card:active .read-more {
-  transform: translateX(3px) translateY(1px);
-  box-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+.newspaper-card:hover .read-more::after {
+  transform: translateX(4px);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 1);
 }
+
+/* Active - efeito de apertar o botão */
+.newspaper-card:active .read-more {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 10px rgba(212, 175, 55, 0.4);
+}
+
 
 
         .vintage-texture {
