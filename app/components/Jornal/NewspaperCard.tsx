@@ -212,14 +212,48 @@ export const NewspaperCard: React.FC<NewspaperCardProps> = ({
         .card-footer   { text-align: right; margin-top: auto; }
 
         .read-more {
-          font-size: 7px;
-          font-weight: bold;
-          letter-spacing: 0.8px;
-          font-family: 'Courier New', monospace;
-          transition: transform 0.2s;
-          display: inline-block;
-        }
-        .newspaper-card:hover .read-more { transform: translateX(3px); }
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  font-family: 'Courier New', Courier, monospace;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  background: #f5f5dc; /* papel amarelado */
+  border: 2px double #333; /* borda dupla clássica de jornal */
+  padding: 6px 12px;
+  position: relative;
+  display: inline-block;
+  box-shadow: 
+    2px 2px 0px rgba(0,0,0,0.1),
+    inset 0 0 10px rgba(139, 69, 19, 0.05); /* textura sutil de papel */
+  transition: all 0.2s ease;
+}
+
+.read-more::before {
+  content: "[";
+  margin-right: 4px;
+  opacity: 0.6;
+}
+
+.read-more::after {
+  content: "]";
+  margin-left: 4px;
+  opacity: 0.6;
+}
+
+.newspaper-card:hover .read-more {
+  background: #1a1a1a;
+  color: #f5f5dc; /* inverte as cores */
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.2);
+  transform: translateX(3px);
+}
+
+/* Efeito de "carimbo" ao clicar */
+.newspaper-card:active .read-more {
+  transform: translateX(3px) translateY(1px);
+  box-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+}
+
 
         .vintage-texture {
           position: absolute;
