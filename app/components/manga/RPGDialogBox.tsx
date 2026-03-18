@@ -1,324 +1,395 @@
 'use client';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// components/manga/RPGDialogBox.tsx
-// Caixa de diálogo estilo RPG Nintendo — typewriter, avatar, auto-avanço
+// app/components/manga/RPGDialogBox.tsx
+// Caixa RPG estilo Nintendo — avatar real, botão partícula orbital
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import Image from 'next/image';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
-
 export interface RPGDialogo {
-  personagem:  string;           // Nome exibido
-  fala:        string;           // Texto da fala
-  avatar?:     string;           // Caminho da imagem do avatar
-  cor?:        string;           // Cor do nome do personagem
-  autoMs?:     number;           // Se definido, avança automaticamente em Xms após typewriter
-  pagina?:     number;           // Índice da página onde aparece (0-based)
-  posicao?:    'base' | 'topo'; // Posição na tela (padrão: base)
+  personagem: string;
+  fala:       string;
+  avatar?:    string;   // ex: "/manga/avatares/fabinho-avatar.png"
+  cor?:       string;
+  autoMs?:    number;
+  pagina?:    number;
+  posicao?:   'base' | 'topo';
 }
 
 export interface RPGScript {
   dialogos: RPGDialogo[];
 }
 
-interface RPGDialogBoxProps {
-  script:       RPGScript | null;
-  paginaAtual:  number;
-  dark:         boolean;
-  onPageChange?: (idx: number) => void; // callback para mudar de página
+interface Props {
+  script:        RPGScript | null;
+  paginaAtual:   number;
+  dark:          boolean;
+  onPageChange?: (idx: number) => void;
 }
 
-// ── Cores padrão por personagem ───────────────────────────────────────────────
+// ── Paleta por personagem ─────────────────────────────────────────────────────
 const PALETA: Record<string, string> = {
-  narrador:  '#a0a0b0',
-  fabinho:   '#00d4ff',
-  fabio:     '#00d4ff',
-  vilao:     '#ff4d6d',
-  aliado:    '#00ff88',
-  sistema:   '#ffd700',
-  misterioso:'#c084fc',
+  narrador:   '#a0a0b0',
+  fabinho:    '#00d4ff',
+  fabio:      '#00d4ff',
+  vilao:      '#ff4d6d',
+  aliado:     '#00ff88',
+  sistema:    '#ffd700',
+  misterioso: '#c084fc',
 };
 
-function corPersonagem(nome: string, cor?: string): string {
+function corDo(nome: string, cor?: string): string {
   if (cor) return cor;
-  const key = nome.toLowerCase().replace(/\s+/g, '');
-  return PALETA[key] ?? '#ffffff';
+  const k = nome.toLowerCase().replace(/\s+/g, '');
+  return PALETA[k] ?? '#e0e0ff';
+}
+
+// ── Iniciais como fallback de avatar ──────────────────────────────────────────
+function AvatarFallback({ nome, cor, size }: { nome: string; cor: string; size: number }) {
+  const iniciais = nome.slice(0, 2).toUpperCase();
+  return (
+    <div style={{
+      width:          size, height: size,
+      borderRadius:   10,
+      background:     `linear-gradient(135deg, ${cor}33, ${cor}11)`,
+      border:         `2px solid ${cor}66`,
+      display:        'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize:       size * 0.35,
+      fontWeight:     900,
+      color:          cor,
+      fontFamily:     "'Courier New', monospace",
+      textShadow:     `0 0 10px ${cor}`,
+      letterSpacing:  1,
+      flexShrink:     0,
+    }}>
+      {iniciais}
+    </div>
+  );
+}
+
+// ── Avatar com fallback automático ────────────────────────────────────────────
+function Avatar({ src, nome, cor, size = 58 }: { src?: string; nome: string; cor: string; size?: number }) {
+  const [erro, setErro] = useState(false);
+
+  // Reset se src mudar
+  useEffect(() => { setErro(false); }, [src]);
+
+  if (!src || erro) return <AvatarFallback nome={nome} cor={cor} size={size} />;
+
+  return (
+    <div style={{
+      width:        size, height: size,
+      borderRadius: 10,
+      overflow:     'hidden',
+      border:       `2px solid ${cor}66`,
+      boxShadow:    `0 0 14px ${cor}44, inset 0 0 8px rgba(0,0,0,0.4)`,
+      flexShrink:   0,
+      position:     'relative',
+      background:   'rgba(0,0,0,0.3)',
+    }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={nome}
+        onError={() => setErro(true)}
+        style={{
+          width: '100%', height: '100%',
+          objectFit: 'cover',
+          display: 'block',
+        }}
+      />
+      {/* Brilho de canto no avatar */}
+      <div style={{
+        position:   'absolute', inset: 0, pointerEvents: 'none',
+        background: `linear-gradient(135deg, ${cor}22 0%, transparent 50%)`,
+      }}/>
+    </div>
+  );
+}
+
+// ── Botão partícula orbital ───────────────────────────────────────────────────
+function ParticleButton({ cor, label, onClick }: { cor: string; label: string; onClick: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef    = useRef<number>();
+  const phaseRef  = useRef(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const W = canvas.width  = 44;
+    const H = canvas.height = 44;
+    const cx = W / 2, cy = H / 2;
+
+    const draw = () => {
+      phaseRef.current += 0.05;
+      const p = phaseRef.current;
+      ctx.clearRect(0, 0, W, H);
+
+      // Glow central
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 14);
+      grad.addColorStop(0,   cor + 'ff');
+      grad.addColorStop(0.4, cor + '88');
+      grad.addColorStop(1,   cor + '00');
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14 + Math.sin(p * 1.5) * 3, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Núcleo brilhante
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4 + Math.sin(p * 2) * 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      // Anel orbital
+      ctx.beginPath();
+      ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+      ctx.strokeStyle = cor + '44';
+      ctx.lineWidth   = 1;
+      ctx.stroke();
+
+      // Partícula orbitando
+      const ox = cx + Math.cos(p) * 16;
+      const oy = cy + Math.sin(p) * 16;
+      ctx.beginPath();
+      ctx.arc(ox, oy, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = cor;
+      ctx.fill();
+
+      // Segunda partícula (oposta + velocidade diferente)
+      const ox2 = cx + Math.cos(p * 0.7 + Math.PI) * 16;
+      const oy2 = cy + Math.sin(p * 0.7 + Math.PI) * 16;
+      ctx.beginPath();
+      ctx.arc(ox2, oy2, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = cor + 'aa';
+      ctx.fill();
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    rafRef.current = requestAnimationFrame(draw);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [cor]);
+
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); onClick(); }}
+      title={label}
+      style={{
+        background:   'none',
+        border:       'none',
+        padding:      0,
+        cursor:       'pointer',
+        display:      'flex',
+        flexDirection:'column',
+        alignItems:   'center',
+        gap:          2,
+        flexShrink:   0,
+      }}
+    >
+      <canvas ref={canvasRef} style={{ width: 44, height: 44, display: 'block' }} />
+      <span style={{
+        fontFamily:    "'Courier New', monospace",
+        fontSize:      7,
+        color:         cor + 'aa',
+        letterSpacing: 1.5,
+        textTransform: 'uppercase',
+      }}>{label}</span>
+    </button>
+  );
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Componente principal
+// COMPONENTE PRINCIPAL
 // ═════════════════════════════════════════════════════════════════════════════
-export default function RPGDialogBox({
-  script, paginaAtual, dark, onPageChange,
-}: RPGDialogBoxProps) {
-  // Filtra diálogos da página atual
-  const dialogosDaPagina = script?.dialogos.filter(
-    d => (d.pagina ?? 0) === paginaAtual
-  ) ?? [];
+export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }: Props) {
+  const dialogosDaPagina = script?.dialogos.filter(d => (d.pagina ?? 0) === paginaAtual) ?? [];
 
-  const [idx,        setIdx]        = useState(0);
-  const [texto,      setTexto]      = useState('');
-  const [completo,   setCompleto]   = useState(false);
-  const [visivel,    setVisivel]    = useState(false);
-  const [skipAnim,   setSkipAnim]   = useState(false);
+  const [idx,      setIdx]      = useState(0);
+  const [texto,    setTexto]    = useState('');
+  const [completo, setCompleto] = useState(false);
+  const [visivel,  setVisivel]  = useState(false);
 
-  const timerRef   = useRef<ReturnType<typeof setTimeout>|null>(null);
-  const autoRef    = useRef<ReturnType<typeof setTimeout>|null>(null);
-  const indexRef   = useRef(0); // índice da letra atual no typewriter
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const letterRef= useRef(0);
 
   const dialogo = dialogosDaPagina[idx] ?? null;
 
   // Reset ao mudar de página
   useEffect(() => {
-    setIdx(0);
-    setTexto('');
-    setCompleto(false);
-    setSkipAnim(false);
+    setIdx(0); setTexto(''); setCompleto(false);
     setVisivel(dialogosDaPagina.length > 0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginaAtual]);
+  }, [paginaAtual, script]);
 
   // Typewriter
   useEffect(() => {
     if (!dialogo || !visivel) return;
     if (timerRef.current) clearTimeout(timerRef.current);
     if (autoRef.current)  clearTimeout(autoRef.current);
+    setTexto(''); setCompleto(false); letterRef.current = 0;
 
-    setTexto('');
-    setCompleto(false);
-    indexRef.current = 0;
-
-    if (skipAnim) {
-      setTexto(dialogo.fala);
-      setCompleto(true);
-      setSkipAnim(false);
-      agendarAuto(dialogo);
-      return;
-    }
-
-    const velocidade = dialogo.fala.length > 80 ? 18 : 24; // ms por letra
+    const vel = dialogo.fala.length > 100 ? 16 : 22;
 
     const digitar = () => {
-      indexRef.current++;
-      const parcial = dialogo.fala.slice(0, indexRef.current);
-      setTexto(parcial);
-
-      if (indexRef.current >= dialogo.fala.length) {
+      letterRef.current++;
+      setTexto(dialogo.fala.slice(0, letterRef.current));
+      if (letterRef.current >= dialogo.fala.length) {
         setCompleto(true);
-        agendarAuto(dialogo);
+        if (dialogo.autoMs) autoRef.current = setTimeout(avancar, dialogo.autoMs);
       } else {
-        timerRef.current = setTimeout(digitar, velocidade);
+        timerRef.current = setTimeout(digitar, vel);
       }
     };
-
-    timerRef.current = setTimeout(digitar, velocidade);
+    timerRef.current = setTimeout(digitar, vel);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (autoRef.current)  clearTimeout(autoRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, visivel, dialogo?.fala]);
+  }, [idx, visivel]);
 
-  function agendarAuto(d: RPGDialogo) {
-    if (!d.autoMs) return;
-    autoRef.current = setTimeout(() => avancar(), d.autoMs);
-  }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const avancar = useCallback(() => {
     if (!dialogo) return;
-
-    // Se typewriter não terminou — mostrar tudo primeiro
+    // Primeiro toque: completa o texto
     if (!completo) {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (autoRef.current)  clearTimeout(autoRef.current);
       setTexto(dialogo.fala);
       setCompleto(true);
-      setSkipAnim(true);
-      agendarAuto(dialogo);
+      if (dialogo.autoMs) autoRef.current = setTimeout(avancar, dialogo.autoMs);
       return;
     }
-
     if (autoRef.current) clearTimeout(autoRef.current);
-
-    const proximo = idx + 1;
-    if (proximo < dialogosDaPagina.length) {
-      setIdx(proximo);
-      setCompleto(false);
-      setSkipAnim(false);
+    const prox = idx + 1;
+    if (prox < dialogosDaPagina.length) {
+      setIdx(prox); setCompleto(false);
     } else {
-      // Acabou os diálogos desta página
       setVisivel(false);
-      // Avança para próxima página se callback fornecido
-      if (onPageChange) {
-        setTimeout(() => onPageChange(paginaAtual + 1), 400);
-      }
+      onPageChange?.(paginaAtual + 1);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dialogo, completo, idx, dialogosDaPagina.length, paginaAtual, onPageChange]);
 
   if (!visivel || !dialogo) return null;
 
-  const cor      = corPersonagem(dialogo.personagem, dialogo.cor);
-  const posicao  = dialogo.posicao ?? 'base';
-  const temAvatar = !!dialogo.avatar;
-
-  // ── Estilo da caixa ──────────────────────────────────────────────────────
-  const caixaBg    = dark
-    ? 'linear-gradient(135deg, rgba(8,6,20,0.97), rgba(16,10,36,0.97))'
-    : 'linear-gradient(135deg, rgba(240,239,248,0.97), rgba(220,218,240,0.97))';
-  const bordaCor   = `${cor}60`;
-  const textoCor   = dark ? 'rgba(255,255,255,0.92)' : 'rgba(20,20,30,0.92)';
-  const subtextCor = dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
+  const cor     = corDo(dialogo.personagem, dialogo.cor);
+  const isBase  = (dialogo.posicao ?? 'base') === 'base';
+  const bgCaixa = dark
+    ? 'linear-gradient(135deg,rgba(6,4,18,0.96),rgba(12,8,30,0.96))'
+    : 'linear-gradient(135deg,rgba(238,237,250,0.97),rgba(218,216,242,0.97))';
+  const txCor   = dark ? 'rgba(240,238,255,0.93)' : 'rgba(16,14,32,0.93)';
+  const subCor  = dark ? 'rgba(255,255,255,0.28)'  : 'rgba(0,0,0,0.28)';
+  const isUlt   = idx === dialogosDaPagina.length - 1;
 
   return (
     <div
       style={{
-        position:    'absolute',
-        [posicao === 'base' ? 'bottom' : 'top']: 0,
-        left: 0, right: 0,
-        zIndex: 30,
-        padding: '0 12px 12px',
-        animation: 'rpgSlideUp .25s cubic-bezier(.34,1.56,.64,1)',
-        pointerEvents: 'auto',
+        position:  'absolute',
+        [isBase ? 'bottom' : 'top']: 0,
+        left: 0, right: 0, zIndex: 30,
+        padding:   '0 10px 10px',
+        animation: 'rpgUp .28s cubic-bezier(.34,1.56,.64,1)',
       }}
       onClick={avancar}
     >
-      {/* Nome do personagem — badge acima da caixa */}
+      {/* ── Badge nome ── */}
       <div style={{
         display:       'inline-flex',
         alignItems:    'center',
-        gap:           6,
+        gap:           5,
         marginBottom:  -1,
-        marginLeft:    temAvatar ? 70 : 12,
+        marginLeft:    dialogo.avatar ? 76 : 14,
         padding:       '4px 14px 6px',
-        background:    dark ? `${cor}22` : `${cor}18`,
-        border:        `1px solid ${cor}55`,
+        background:    `${cor}18`,
+        border:        `1.5px solid ${cor}55`,
         borderBottom:  'none',
         borderRadius:  '10px 10px 0 0',
-        position:      'relative',
-        zIndex:        1,
+        position:      'relative', zIndex: 1,
       }}>
-        <span style={{
-          fontFamily:    "'Courier New', monospace",
-          fontSize:      11,
-          fontWeight:    900,
-          color:         cor,
-          letterSpacing: 1.5,
-          textShadow:    `0 0 10px ${cor}88`,
-        }}>
+        {/* Bolinha de status */}
+        <div style={{ width:6, height:6, borderRadius:'50%', background:cor, boxShadow:`0 0 6px ${cor}`, animation:'rpgPulse 2s ease-in-out infinite', flexShrink:0 }}/>
+        <span style={{ fontFamily:"'Courier New',monospace", fontSize:11, fontWeight:900, color:cor, letterSpacing:2, textShadow:`0 0 10px ${cor}88` }}>
           {dialogo.personagem.toUpperCase()}
         </span>
+        {dialogosDaPagina.length > 1 && (
+          <span style={{ fontFamily:"'Courier New',monospace", fontSize:8, color:subCor, marginLeft:4 }}>
+            {idx+1}/{dialogosDaPagina.length}
+          </span>
+        )}
       </div>
 
-      {/* Caixa principal */}
+      {/* ── Caixa ── */}
       <div style={{
-        display:      'flex',
-        alignItems:   'flex-start',
-        gap:          12,
-        background:   caixaBg,
-        border:       `1.5px solid ${bordaCor}`,
-        borderRadius: temAvatar ? '0 14px 14px 14px' : 14,
-        padding:      '14px 16px',
-        boxShadow:    `0 0 30px ${cor}18, 0 8px 32px rgba(0,0,0,0.6)`,
-        backdropFilter: 'blur(16px)',
-        minHeight:    80,
-        position:     'relative',
-        overflow:     'hidden',
+        display:        'flex',
+        alignItems:     'center',
+        gap:            12,
+        background:     bgCaixa,
+        border:         `1.5px solid ${cor}50`,
+        borderRadius:   dialogo.avatar ? '0 14px 14px 14px' : 14,
+        padding:        '12px 14px',
+        boxShadow:      `0 0 28px ${cor}18, 0 8px 40px rgba(0,0,0,0.65)`,
+        backdropFilter: 'blur(18px)',
+        minHeight:      72,
+        position:       'relative',
+        overflow:       'hidden',
       }}>
 
-        {/* Scanline sutil */}
-        <div style={{
-          position:     'absolute', inset: 0, pointerEvents: 'none',
-          backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px)',
-          borderRadius: 'inherit',
-        }}/>
+        {/* Scanlines */}
+        <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.025) 3px,rgba(0,0,0,0.025) 4px)', borderRadius:'inherit' }}/>
+        {/* Brilho topo */}
+        <div style={{ position:'absolute', top:0, left:0, right:0, height:1, background:`linear-gradient(90deg,transparent,${cor}50,transparent)`, pointerEvents:'none' }}/>
 
-        {/* Brilho de canto */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: 1,
-          background: `linear-gradient(90deg, transparent, ${cor}40, transparent)`,
-          pointerEvents: 'none',
-        }}/>
+        {/* ── Avatar ── */}
+        <Avatar src={dialogo.avatar} nome={dialogo.personagem} cor={cor} size={58} />
 
-        {/* Avatar */}
-        {temAvatar && (
-          <div style={{
-            width:        56, height: 56,
-            borderRadius: 10,
-            border:       `2px solid ${cor}66`,
-            overflow:     'hidden',
-            flexShrink:   0,
-            background:   dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)',
-            boxShadow:    `0 0 12px ${cor}44`,
-            position:     'relative',
-          }}>
-            <Image src={dialogo.avatar!} alt={dialogo.personagem} fill style={{ objectFit:'cover' }} />
-          </div>
-        )}
-
-        {/* Texto */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {/* ── Texto ── */}
+        <div style={{ flex:1, minWidth:0 }}>
           <p style={{
-            margin:      0,
-            fontSize:    14,
-            lineHeight:  1.65,
-            color:       textoCor,
-            fontFamily:  "'Courier New', monospace",
-            letterSpacing: 0.3,
-            whiteSpace:  'pre-wrap',
-            wordBreak:   'break-word',
+            margin:       0,
+            fontSize:     13,
+            lineHeight:   1.7,
+            color:        txCor,
+            fontFamily:   "'Courier New',monospace",
+            letterSpacing:0.4,
+            whiteSpace:   'pre-wrap',
+            wordBreak:    'break-word',
           }}>
             {texto}
-            {/* Cursor piscante enquanto digita */}
             {!completo && (
-              <span style={{ animation:'rpgCursor .6s step-end infinite', color:cor, marginLeft:1 }}>▋</span>
+              <span style={{ animation:'rpgBlink .55s step-end infinite', color:cor }}>▋</span>
             )}
           </p>
         </div>
 
-        {/* Indicador "toque para continuar" */}
-        {completo && dialogosDaPagina.length > 0 && (
-          <div style={{
-            position:  'absolute', bottom: 8, right: 12,
-            display:   'flex', alignItems: 'center', gap: 4,
-            animation: 'rpgBounce .8s ease-in-out infinite',
-          }}>
-            <span style={{ fontSize:10, color: subtextCor, fontFamily:"'Courier New',monospace", letterSpacing:1 }}>
-              {idx < dialogosDaPagina.length - 1 ? 'CONTINUAR' : 'PRÓX. PÁGINA'}
-            </span>
-            <span style={{ color:cor, fontSize:12 }}>▼</span>
-          </div>
-        )}
-
-        {/* Índice de diálogos */}
-        {dialogosDaPagina.length > 1 && (
-          <div style={{
-            position:   'absolute', top: 8, right: 10,
-            fontFamily: "'Courier New',monospace",
-            fontSize:   9, color: subtextCor, letterSpacing:1,
-          }}>
-            {idx + 1}/{dialogosDaPagina.length}
-          </div>
+        {/* ── Botão partícula orbital ── */}
+        {completo && (
+          <ParticleButton
+            cor={cor}
+            label={isUlt ? 'PRÓX.' : 'OK'}
+            onClick={avancar}
+          />
         )}
       </div>
 
-      {/* Auto-progresso bar */}
+      {/* Barra de auto-progresso */}
       {completo && dialogo.autoMs && (
-        <div style={{ height:2, background:'rgba(255,255,255,.08)', marginTop:3, borderRadius:1, overflow:'hidden' }}>
-          <div style={{
-            height:'100%', background:`${cor}88`,
-            animation:`rpgAutoBar ${dialogo.autoMs}ms linear forwards`,
-          }}/>
+        <div style={{ height:2, background:'rgba(255,255,255,.06)', borderRadius:1, overflow:'hidden', marginTop:3 }}>
+          <div style={{ height:'100%', background:`${cor}77`, animation:`rpgAuto ${dialogo.autoMs}ms linear forwards` }}/>
         </div>
       )}
 
       <style>{`
-        @keyframes rpgSlideUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes rpgCursor    { 0%,100%{opacity:1} 50%{opacity:0} }
-        @keyframes rpgBounce    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(3px)} }
-        @keyframes rpgAutoBar   { from{width:0%} to{width:100%} }
+        @keyframes rpgUp     { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes rpgBlink  { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes rpgPulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+        @keyframes rpgAuto   { from{width:0%} to{width:100%} }
       `}</style>
     </div>
   );
