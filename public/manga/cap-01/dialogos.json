@@ -1,0 +1,41 @@
+{
+  "dialogos": [
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "Conexão neural estabelecida. Bem-vindo ao Growth Tracker Universe.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700",
+      "autoMs": 3500
+    },
+    {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "O que é esse painel flutuando no céu...?",
+      "avatar": "/manga/avatares/fabinho.png",
+      "cor": "#00d4ff"
+    },
+    {
+      "pagina": 1,
+      "personagem": "Narrador",
+      "fala": "Era uma noite comum. Mas algo no horizonte digital mudaria tudo.",
+      "cor": "#a0a0b0",
+      "autoMs": 4000
+    },
+    {
+      "pagina": 1,
+      "personagem": "Fabinho",
+      "fala": "Eu consigo ver os dados... consigo ver o crescimento.",
+      "avatar": "/manga/avatares/fabinho.png",
+      "cor": "#00d4ff"
+    },
+    {
+      "pagina": 1,
+      "personagem": "Sistema",
+      "fala": "Protocolo GT-Chain ativado. Minerando bloco #001...",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700",
+      "autoMs": 2500
+    }
+  ]
+}
