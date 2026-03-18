@@ -220,9 +220,9 @@ export const NewspaperCard: React.FC<NewspaperCardProps> = ({
   color: #d4af37; /* dourado base */
   background: rgba(212, 175, 55, 0.08); /* translúcido dourado bem tênue */
   backdrop-filter: blur(2px); /* efeito vidro fosco (opcional, remove se não quiser) */
-  border: 1px solid rgba(212, 175, 55, 0.4); /* borda dourada semi-transparente */
+  border: 2px solid rgba(212, 175, 55, 0.4); /* borda dourada semi-transparente */
   border-radius: 5px; /* bordas bem redondas */
-  padding: 8px 16px;
+  padding: 4px 8px;
   position: relative;
   display: inline-block;
   cursor: pointer;
