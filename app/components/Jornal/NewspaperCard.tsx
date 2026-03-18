@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { JornalCard } from '@/app/types/jornal';
 import { VintageFrame } from './VintageFrame';
 
-// ✅ Sem prop style — não aceita propriedades extras
+//Sem prop style — não aceita propriedades extras
 interface NewspaperCardProps extends JornalCard {
   gridArea?: string;
 }
