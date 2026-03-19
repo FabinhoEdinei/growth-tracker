@@ -124,8 +124,29 @@ export const NewspaperHeader = () => {
       <div className="newspaper-meta">
         <span>CRÔNICAS DO SUL DIGITAL</span>
         <span>{formattedDate}</span>
-        <span className="edition">EDIÇÃO Nº. {Math.floor(Date.now() / 86400000)}</span>
-        <span className="price">GRATUITO</span>
+        <span className="edition">EDIÇÃO Nº. {Math.floor(Date.now() / 86400000)}      {temAnterior
+        ? <Link href={paginaAtual===2?'/jornal':`/jornal?pagina=${paginaAtual-1}`} style={btn}>◀ ANTERIOR</Link>
+        : <Link href="/" style={btnHome}>⌂ HOME</Link>
+      }
+
+      {/* Centro — info + dots */}
+      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flex:1 }}>
+        <span style={{ fontFamily:"'Courier New',monospace", fontSize:7, color:'rgba(200,168,75,0.55)', letterSpacing:2 }}>
+          ◆ PÁG. {paginaAtual}/{totalPaginas} · {totalPosts} EDIÇÕES ◆
+        </span>
+        <div style={{ display:'flex', gap:4, alignItems:'center' }}>
+          {Array.from({ length: totalPaginas }, (_, i) => i+1).map(p => (
+            <Link key={p} href={p===1?'/jornal':`/jornal?pagina=${p}`} style={{
+              width:      p===paginaAtual ? 20 : 7,
+              height:     7, borderRadius:4,
+              background: p===paginaAtual ? '#c8a84b' : 'rgba(200,168,75,0.25)',
+              display:    'block', transition:'all .3s',
+              boxShadow:  p===paginaAtual ? '0 0 6px rgba(200,168,75,0.5)' : 'none',
+            }}/>
+          ))}
+        </div>
+      </div>
+
       </div>
 
       {/* Ornamento inferior */}
