@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 export interface RPGDialogo {
@@ -16,6 +17,8 @@ export interface RPGDialogo {
   autoMs?:    number;
   pagina?:    number;
   posicao?:   'base' | 'topo';
+  link?:      string;   // URL para navegar ao clicar no botão
+  linkLabel?: string;   // Texto do botão (default: "VER →")
 }
 
 export interface RPGScript {
@@ -328,6 +331,35 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
           <span style={{ fontFamily:"'Courier New',monospace", fontSize:8, color:subCor, marginLeft:4 }}>
             {idx+1}/{dialogosDaPagina.length}
           </span>
+        )}
+        {/* Botão de link para post/blog relacionado */}
+        {dialogo.link && (
+          <Link
+            href={dialogo.link}
+            onClick={e => e.stopPropagation()}
+            style={{
+              marginLeft:    6,
+              padding:       '2px 8px',
+              background:    `${cor}25`,
+              border:        `1px solid ${cor}70`,
+              borderRadius:  6,
+              fontFamily:    "'Courier New',monospace",
+              fontSize:      8,
+              fontWeight:    900,
+              color:         cor,
+              textDecoration:'none',
+              letterSpacing: 1,
+              whiteSpace:    'nowrap' as const,
+              display:       'inline-flex',
+              alignItems:    'center',
+              gap:           3,
+              textShadow:    `0 0 6px ${cor}66`,
+              boxShadow:     `0 0 8px ${cor}22`,
+              animation:     'rpgPulse 2s ease-in-out infinite',
+            }}
+          >
+            📎 {dialogo.linkLabel ?? 'VER →'}
+          </Link>
         )}
       </div>
 
