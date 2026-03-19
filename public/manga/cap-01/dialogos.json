@@ -36,6 +36,21 @@
       "avatar": "/manga/avatares/sistema.png",
       "cor": "#ffd700",
       "autoMs": 2500
-    }
+    },
+{
+      "pagina": 2,
+      "personagem": "Narrador",
+      "fala": "Passou a noite e ai tudo começou acordando na cama, luz do amanhecer entrando pela janela, quarto simples,ainda cansado, olhos abrindo o mundo la fora vivendo mais um dia ",
+      "cor": "#a0a0b0",
+      "autoMs": 4000
+    },
+{
+"pagina": 1,
+      "personagem": "Fabinho",
+      "fala": "Ahhhhh , que preguiça, vamos la , animo cara o hoje eu começo no meu primeiro trabalho 😅.",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+},
+    
   ]
 }
