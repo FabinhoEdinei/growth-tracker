@@ -1,7 +1,7 @@
 ---
 title: "Seguindo a saga de construir minha história"
 slug: "modulo-2-silencio-ativo-imersao"
-date: "2026-03-01"
+date: "2026-03-19"
 author: "Fabio Edinei"
 category: "Jornada"
 excerpt: "Guia diário para relatar o que fiz no dia."
