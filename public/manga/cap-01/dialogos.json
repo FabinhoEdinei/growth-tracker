@@ -45,12 +45,20 @@
       "autoMs": 4000
     },
 {
-"pagina": 1,
+"pagina": 2,
       "personagem": "Fabinho",
       "fala": "Ahhhhh , que preguiça, vamos la , animo cara o hoje eu começo no meu primeiro trabalho 😅.",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
 },
+{
+      "pagina": 2,
+      "personagem": "Sistema",
+      "fala": "Agora quer saber mais sobre o sono depois volta na home la no blog tem um post falando sobre p assunto",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700",
+      "autoMs": 2500
+    },
     
   ]
 }
