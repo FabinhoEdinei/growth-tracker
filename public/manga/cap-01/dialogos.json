@@ -52,12 +52,14 @@
       "cor": "#00d4ff"
     },
     {
-      "pagina": 2,
-      "personagem": "Sistema",
-      "fala": "Quer saber mais sobre o sono? Depois volta na home — no blog tem um post falando sobre o assunto.",
-      "avatar": "/manga/avatares/sistema.png",
-      "cor": "#ffd700",
-      "autoMs": 2500
-    }
+  "pagina": 2,
+  "personagem": "Sistema",
+  "fala": "Quer saber mais sobre o sono? Depois volta na home — no blog tem um post falando sobre o assunto.",
+  "avatar": "/manga/avatares/sistema.png",
+  "cor": "#ffd700",
+  "autoMs": 2500,
+  "link": "/blog/sono-e-produtividade",
+  "linkLabel": "LER POST"
+}
   ]
 }
