@@ -60,6 +60,27 @@
   "autoMs": 2500,
   "link":"blog/sono-sonhos-ciencia-descanso-mente-noturna",
   "linkLabel": "LER POST"
-}
+}, 
+    {
+      "pagina": 3,
+      "personagem": "Fabinho",
+      "fala": "Agora sim, vou tomar esse café, e um pão novinho fofo igual essa chimia de abóbora...",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+    {
+      "pagina": 3,
+      "personagem": "Fabinho",
+      "fala": "Até vou por uma camada a mais vai saber como vai ser o dia,",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+    {
+      "pagina": 3,
+      "personagem": "Narrador",
+      "fala": "So uma informação importante,  ele comeu um pão de forma todo,aquele feito no formo de barro, na brincadeira de so mais um pouco se foi 1 e meio pote de chimia ",
+      "cor": "#a0a0b0",
+      "autoMs": 4000
+    }
   ]
 }
