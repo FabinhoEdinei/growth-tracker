@@ -1,7 +1,7 @@
 // app/jornal/page.tsx
 // Paginação via searchParams — ?pagina=2, ?pagina=3...
 // Página 1: header completo + grid
-// Páginas seguintes: mini header + grid + navegação vintage
+// Páginas seguintes: mini header + grid  navegação vintage
 
 import { NewspaperHeader }   from '../components/Jornal/NewspaperHeader';
 import { NewspaperGrid }     from '../components/Jornal/NewspaperGrid';
