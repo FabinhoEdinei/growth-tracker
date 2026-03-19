@@ -1,5 +1,5 @@
 'use client';
-
+import Link   from 'next/link';
 export const NewspaperHeader = () => {
   const today = new Date();
   const formattedDate = today.toLocaleDateString('pt-BR', {
