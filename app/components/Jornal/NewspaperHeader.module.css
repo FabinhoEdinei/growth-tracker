@@ -1,0 +1,199 @@
+/* app/components/Jornal/NewspaperHeader.module.css */
+
+.header {
+  text-align: center;
+  padding: 12px 30px;
+  background: linear-gradient(180deg, #2a1810 0%, #1f120d 50%, #1a0f0a 100%);
+  border: 2px solid #8B7355;
+  position: relative;
+  margin: 0 10px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5), inset 0 1px 0 rgba(218,165,32,.15);
+  overflow: visible;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 15px; left: 15px; right: 15px; bottom: 15px;
+  border: 1px solid rgba(218,165,32,.4);
+  pointer-events: none;
+}
+
+/* ── Cantos SVG ── */
+.corner {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  z-index: 10;
+  filter: drop-shadow(0 0 6px rgba(218,165,32,.8)) drop-shadow(0 0 12px rgba(255,215,0,.4));
+}
+.topLeft    { top: 0; left: 0; }
+.topRight   { top: 0; right: 0; }
+.bottomLeft { bottom: 0; left: 0; }
+.bottomRight{ bottom: 0; right: 0; }
+
+/* ── Título ── */
+.title {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: 28px;
+  font-weight: 700;
+  padding: 3px;
+  margin: 8px 0;
+  color: #f5e6d3;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  line-height: 1.1;
+  text-shadow: 2px 2px 6px rgba(0,0,0,.7);
+}
+
+/* ── Meta ── */
+.meta {
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  color: rgba(245,230,211,.7);
+  letter-spacing: 1.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.edition {
+  color: rgba(218,165,32,.9);
+  font-weight: 700;
+}
+
+.price {
+  color: #DAA520;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  text-shadow: 0 0 8px rgba(218,165,32,.5);
+}
+
+/* ── Barra de navegação ── */
+.navBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 4px;
+  border-top: 1px solid rgba(200,168,75,.25);
+}
+
+.navGratuito {
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 900;
+  text-decoration: none;
+  padding: 7px 13px;
+  border: 1.5px solid rgba(200,168,75,.55);
+  border-radius: 4px;
+  background: rgba(200,168,75,.1);
+  letter-spacing: 1.5px;
+  color: #c8a84b;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: all .2s;
+}
+
+.btn:hover {
+  background: rgba(200,168,75,.2);
+}
+
+.btnFade {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 900;
+  text-decoration: none;
+  padding: 7px 13px;
+  border: 1.5px solid rgba(200,168,75,.2);
+  border-radius: 4px;
+  background: transparent;
+  letter-spacing: 1.5px;
+  color: rgba(200,168,75,.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+/* ── Dots de paginação ── */
+.dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.dotsLabel {
+  font-family: 'Courier New', monospace;
+  font-size: 7px;
+  color: rgba(200,168,75,.55);
+  letter-spacing: 1.5px;
+}
+
+.dotsRow {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(200,168,75,.25);
+  display: block;
+  transition: all .3s;
+}
+
+.dotActive {
+  width: 18px;
+  height: 7px;
+  border-radius: 4px;
+  background: #c8a84b;
+  display: block;
+  box-shadow: 0 0 6px rgba(200,168,75,.5);
+  transition: all .3s;
+}
+
+/* ── Ornamento ── */
+.ornament {
+  font-size: 10px;
+  color: rgba(218,165,32,.6);
+  letter-spacing: 10px;
+  margin-top: 10px;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 8px rgba(218,165,32,.4);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .header   { padding: 10px 18px; margin: 0 5px 0; }
+  .corner   { width: 60px; height: 60px; }
+  .title    { font-size: 18px; letter-spacing: 2px; margin: 6px 0; }
+  .meta     { font-size: 7px; margin-top: 8px; gap: 3px; }
+  .ornament { font-size: 8px; letter-spacing: 6px; margin-top: 8px; }
+  .navBar   { gap: 5px; }
+  .btn, .btnFade { font-size: 9px; padding: 5px 9px; }
+}
+
+@media (max-width: 480px) {
+  .header   { padding: 8px 12px; }
+  .corner   { width: 48px; height: 48px; }
+  .title    { font-size: 15px; letter-spacing: 1.5px; }
+  .ornament { font-size: 7px; letter-spacing: 5px; }
+}
