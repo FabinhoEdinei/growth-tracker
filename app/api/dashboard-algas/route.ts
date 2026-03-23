@@ -15,9 +15,17 @@ export const dynamic = 'force-dynamic';
 interface PostMeta {
   title:    string;
   slug:     string;
-  date:     string;
+  date:     string; // Sempre normalizado para string na leitura
   category: string;
   excerpt:  string;
+}
+
+// Helper para normalizar data para string
+function normalizeDateToString(date: unknown): string {
+  if (!date) return '';
+  if (date instanceof Date) return date.toISOString();
+  if (typeof date === 'string') return date;
+  return String(date);
 }
 
 function lerPosts(dirPath: string): PostMeta[] {
@@ -35,17 +43,10 @@ function lerPosts(dirPath: string): PostMeta[] {
         try {
           const raw = fs.readFileSync(path.join(dirPath, arquivo), 'utf8');
           const { data, content } = matter(raw);
-          // Normaliza date para string (gray-matter pode retornar Date object)
-          let dateStr = '';
-          if (data.date) {
-            dateStr = data.date instanceof Date 
-              ? data.date.toISOString() 
-              : String(data.date);
-          }
           return {
             title:    data.title    ?? arquivo.replace('.md', ''),
             slug:     data.slug     ?? arquivo.replace('.md', ''),
-            date:     dateStr,
+            date:     normalizeDateToString(data.date),
             category: data.category ?? 'Outros',
             excerpt:  data.excerpt  ?? content.slice(0, 120).replace(/[#*`]/g, '').trim(),
           };
@@ -193,11 +194,8 @@ export async function GET() {
         postsHoje: todosPosts.filter(p => {
           if (!p.date) return false;
           const hoje = new Date().toISOString().split('T')[0];
-          // Normaliza date para string se for objeto Date
-          const dateStr = typeof p.date === 'string' 
-            ? p.date 
-            : (p.date instanceof Date ? p.date.toISOString() : String(p.date));
-          return dateStr.startsWith(hoje);
+          // p.date ja e string pois foi normalizado em lerPosts
+          return p.date.startsWith(hoje);
         }).length,
       },
       codigo: {
