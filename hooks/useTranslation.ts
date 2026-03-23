@@ -1,54 +1,48 @@
 // hooks/useTranslation.ts
-// Hook client-side — detecta idioma do browser, sem mudar URL
-// Persiste escolha do usuário no localStorage
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { type Locale, LOCALES, DEFAULT_LOCALE, detectLocale } from '@/lib/i18n';
+import { LOCALES, DEFAULT_LOCALE, COOKIE_NAME, resolveLocale, type Locale } from '@/lib/i18n';
 import { messages, type Messages } from '@/messages/translations';
 
-const LS_KEY = 'gt_locale';
-
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Client hook ───────────────────────────────────────────────────────────────
 export function useTranslation() {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
   const [ready,  setReady]       = useState(false);
 
   useEffect(() => {
-    // 1. Verifica preferência salva pelo usuário
-    const saved = localStorage.getItem(LS_KEY) as Locale | null;
-    if (saved && LOCALES.includes(saved)) {
-      setLocaleState(saved);
-      setReady(true);
-      return;
-    }
-    // 2. Detecta pelo browser
-    const detected = detectLocale(navigator.language);
+    // Lê cookie gt_locale
+    const cookie = document.cookie.split(';')
+      .map(c => c.trim()).find(c => c.startsWith(`${COOKIE_NAME}=`))
+      ?.split('=')[1];
+    const detected = resolveLocale(cookie, navigator.language);
     setLocaleState(detected);
     setReady(true);
   }, []);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
-    localStorage.setItem(LS_KEY, l);
+    // Salva como cookie — 1 ano, path raiz — servidor lê em toda requisição
+    document.cookie = `${COOKIE_NAME}=${l}; path=/; max-age=31536000; SameSite=Lax`;
   }, []);
 
-  const t: Messages = messages[locale];
-
-  return { locale, setLocale, t, ready };
+  return { locale, setLocale, t: messages[locale], ready };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Versão server-side — lê Accept-Language do header
-// Usar em Server Components e page.tsx
-// ─────────────────────────────────────────────────────────────────────────────
-export function getServerLocale(acceptLanguage?: string): Locale {
-  const saved = null; // servidor não tem localStorage
-  if (saved) return saved as Locale;
-  return detectLocale(acceptLanguage);
+// ── Server helper — importar em Server Components e page.tsx ──────────────────
+// Uso: const t = await getT();
+export async function getT(): Promise<Messages> {
+  const { cookies, headers } = await import('next/headers');
+  const jar   = await cookies();
+  const hdrs  = await headers();
+  const cookie = jar.get(COOKIE_NAME)?.value;
+  const accept = hdrs.get('accept-language') ?? '';
+  const locale = resolveLocale(cookie, accept);
+  return messages[locale];
 }
 
-export function getServerTranslations(acceptLanguage?: string): Messages {
-  const locale = getServerLocale(acceptLanguage);
+// Versão síncrona para layout.tsx (sem await)
+export function getTSync(cookieValue?: string, acceptLang?: string): Messages {
+  const locale = resolveLocale(cookieValue, acceptLang);
   return messages[locale];
 }
