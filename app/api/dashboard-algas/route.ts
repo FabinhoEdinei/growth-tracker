@@ -35,10 +35,17 @@ function lerPosts(dirPath: string): PostMeta[] {
         try {
           const raw = fs.readFileSync(path.join(dirPath, arquivo), 'utf8');
           const { data, content } = matter(raw);
+          // Normaliza date para string (gray-matter pode retornar Date object)
+          let dateStr = '';
+          if (data.date) {
+            dateStr = data.date instanceof Date 
+              ? data.date.toISOString() 
+              : String(data.date);
+          }
           return {
             title:    data.title    ?? arquivo.replace('.md', ''),
             slug:     data.slug     ?? arquivo.replace('.md', ''),
-            date:     data.date     ?? '',
+            date:     dateStr,
             category: data.category ?? 'Outros',
             excerpt:  data.excerpt  ?? content.slice(0, 120).replace(/[#*`]/g, '').trim(),
           };
@@ -184,8 +191,13 @@ export async function GET() {
       geral: {
         totalConteudo:   todosPosts.length,
         postsHoje: todosPosts.filter(p => {
+          if (!p.date) return false;
           const hoje = new Date().toISOString().split('T')[0];
-          return p.date?.startsWith(hoje);
+          // Normaliza date para string se for objeto Date
+          const dateStr = typeof p.date === 'string' 
+            ? p.date 
+            : (p.date instanceof Date ? p.date.toISOString() : String(p.date));
+          return dateStr.startsWith(hoje);
         }).length,
       },
       codigo: {
