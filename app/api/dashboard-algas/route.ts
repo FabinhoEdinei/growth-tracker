@@ -3,6 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 
+// Força runtime Node.js para usar fs
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/dashboard-algas
 // Lê os arquivos .md reais do blog e jornal e retorna estatísticas reais
@@ -17,23 +21,44 @@ interface PostMeta {
 }
 
 function lerPosts(dirPath: string): PostMeta[] {
-  if (!fs.existsSync(dirPath)) return [];
-  return fs.readdirSync(dirPath)
-    .filter(f => f.endsWith('.md'))
-    .map(arquivo => {
-      try {
-        const raw = fs.readFileSync(path.join(dirPath, arquivo), 'utf8');
-        const { data, content } = matter(raw);
-        return {
-          title:    data.title    ?? arquivo.replace('.md', ''),
-          slug:     data.slug     ?? arquivo.replace('.md', ''),
-          date:     data.date     ?? '',
-          category: data.category ?? 'Outros',
-          excerpt:  data.excerpt  ?? content.slice(0, 120).replace(/[#*`]/g, '').trim(),
-        };
-      } catch { return null; }
-    })
-    .filter(Boolean) as PostMeta[];
+  try {
+    if (!fs.existsSync(dirPath)) {
+      console.log(`[dashboard-algas] Diretório não encontrado: ${dirPath}`);
+      return [];
+    }
+    
+    const arquivos = fs.readdirSync(dirPath).filter(f => f.endsWith('.md'));
+    console.log(`[dashboard-algas] Encontrados ${arquivos.length} arquivos em ${dirPath}`);
+    
+    return arquivos
+      .map(arquivo => {
+        try {
+          const raw = fs.readFileSync(path.join(dirPath, arquivo), 'utf8');
+          const { data, content } = matter(raw);
+          // Normaliza date para string (gray-matter pode retornar Date object)
+          let dateStr = '';
+          if (data.date) {
+            dateStr = data.date instanceof Date 
+              ? data.date.toISOString() 
+              : String(data.date);
+          }
+          return {
+            title:    data.title    ?? arquivo.replace('.md', ''),
+            slug:     data.slug     ?? arquivo.replace('.md', ''),
+            date:     dateStr,
+            category: data.category ?? 'Outros',
+            excerpt:  data.excerpt  ?? content.slice(0, 120).replace(/[#*`]/g, '').trim(),
+          };
+        } catch (e) {
+          console.log(`[dashboard-algas] Erro ao ler ${arquivo}:`, e);
+          return null;
+        }
+      })
+      .filter(Boolean) as PostMeta[];
+  } catch (e) {
+    console.error(`[dashboard-algas] Erro ao ler diretório ${dirPath}:`, e);
+    return [];
+  }
 }
 
 function calcularPostsPorMes(posts: PostMeta[]) {
@@ -71,11 +96,14 @@ function calcularCategorias(posts: PostMeta[]) {
 export async function GET() {
   try {
     const base = process.cwd();
+    console.log(`[dashboard-algas] Base path: ${base}`);
 
     // Lê todos os posts reais
     const postsBlog   = lerPosts(path.join(base, 'app/content/post'));
     const postsBlog2  = lerPosts(path.join(base, 'app/content/posts'));
     const postsJornal = lerPosts(path.join(base, 'app/content/jornal'));
+    
+    console.log(`[dashboard-algas] Total posts: blog=${postsBlog.length + postsBlog2.length}, jornal=${postsJornal.length}`);
     const todosBlogs  = [...postsBlog, ...postsBlog2];
     const todosPosts  = [...todosBlogs, ...postsJornal];
 
@@ -111,19 +139,32 @@ export async function GET() {
     let totalLinhas = 0, totalArquivos = 0;
     const porTipo: Record<string, number> = {};
 
-    function contarArquivos(dir: string) {
-      if (!fs.existsSync(dir)) return;
-      for (const f of fs.readdirSync(dir)) {
-        if (['node_modules', '.next', '.git', 'public'].includes(f)) continue;
-        const full = path.join(dir, f);
-        const stat = fs.statSync(full);
-        if (stat.isDirectory()) { contarArquivos(full); continue; }
-        const ext = path.extname(f);
-        if (['.tsx','.ts','.css','.md','.json'].includes(ext)) {
-          totalArquivos++;
-          porTipo[ext] = (porTipo[ext] || 0) + 1;
-          try { totalLinhas += fs.readFileSync(full, 'utf8').split('\n').length; } catch {}
+    function contarArquivos(dir: string, depth = 0) {
+      // Limitar profundidade para evitar recursão infinita
+      if (depth > 10) return;
+      try {
+        if (!fs.existsSync(dir)) return;
+        for (const f of fs.readdirSync(dir)) {
+          if (['node_modules', '.next', '.git', 'public', '.vercel'].includes(f)) continue;
+          const full = path.join(dir, f);
+          try {
+            const stat = fs.statSync(full);
+            if (stat.isDirectory()) { 
+              contarArquivos(full, depth + 1); 
+              continue; 
+            }
+            const ext = path.extname(f);
+            if (['.tsx','.ts','.css','.md','.json'].includes(ext)) {
+              totalArquivos++;
+              porTipo[ext] = (porTipo[ext] || 0) + 1;
+              try { totalLinhas += fs.readFileSync(full, 'utf8').split('\n').length; } catch {}
+            }
+          } catch {
+            // Ignora arquivos que não podem ser lidos
+          }
         }
+      } catch (e) {
+        console.error(`[dashboard-algas] Erro ao contar arquivos em ${dir}:`, e);
       }
     }
     contarArquivos(appPath);
@@ -150,8 +191,13 @@ export async function GET() {
       geral: {
         totalConteudo:   todosPosts.length,
         postsHoje: todosPosts.filter(p => {
+          if (!p.date) return false;
           const hoje = new Date().toISOString().split('T')[0];
-          return p.date?.startsWith(hoje);
+          // Normaliza date para string se for objeto Date
+          const dateStr = typeof p.date === 'string' 
+            ? p.date 
+            : (p.date instanceof Date ? p.date.toISOString() : String(p.date));
+          return dateStr.startsWith(hoje);
         }).length,
       },
       codigo: {
@@ -162,7 +208,12 @@ export async function GET() {
       geradoEm: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Dashboard Algas API error:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error('[dashboard-algas] API error:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    return NextResponse.json({ 
+      error: message,
+      stack: process.env.NODE_ENV === 'development' ? stack : undefined 
+    }, { status: 500 });
   }
 }

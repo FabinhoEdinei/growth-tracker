@@ -160,11 +160,16 @@ export default function DashboardAlgasPage() {
     if (manual) setRefreshing(true); else setLoading(true);
     try {
       const res = await fetch('/api/dashboard-algas');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setData(await res.json());
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${res.status}`);
+      }
+      const jsonData = await res.json();
+      setData(jsonData);
       setError(null);
       setUltimaSync(new Date());
     } catch (e) {
+      console.error('[v0] Dashboard Algas fetch error:', e);
       setError(e instanceof Error ? e.message : 'Erro desconhecido');
     } finally {
       setLoading(false);
