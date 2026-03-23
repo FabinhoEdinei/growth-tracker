@@ -1,6 +1,6 @@
 ---
 title: "Seguindo o dia dia do meu ser"
-slug: "modulo-3-silencio-ativo-imersao"
+slug: "modulo-4-ativo-imerso"
 date: "2026-03-23"
 author: "Fabio Edinei"
 category: "Jornada"
