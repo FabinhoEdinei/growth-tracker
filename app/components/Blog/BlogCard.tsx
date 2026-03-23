@@ -112,7 +112,13 @@ export const BlogCard: React.FC<BlogCardProps> = ({
       {/* Imagem (se existir) */}
       {image && (
         <div className="post-image">
-          <Image src={image} alt={title} />
+          <Image 
+            src={image} 
+            alt={title} 
+            fill
+            sizes="(max-width: 768px) 100vw, 400px"
+            style={{ objectFit: 'cover' }}
+          />
         </div>
       )}
 
@@ -236,19 +242,13 @@ export const BlogCard: React.FC<BlogCardProps> = ({
         }
 
         .post-image {
+          position: relative;
           width: 100%;
           height: 180px;
           border-radius: 12px;
           overflow: hidden;
           margin-bottom: 20px;
           background: rgba(0, 0, 0, 0.3);
-        }
-
-        .post-image img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.5s ease;
         }
 
         .post-leaf:hover .post-image img {
