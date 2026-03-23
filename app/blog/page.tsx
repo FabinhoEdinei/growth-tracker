@@ -1,7 +1,7 @@
 // app/blog/page.tsx (ou onde estiver sua listagem de posts)
 // Exemplo de integração — adapte ao seu arquivo atual
 
-import { getT } from '@/hooks/useTranslation';
+import { getT } from '@/lib/getT';
 import Link from 'next/link';
 import fs from 'fs';
 import path from 'path';
