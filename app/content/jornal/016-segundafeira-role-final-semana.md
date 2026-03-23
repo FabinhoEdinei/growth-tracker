@@ -1,5 +1,5 @@
 ---
-title: "Seguindo a saga de construir meu ser"
+title: "Seguindo o dia dia do meu ser"
 slug: "modulo-3-silencio-ativo-imersao"
 date: "2026-03-23"
 author: "Fabio Edinei"
