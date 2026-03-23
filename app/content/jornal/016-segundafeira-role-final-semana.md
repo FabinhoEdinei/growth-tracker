@@ -8,11 +8,11 @@ excerpt: "Guia diário, relatório do dia."
 ---
 
 # Segunda feira primeiro 
-<span style="color:#319A89">Hoje eu fiz alteração no menu/configuração onde hoje tem as testes dentro de configuração e tambémagora pode se trocar o idioma,  mas não esta 100% funcionando tenho que ajustar mas é bom começo também vou por mais coisa. </span>
+<span style="color:#319A89">Hoje eu fiz alteração no menu/configuração onde hoje tem os testes dentro de configuração e também agora pode se trocar o idioma,  mas não esta 100% funcionando tenho que ajustar mas é bom começo também vou por mais coisa. Tenho que aprender colocar fotos aqui miniaturas 🏗</span>
 
 
 ## Compromisso comigo!
 
-<span style ="color:#2C3EC3">Depois de ver um layout da nossa casa futura,  hoje começou a procurade como vai ser a versão da água na casa como vai ser seus comportamento e quais os materiaisque iremos usar e onde usar começo a imaginar a distância em 3d mental pra saber onde cada ponto sai e entra mais estou no início .</span>
+<span style ="color:#2C3EC3">Depois de ver um layout da nossa casa futura 🚐,  hoje começou a procura de como vai ser a versão da água na casa como vai ser seus comportamentos  e quais os materiais que iremos usar e onde usar começo a imaginar a distância em 3d mental pra saber onde cada ponto sai e entra mais ainda é só o início .</span>
 
 *hoje março dia 23 do ano 2026!*
