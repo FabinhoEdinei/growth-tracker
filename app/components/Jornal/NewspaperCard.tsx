@@ -1,305 +1,89 @@
 'use client';
+// app/components/Jornal/NewspaperCard.tsx
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { JornalCard } from '@/app/types/jornal';
 import { VintageFrame } from './VintageFrame';
+import { useTranslation } from '@/hooks/useTranslation';
 
-//Sem prop style — não aceita propriedades extras
-interface NewspaperCardProps extends JornalCard {
-  gridArea?: string;
-}
+interface NewspaperCardProps extends JornalCard { gridArea?: string; }
 
 const cardStyles = {
-  fabio: {
-    frameVariant: 'ornate' as const,
-    frameColor:   'brown' as const,
-    borderColor:  '#8B4513',
-    background:   'linear-gradient(135deg, #f4e4d7, #e8d5c4)',
-    accentColor:  '#8B4513',
-    icon:         '🤠',
-  },
-  claudia: {
-    frameVariant: 'elegant' as const,
-    frameColor:   'gold' as const,
-    borderColor:  '#DAA520',
-    background:   'linear-gradient(135deg, #fff8e7, #f5e6d3)',
-    accentColor:  '#DAA520',
-    icon:         '🌸',
-  },
-  publicidade: {
-    frameVariant: 'decorative' as const,
-    frameColor:   'black' as const,
-    borderColor:  '#000',
-    background:   '#fffef5',
-    accentColor:  '#c41e3a',
-    icon:         '✨',
-  },
-  fatos: {
-    frameVariant: 'simple' as const,
-    frameColor:   'sepia' as const,
-    borderColor:  '#2F4F4F',
-    background:   '#f9f9f0',
-    accentColor:  '#2F4F4F',
-    icon:         '📰',
-  },
-  lugares: {
-    frameVariant: 'elegant' as const,
-    frameColor:   'brown' as const,
-    borderColor:  '#556B2F',
-    background:   'linear-gradient(135deg, #faf8f0, #f0ebe0)',
-    accentColor:  '#556B2F',
-    icon:         '🗺️',
-  },
+  fabio:       { frameVariant:'ornate'    as const, frameColor:'brown' as const, background:'linear-gradient(135deg,#f4e4d7,#e8d5c4)', accentColor:'#8B4513', icon:'🤠' },
+  claudia:     { frameVariant:'elegant'   as const, frameColor:'gold'  as const, background:'linear-gradient(135deg,#fff8e7,#f5e6d3)', accentColor:'#DAA520', icon:'🌸' },
+  publicidade: { frameVariant:'decorative'as const, frameColor:'black' as const, background:'#fffef5',                                  accentColor:'#c41e3a', icon:'✨' },
+  fatos:       { frameVariant:'simple'    as const, frameColor:'sepia' as const, background:'#f9f9f0',                                  accentColor:'#2F4F4F', icon:'📰' },
+  lugares:     { frameVariant:'elegant'   as const, frameColor:'brown' as const, background:'linear-gradient(135deg,#faf8f0,#f0ebe0)', accentColor:'#556B2F', icon:'🗺️' },
 };
 
-// ✅ Export correto — era NewspaperGrid por engano
-export const NewspaperCard: React.FC<NewspaperCardProps> = ({
-  slug,
-  title,
-  type,
-  excerpt,
-  date,
-  gridArea,
-}) => {
+export const NewspaperCard: React.FC<NewspaperCardProps> = ({ slug, title, type, excerpt, date, gridArea }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const router = useRouter();
-  const style  = cardStyles[type as keyof typeof cardStyles] ?? cardStyles.fatos;
+  const router  = useRouter();
+  const { t }   = useTranslation();
+  const style   = cardStyles[type as keyof typeof cardStyles] ?? cardStyles.fatos;
 
-  const handleClick = () => router.push(`/jornal/${slug}`);
+  // ── Labels traduzidos por tipo ──────────────────────────────────────────────
+  const tipoLabel: Record<string, string> = {
+    fabio:       'AVENTURAS DE FABIO',
+    claudia:     'DIÁRIO DE CLÁUDIA',
+    publicidade: 'ANÚNCIO ESPECIAL',
+    fatos:       t.jornal.tipoFatos,
+    lugares:     t.jornal.tipoLugares,
+    tecnologia:  t.jornal.tipoTecnologia,
+    opiniao:     t.jornal.tipoOpiniao,
+    cultura:     t.jornal.tipoCultura,
+  };
 
-  const formatDate = (dateStr: string) => {
-    try {
-      return new Date(dateStr).toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
-    } catch { return dateStr; }
+  const formatDate = (d: string) => {
+    try { return new Date(d).toLocaleDateString(t.datas.locale, { day:'2-digit', month:'short' }); }
+    catch { return d; }
   };
 
   return (
     <div
       className="newspaper-card"
-      onClick={handleClick}
+      onClick={() => router.push(`/jornal/${slug}`)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{
-        gridArea,
-        background: style.background,
-        transform:  isHovered ? 'scale(1.01) translateY(-2px)' : 'scale(1)',
-      }}
+      style={{ gridArea, background:style.background, transform:isHovered?'scale(1.01) translateY(-2px)':'scale(1)' }}
     >
       <VintageFrame variant={style.frameVariant} color={style.frameColor} size="medium">
         <div className="card-inner">
-
           <div className="card-ornament-top">
-            {type === 'publicidade' && '⚜ ⚜ ⚜'}
-            {type === 'fabio'       && '★ ★ ★'}
-            {type === 'claudia'     && '❀ ❀ ❀'}
-            {type === 'fatos'       && '◆ ◆ ◆'}
-            {type === 'lugares'     && '⚑ ⚑ ⚑'}
+            {type==='publicidade'&&'⚜ ⚜ ⚜'}{type==='fabio'&&'★ ★ ★'}{type==='claudia'&&'❀ ❀ ❀'}{type==='fatos'&&'◆ ◆ ◆'}{type==='lugares'&&'⚑ ⚑ ⚑'}
           </div>
-
           <div className="card-header">
             <span className="card-icon">{style.icon}</span>
-            <div className="card-label" style={{ color: style.accentColor }}>
-              {type === 'fabio'       && 'AVENTURAS DE FABIO'}
-              {type === 'claudia'     && 'DIÁRIO DE CLÁUDIA'}
-              {type === 'publicidade' && 'ANÚNCIO ESPECIAL'}
-              {type === 'fatos'       && 'FATOS DO DIA'}
-              {type === 'lugares'     && 'TERRAS EXPLORADAS'}
-            </div>
+            <div className="card-label" style={{ color:style.accentColor }}>{tipoLabel[type] ?? type.toUpperCase()}</div>
             <span className="card-date-inline">{formatDate(date)}</span>
           </div>
-
           <h3 className="card-title">{title}</h3>
-          <div className="card-divider" style={{ borderColor: style.accentColor }} />
+          <div className="card-divider" style={{ borderColor:style.accentColor }}/>
           <p className="card-excerpt">{excerpt}</p>
-
           <div className="card-footer">
-            <span className="read-more" style={{ color: style.accentColor }}>LER →</span>
+            {/* ✅ "LER →" traduzido */}
+            <span className="read-more" style={{ color:style.accentColor }}>{t.comum.ler}</span>
           </div>
         </div>
       </VintageFrame>
-
-      <div className="vintage-texture" />
-
+      <div className="vintage-texture"/>
       <style jsx>{`
-        .newspaper-card {
-          position: relative;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          overflow: hidden;
-          box-shadow: 1px 1px 5px rgba(0,0,0,0.12);
-          min-height: 120px;
-        }
-        .newspaper-card:hover { box-shadow: 3px 3px 10px rgba(0,0,0,0.2); }
-
-        .card-inner {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          padding: 2px 0;
-        }
-
-        .card-ornament-top {
-          text-align: center;
-          font-size: 8px;
-          color: rgba(0,0,0,0.25);
-          margin-bottom: 3px;
-          letter-spacing: 3px;
-        }
-
-        .card-header {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          margin-bottom: 4px;
-        }
-
-        .card-icon       { font-size: 12px; flex-shrink: 0; }
-
-        .card-label {
-          font-size: 7px;
-          font-weight: bold;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          font-family: 'Courier New', monospace;
-          flex: 1;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .card-date-inline {
-          font-size: 7px;
-          font-style: italic;
-          color: rgba(0,0,0,0.4);
-          font-family: 'Georgia', serif;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-
-        .card-title {
-          font-size: 11px;
-          font-weight: bold;
-          line-height: 1.25;
-          margin: 0 0 3px 0;
-          color: #2a1810;
-          font-family: 'Georgia', serif;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .card-divider {
-          border-top: 1px solid;
-          margin: 3px 0;
-          opacity: 0.35;
-        }
-
-        .card-excerpt {
-          font-size: 9px;
-          line-height: 1.4;
-          color: #3a2820;
-          margin-bottom: 3px;
-          font-family: 'Georgia', serif;
-          flex: 1;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .card-footer   { text-align: right; margin-top: auto; }
-
-        .read-more {
-  font-size: 9px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  font-family: 'Courier New', Courier, monospace;
-  text-transform: uppercase;
-  color: #d4af37; /* dourado base */
-  background: rgba(212, 175, 55, 0.08); /* translúcido dourado bem tênue */
-  backdrop-filter: blur(2px); /* efeito vidro fosco (opcional, remove se não quiser) */
-  border: 2px solid rgba(212, 175, 55, 0.4); /* borda dourada semi-transparente */
-  border-radius: 5px; /* bordas bem redondas */
-  padding: 4px 8px;
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  
-  /* Efeito 3D de sair do papel + Neon dourado */
-  box-shadow: 
-    0 4px 6px rgba(0, 0, 0, 0.1), /* sombra base suave */
-    0 1px 3px rgba(0, 0, 0, 0.08), /* profundidade extra */
-    inset 0 1px 0 rgba(255, 255, 255, 0.2), /* brilho interno topo */
-    0 0 15px rgba(212, 175, 55, 0.3), /* halo neon dourado externo */
-    0 0 30px rgba(212, 175, 55, 0.1); /* glow difuso */
-  
-  text-shadow: 
-    0 0 5px rgba(212, 175, 55, 0.8), /* brilho no texto */
-    0 0 10px rgba(212, 175, 55, 0.4);
-  
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(0);
-}
-
-/* Seta com glow também */
-.read-more::after {
-  content: "→";
-  margin-left: 6px;
-  display: inline-block;
-  text-shadow: 0 0 5px rgba(212, 175, 55, 0.8);
-  transition: transform 0.3s ease;
-}
-
-/* Hover - intensifica o neon e eleva mais */
-.newspaper-card:hover .read-more {
-  background: rgba(212, 175, 55, 0.15); /* mais opaco no hover */
-  color: #ffd700; /* dourado mais brilhante */
-  border-color: rgba(255, 215, 0, 0.6);
-  
-  /* Eleva + intensifica neon */
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.15), /* sombra maior = mais alto */
-    0 4px 10px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 0 20px rgba(212, 175, 55, 0.6), /* neon mais forte */
-    0 0 40px rgba(212, 175, 55, 0.3),
-    0 0 60px rgba(212, 175, 55, 0.1);
-  
-  text-shadow: 
-    0 0 10px rgba(255, 215, 0, 1),
-    0 0 20px rgba(212, 175, 55, 0.8),
-    0 0 30px rgba(212, 175, 55, 0.4);
-}
-
-.newspaper-card:hover .read-more::after {
-  transform: translateX(4px);
-  text-shadow: 0 0 10px rgba(255, 215, 0, 1);
-}
-
-/* Active - efeito de apertar o botão */
-.newspaper-card:active .read-more {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.1),
-    0 0 10px rgba(212, 175, 55, 0.4);
-}
-
-
-
-        .vintage-texture {
-          position: absolute;
-          inset: 0;
-          background-image: repeating-linear-gradient(
-            0deg, transparent, transparent 2px,
-            rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px
-          );
-          pointer-events: none;
-          opacity: 0.3;
-          z-index: 0;
-        }
+        .newspaper-card{position:relative;cursor:pointer;transition:all .3s ease;overflow:hidden;box-shadow:1px 1px 5px rgba(0,0,0,.12);min-height:120px;}
+        .newspaper-card:hover{box-shadow:3px 3px 10px rgba(0,0,0,.2);}
+        .card-inner{height:100%;display:flex;flex-direction:column;padding:2px 0;}
+        .card-ornament-top{text-align:center;font-size:8px;color:rgba(0,0,0,.25);margin-bottom:3px;letter-spacing:3px;}
+        .card-header{display:flex;align-items:center;gap:4px;margin-bottom:4px;}
+        .card-icon{font-size:12px;flex-shrink:0;}
+        .card-label{font-size:7px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;font-family:'Courier New',monospace;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .card-date-inline{font-size:7px;font-style:italic;color:rgba(0,0,0,.4);font-family:'Georgia',serif;white-space:nowrap;flex-shrink:0;}
+        .card-title{font-size:11px;font-weight:bold;line-height:1.25;margin:0 0 3px;color:#2a1810;font-family:'Georgia',serif;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .card-divider{border-top:1px solid;margin:3px 0;opacity:.35;}
+        .card-excerpt{font-size:9px;line-height:1.4;color:#3a2820;margin-bottom:3px;font-family:'Georgia',serif;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .card-footer{text-align:right;margin-top:auto;}
+        .read-more{font-size:7px;font-weight:bold;letter-spacing:.8px;font-family:'Courier New',monospace;transition:transform .2s;display:inline-block;}
+        .newspaper-card:hover .read-more{transform:translateX(3px);}
+        .vintage-texture{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.015) 2px,rgba(0,0,0,.015) 4px);pointer-events:none;opacity:.3;z-index:0;}
       `}</style>
     </div>
   );
