@@ -3,7 +3,7 @@
 // CSS via NewspaperHeader.module.css
 
 import Link from 'next/link';
-import { getT } from '@/hooks/useTranslation';
+import { getT } from '@/lib/getT';
 import styles from './NewspaperHeader.module.css';
 
 interface NewspaperHeaderProps {
