@@ -4,8 +4,7 @@ slug: "023-ajuste-jornal"
 date: "2026-03-06"
 author: "Equipe Growth Tracker"
 category: "Engenharia"
-excerpt: "Resolução do erro 404 no jornal e otimização da arquitetura de busca de posts. Uma jornada pela correção de um bug que impedia a leitura de histórias antigas."
-image: "/image/blog/jornal-fix.jpg"
+excerpt: "Resolução do erro 404 no jornal e otimização da arquitetura de busca de posts. Uma jornada pela correção de um bug que impedia a leitura de histórias."
 ---
 
 ## 📰 O Problema do Jornal Perdido
