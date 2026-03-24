@@ -1,9 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // data/workouts.ts — Catálogo central de todos os treinos
-// ─────────────────────────────────────────────────────────────────────────────
-
-import type { Workout } from '../types/gym';
-import { WORKOUT_FULLBODY_45 } from './workout';
+// ───────────────
+import { WORKOUT_FULLBODY_45 } from './fullbody';
 import { WORKOUT_ABS_10, WORKOUT_ABS_FINISHER, WORKOUT_ABS_PRO } from './abs';
 
 // Metadados visuais separados do tipo Workout (não polui o tipo original)
