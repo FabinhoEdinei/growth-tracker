@@ -16,3 +16,5 @@ excerpt: "Guia diário para relatar o que fiz no dia."
 
 <img src="/image/blog/treino-fullbody.jpg" alt="
 print do treino" width="100" height="50">
+<img src="/image/blog/Recompecatroféu.jpg" alt="
+print do treino" width="100" height="50">
