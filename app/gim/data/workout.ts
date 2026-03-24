@@ -34,7 +34,7 @@ export function getTotalSets(workout: Workout): number {
     .reduce((acc, ex) => acc + ex.sets, 0);
 }
 
-// Helper: total de exercícios de um treino
+// Helper:  fiz total de exercícios de um treino
 export function getTotalExercises(workout: Workout): number {
   return workout.blocks.flatMap(b => b.exercises).length;
 }
