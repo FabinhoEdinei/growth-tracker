@@ -20,6 +20,7 @@
       "personagem": "Narrador",
       "fala": "Era uma noite comum. Mas algo no horizonte digital mudaria tudo.",
       "cor": "#a0a0b0",
+      "avatar": "/manga/avatares/narrador.png",
       "autoMs": 4000
     },
     {
@@ -42,6 +43,7 @@
       "personagem": "Narrador",
       "fala": "Passou a noite e tudo começou. Acordando na cama, luz do amanhecer entrando pela janela, quarto simples, ainda cansado, olhos abrindo — o mundo lá fora vivendo mais um dia.",
       "cor": "#a0a0b0",
+      "avatar": "/manga/avatares/narrador.png",
       "autoMs": 4000
     },
     {
@@ -80,6 +82,7 @@
       "personagem": "Narrador",
       "fala": "So uma informação importante,  ele comeu um pão de forma todo,aquele feito no formo de barro, na brincadeira de so mais um pouco se foi 1 e meio pote de chimia ",
       "cor": "#a0a0b0",
+      "avatar": "/manga/avatares/narrador.png",
       "autoMs": 4000
     }
   ]
