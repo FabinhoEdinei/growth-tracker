@@ -9,6 +9,6 @@ excerpt: "Guia diário para relatar o que fiz no dia."
 
 # Treino realizado 
 
-<span style= "cor:#E01322"> Ontem realmente fiz o treino  que tem no app aqui, é  puxado, mas tenho que resolver uns bugs</span>
+<span style="color:#E01322"> Ontem realmente fiz o treino  que tem no app aqui, é  puxado, mas tenho que resolver uns bugs</span>
 
 ## Vou por imagem aqui abaixo:⬇️⬇️⬇️
