@@ -3,7 +3,7 @@
     {
       "pagina": 0,
       "personagem": "Sistema",
-      "fala": "Conexão neural estabelecida. Bem-vindo ao Growth Tracker Universe.",
+      "fala": "Conexão neural estabelecida. Bem-vindo ao Growth Tracker Universe. clicando no ok vc irá prosseguir!",
       "avatar": "/manga/avatares/sistema.png",
       "cor": "#ffd700",
       "autoMs": 3500
@@ -11,7 +11,7 @@
     {
       "pagina": 0,
       "personagem": "Fabinho",
-      "fala": "O que é esse painel flutuando no céu...?",
+      "fala": "O que é esse painel flutuando no céu...ooi?",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
@@ -84,6 +84,15 @@
       "cor": "#a0a0b0",
       "avatar": "/manga/avatares/narrador.png",
       "autoMs": 4000
-    }
+    },
+     { 
+      "pagina": 4,
+      "personagem": "Sistema",
+      "fala": " Fabinho nunca foi isso ai de lavar as coisas, isso muda no futuro pois é como a vida ensina aos poucos.",
+      "cor": "#a0a0b0",
+      "avatar": "/manga/avatares/sistema.png",
+        "autoMs": 4000
+       }
+   
   ]
 }
