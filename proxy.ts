@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 const rateLimitMap = new Map<string, number[]>();
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'anonymous';
   const now = Date.now();
   const windowMs = 60 * 1000; // 1 minuto
