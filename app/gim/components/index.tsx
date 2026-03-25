@@ -248,7 +248,7 @@ function WorkoutSession({ workout, onBack }: { workout: Workout; onBack: () => v
           DESCANSO
         </div>
         <div style={{ fontSize: 88, fontWeight: 900, color: T.accent, fontFamily: T.mono, lineHeight: 1 }}>
-          {state.restRemaining ?? '--'}
+          {state.restSecondsLeft ?? '--'}
         </div>
         <div style={{ color: T.muted, fontSize: 13, marginTop: 8 }}>segundos</div>
         <button onClick={completeSet} style={{
