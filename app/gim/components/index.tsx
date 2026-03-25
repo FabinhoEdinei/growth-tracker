@@ -264,8 +264,11 @@ function WorkoutSession({ workout, onBack }: { workout: Workout; onBack: () => v
 
   if (!currentExercise) return null;
 
-  const progress     = (state.completedSets ?? 0) / Math.max(state.totalSets ?? 1, 1);
-  const currentSet   = (state.currentSet ?? 0) + 1;
+// cálculo corrigido
+const totalSets = getTotalSets(workout);
+const progress  = (state.currentSet ?? 0) / Math.max(totalSets, 1);
+
+const currentSet = (state.currentSet ?? 0) + 1;
 
   // ── Exercício ativo ──
   return (
