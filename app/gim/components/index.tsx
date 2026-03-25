@@ -5,9 +5,6 @@ import type { Workout } from '../types/gym';
 import { WORKOUTS, getWorkoutMeta, getTotalSets, getTotalExercises } from '../data/workouts';
 import { useWorkout } from '../hooks/useWorkout';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TEMA
-// ─────────────────────────────────────────────────────────────────────────────
 const T = {
   bg:      '#080808',
   card:    '#111111',
@@ -20,9 +17,6 @@ const T = {
   gradient:'linear-gradient(135deg, #ff4520 0%, #ff7a00 100%)',
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PAGE
-// ─────────────────────────────────────────────────────────────────────────────
 export default function GymTrackerPage() {
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
 
@@ -38,9 +32,6 @@ export default function GymTrackerPage() {
   return <WorkoutMenu onSelect={setActiveWorkout} />;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MENU — Seleção do treino do dia
-// ─────────────────────────────────────────────────────────────────────────────
 function WorkoutMenu({ onSelect }: { onSelect: (w: Workout) => void }) {
   const [selectedId, setSelectedId] = useState<string>(WORKOUTS[0].id);
   const selected = WORKOUTS.find(w => w.id === selectedId) ?? WORKOUTS[0];
@@ -48,7 +39,6 @@ function WorkoutMenu({ onSelect }: { onSelect: (w: Workout) => void }) {
   return (
     <div style={{ minHeight: '100vh', background: T.bg, display: 'flex', flexDirection: 'column' }}>
 
-      {/* ── Header ── */}
       <div style={{ padding: '28px 20px 0' }}>
         <div style={{ fontSize: 10, letterSpacing: 3, color: T.muted, fontFamily: T.mono, marginBottom: 6 }}>
           GROWTH TRACKER / GIM
@@ -61,7 +51,6 @@ function WorkoutMenu({ onSelect }: { onSelect: (w: Workout) => void }) {
         </p>
       </div>
 
-      {/* ── Carrossel ── */}
       <div style={{ overflowX: 'auto', padding: '24px 0 0' }}>
         <div style={{ display: 'flex', gap: 12, padding: '0 20px 8px', minWidth: 'max-content' }}>
           {WORKOUTS.map(w => {
@@ -102,12 +91,10 @@ function WorkoutMenu({ onSelect }: { onSelect: (w: Workout) => void }) {
         </div>
       </div>
 
-      {/* ── Preview ── */}
       <div style={{ flex: 1, padding: '20px 20px 100px', overflowY: 'auto' }}>
         <WorkoutPreview workout={selected} />
       </div>
 
-      {/* ── Botão fixo ── */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
         padding: '16px 20px 32px',
@@ -129,22 +116,18 @@ function WorkoutMenu({ onSelect }: { onSelect: (w: Workout) => void }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PREVIEW
-// ─────────────────────────────────────────────────────────────────────────────
 function WorkoutPreview({ workout }: { workout: Workout }) {
-  const meta = getWorkoutMeta(workout.id);
+  const meta      = getWorkoutMeta(workout.id);
   const totalEx   = getTotalExercises(workout);
   const totalSets = getTotalSets(workout);
 
   return (
     <div>
-      {/* Stats */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'DURAÇÃO',     value: `${workout.totalMinutes}min` },
-          { label: 'EXERCÍCIOS',  value: totalEx },
-          { label: 'SÉRIES',      value: totalSets },
+          { label: 'DURAÇÃO',    value: `${workout.totalMinutes}min` },
+          { label: 'EXERCÍCIOS', value: totalEx },
+          { label: 'SÉRIES',     value: totalSets },
         ].map(s => (
           <div key={s.label} style={{
             flex: 1, padding: '14px 12px', borderRadius: 12,
@@ -162,7 +145,6 @@ function WorkoutPreview({ workout }: { workout: Workout }) {
 
       <p style={{ color: T.muted, fontSize: 13, marginBottom: 20 }}>{meta.description}</p>
 
-      {/* Blocos */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {workout.blocks.map(block => (
           <div key={block.id}>
@@ -199,11 +181,15 @@ function WorkoutPreview({ workout }: { workout: Workout }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SESSÃO — Execução
-// ─────────────────────────────────────────────────────────────────────────────
 function WorkoutSession({ workout, onBack }: { workout: Workout; onBack: () => void }) {
-  const { state, currentExercise, startWorkout, completeSet } = useWorkout(workout);
+  const {
+    state,
+    currentExercise,
+    startWorkout,
+    completeSet,
+    skipRest,
+    getTotalCompletedSets,
+  } = useWorkout(workout);
 
   // ── Idle ──
   if (state.phase === 'idle') {
@@ -236,6 +222,29 @@ function WorkoutSession({ workout, onBack }: { workout: Workout; onBack: () => v
     );
   }
 
+  // ── Finalizado ──
+  if (state.phase === 'finished') {
+    return (
+      <div style={{
+        minHeight: '100vh', background: T.bg,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', padding: 32,
+      }}>
+        <div style={{ fontSize: 72, marginBottom: 20 }}>🏆</div>
+        <h2 style={{ fontSize: 28, fontWeight: 900, color: T.text, marginBottom: 8 }}>TREINO CONCLUÍDO!</h2>
+        <p style={{ color: T.muted, fontSize: 13, marginBottom: 40 }}>{workout.name}</p>
+        <button onClick={onBack} style={{
+          width: '100%', padding: '18px 0', borderRadius: 16,
+          background: T.gradient, border: 'none', color: '#fff',
+          fontSize: 16, fontWeight: 900, letterSpacing: 2,
+          cursor: 'pointer', boxShadow: `0 0 32px ${T.glow}`,
+        }}>
+          VOLTAR AO MENU
+        </button>
+      </div>
+    );
+  }
+
   // ── Descanso ──
   if (state.phase === 'rest') {
     return (
@@ -248,10 +257,10 @@ function WorkoutSession({ workout, onBack }: { workout: Workout; onBack: () => v
           DESCANSO
         </div>
         <div style={{ fontSize: 88, fontWeight: 900, color: T.accent, fontFamily: T.mono, lineHeight: 1 }}>
-          {state.restSecondsLeft ?? '--'}
+          {state.restSecondsLeft}
         </div>
         <div style={{ color: T.muted, fontSize: 13, marginTop: 8 }}>segundos</div>
-        <button onClick={completeSet} style={{
+        <button onClick={skipRest} style={{
           marginTop: 48, padding: '14px 32px', borderRadius: 12,
           background: T.card, border: `1px solid ${T.border}`,
           color: T.muted, fontSize: 12, letterSpacing: 1, cursor: 'pointer',
@@ -264,11 +273,10 @@ function WorkoutSession({ workout, onBack }: { workout: Workout; onBack: () => v
 
   if (!currentExercise) return null;
 
-// cálculo corrigido
-const totalSets = getTotalSets(workout);
-const progress  = (state.currentSet ?? 0) / Math.max(totalSets, 1);
-
-const currentSet = (state.currentSet ?? 0) + 1;
+  const completedSets = getTotalCompletedSets();
+  const totalSets     = getTotalSets(workout);
+  const progress      = completedSets / Math.max(totalSets, 1);
+  const currentSet    = state.currentSetIndex + 1;
 
   // ── Exercício ativo ──
   return (
@@ -277,7 +285,6 @@ const currentSet = (state.currentSet ?? 0) + 1;
       display: 'flex', flexDirection: 'column', padding: '24px 20px 40px',
     }}>
 
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
         <button onClick={onBack} style={{
           background: 'none', border: 'none', color: T.muted, fontSize: 22, cursor: 'pointer', padding: 0,
@@ -290,7 +297,6 @@ const currentSet = (state.currentSet ?? 0) + 1;
         </div>
       </div>
 
-      {/* Progresso */}
       <div style={{ height: 3, background: T.card, borderRadius: 2, marginBottom: 32, overflow: 'hidden' }}>
         <div style={{
           height: '100%', width: `${progress * 100}%`,
@@ -298,7 +304,6 @@ const currentSet = (state.currentSet ?? 0) + 1;
         }} />
       </div>
 
-      {/* Exercício */}
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <div style={{ fontSize: 72, marginBottom: 16 }}>{currentExercise.emoji}</div>
         <h2 style={{ fontSize: 26, fontWeight: 900, color: T.text, letterSpacing: 1, margin: 0 }}>
@@ -307,18 +312,17 @@ const currentSet = (state.currentSet ?? 0) + 1;
         <div style={{ fontSize: 13, color: T.muted, marginTop: 8, fontFamily: T.mono }}>
           {currentExercise.reps} repetições
         </div>
-        {'weight' in currentExercise && currentExercise.weight && (
+        {'weight' in currentExercise && (currentExercise as any).weight && (
           <div style={{ fontSize: 12, color: T.accent, marginTop: 4, fontFamily: T.mono }}>
-            {currentExercise.weight as string}
+            {(currentExercise as any).weight}
           </div>
         )}
       </div>
 
-      {/* Séries */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 32 }}>
         {Array.from({ length: currentExercise.sets }).map((_, i) => {
-          const done    = i < (state.currentSet ?? 0);
-          const current = i === (state.currentSet ?? 0);
+          const done    = i < state.currentSetIndex;
+          const current = i === state.currentSetIndex;
           return (
             <div key={i} style={{
               width: 38, height: 38, borderRadius: 10,
@@ -336,7 +340,6 @@ const currentSet = (state.currentSet ?? 0) + 1;
         })}
       </div>
 
-      {/* Cues */}
       {currentExercise.cues?.length > 0 && (
         <div style={{
           background: T.card, border: `1px solid ${T.border}`,
@@ -356,7 +359,6 @@ const currentSet = (state.currentSet ?? 0) + 1;
         </div>
       )}
 
-      {/* Botão concluir */}
       <div style={{ marginTop: 'auto' }}>
         <button onClick={completeSet} style={{
           width: '100%', padding: '20px 0', borderRadius: 16,
