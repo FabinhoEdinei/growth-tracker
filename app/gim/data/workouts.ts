@@ -3,7 +3,7 @@
 // ───────────────
 import { WORKOUT_FULLBODY_45 } from './fullbody';
 import { WORKOUT_ABS_10, WORKOUT_ABS_FINISHER, WORKOUT_ABS_PRO } from './abs';
-
+import type { Workout } from '../types/gym';
 // Metadados visuais separados do tipo Workout (não polui o tipo original)
 export const WORKOUT_META: Record<string, { icon: string; description: string }> = {
   'fullbody-45-dumbbell': { icon: '🏋️', description: 'Treino completo com halteres' },
