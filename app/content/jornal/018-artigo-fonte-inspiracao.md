@@ -53,4 +53,4 @@ A vitória sobre *Fullmetal Alchemist Brotherhood* no MyAnimeList não diminui o
 
 *Este artigo faz parte da análise
 
-<span style="color:red">No final das coias uma referência pra construir minha história</span >
+<span style="color:red">No final então uma referência pra construir minha história</span >
