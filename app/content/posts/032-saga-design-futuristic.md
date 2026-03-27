@@ -10,7 +10,7 @@ keywords:
 - ecoflow delta 2 max
 - sistema elétrico camper
 - renault master motorhome
-slug: sistema-eletrico-motorhome-ecoflow-delta2max
+slug: sistema-eletrico-motorhome-app
 title: "Sistema Elétrico de Motorhome: Guia Completo com EcoFlow Delta 2
   Max (Mercedes Sprinter)"
 ---
