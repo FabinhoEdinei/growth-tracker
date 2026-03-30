@@ -1,12 +1,15 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
+import React from "react";
 
 // ── Fonte monospace via Google Fonts ─────────────────────────────────────────
-const FONT_LINK = document.createElement("link");
-FONT_LINK.rel = "stylesheet";
-FONT_LINK.href = "https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap";
-document.head.appendChild(FONT_LINK);
+if (typeof document !== "undefined") {
+  const FONT_LINK = document.createElement("link");
+  FONT_LINK.rel = "stylesheet";
+  FONT_LINK.href = "https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap";
+  document.head.appendChild(FONT_LINK);
+}
 
 // ── Paleta base ───────────────────────────────────────────────────────────────
 const C = {
@@ -23,8 +26,40 @@ const C = {
   white:   "#e8ffe8",
 };
 
+// ── Tipos ─────────────────────────────────────────────────────────────────────
+interface Secao {
+  titulo: string;
+  conteudo: string;
+  dica: string;
+}
+
+interface Modulo {
+  id: string;
+  titulo: string;
+  icone: string;
+  cor: string;
+  nivel: string;
+  duracao: string;
+  secoes: Secao[];
+}
+
+interface Msg {
+  role: "user" | "ai";
+  text: string;
+}
+
+interface TemaState {
+  cor: string;
+  corBg1: string;
+  corBg2: string;
+  corBorder: string;
+  nomeSigla: string;
+  nomeCanal: string;
+  icone: string;
+}
+
 // ── Conteúdo do curso ─────────────────────────────────────────────────────────
-const MODULOS = [
+const MODULOS: Modulo[] = [
   {
     id: "m0",
     titulo: "BOOT · Visão Geral do Sistema",
@@ -316,13 +351,6 @@ updateCanal('principal', {
   cor:   '#00d4ff',
   corBg: 'linear-gradient(135deg,#000d1a,#00060f)',
 });
-// Adicionar scanlines no fundo:
-// position:absolute, inset:0
-// background: repeating-linear-gradient(
-//   0deg,
-//   transparent, transparent 2px,
-//   rgba(0,212,255,0.03) 2px, rgba(0,212,255,0.03) 4px
-// )
 
 RECEITA: TEMA CORPORATIVO LIMPO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -346,12 +374,12 @@ TORNAR HUD PERMANENTE (sempre visível):
 
 ESTILIZAR AS SETAS DE NAVEGAÇÃO:
   // Encontre o map(['prev','next']) e altere o style:
-  width: 48,          // maior
+  width: 48,
   height: 48,
-  borderRadius: 8,    // quadrado arredondado ao invés de círculo
+  borderRadius: 8,
   fontSize: 18,
-  background: \`\${canal.cor}22\`,
-  border: \`1.5px solid \${canal.cor}55\`,
+  background: canal.cor + '22',
+  border: '1.5px solid ' + canal.cor + '55',
 
 OCULTAR AS SETAS COMPLETAMENTE:
   // Envolva o map em:
@@ -363,7 +391,7 @@ OCULTAR AS SETAS COMPLETAMENTE:
         conteudo: `ESTRUTURA DO SLIDE PADRÃO:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
   [ BADGE DO CANAL   ]   ← display:inline-flex, borderRadius:20
-  [ 🎯 ÍCONE GRANDE  ]   ← fontSize:42, filter:drop-shadow
+  [ ÍCONE GRANDE     ]   ← fontSize:42, filter:drop-shadow
   [ TÍTULO H2        ]   ← clamp(18px, 4vw, 26px)
   [ Corpo parágrafo  ]   ← fontSize:13, maxWidth:480
   [ RODAPÉ           ]   ← fontSize:9, letterSpacing:2
@@ -372,21 +400,6 @@ MUDAR TAMANHO DO ÍCONE:
   // No SlideContent, encontre:
   fontSize:42, marginBottom:14
   // Altere para 64px para destaque maior
-
-ADICIONAR IMAGEM DE FUNDO POR SLIDE:
-  // No SlideContent, antes do return:
-  if (slide.custom?.bgImage) {
-    return (
-      <div style={{
-        position:'absolute', inset:0,
-        backgroundImage: \`url(\${slide.custom.bgImage})\`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        filter: 'brightness(0.4)',
-      }}/>
-      // ...resto do conteúdo por cima
-    );
-  }
 
 MUDAR A FONTE DO TÍTULO:
   // Substitua -apple-system por:
@@ -420,7 +433,6 @@ FLUXO COMPLETO:
   5. Retorna [{index, src, label}] ordenado alfabeticamente
   6. useMangaLoader chama injectMangaSlides(slides[])
   7. injectMangaSlides() faz setCanais() sem persist
-     (não salva no localStorage — é sempre re-carregado da pasta)
   8. O canal exibe as imagens como SlideContentManga
 
 POR QUE SEM PERSIST?
@@ -438,26 +450,20 @@ POR QUE SEM PERSIST?
 ESTRATÉGIA 2 — Seletor de capítulo dentro do canal:
   Adicione um state capAtivo ao useMangaLoader:
 
-  // Em page.tsx, antes do componente principal:
   const [mangaCap, setMangaCap] = useState('cap-01');
 
   // No fetch:
-  fetch(\`/api/manga-tv?cap=\${mangaCap}\`)
+  fetch('/api/manga-tv?cap=' + mangaCap)
 
   // Na API (route.ts), ler o query param:
-  const { searchParams } = new URL(request.url);
   const cap = searchParams.get('cap') ?? 'cap-01';
   const MANGA_DIR = path.join(process.cwd(),'public','manga', cap);
 
 ESTRUTURA DE PASTAS RECOMENDADA:
   public/
   └── manga/
-      ├── cap-01/
-      │   ├── 001.jpg
-      │   ├── 002.jpg
-      │   └── ...
+      ├── cap-01/  001.jpg, 002.jpg...
       ├── cap-02/
-      │   └── ...
       └── cap-03/`,
         dica: "💡 As imagens são ordenadas com localeCompare + numeric:true. Nomeie sempre com zero-pad: 001.jpg, 002.jpg... para garantir ordem correta.",
       },
@@ -472,19 +478,10 @@ TORNAR A IMAGEM FILL (sem barras laterais):
   // SlideContentManga — troque:
   objectFit: 'contain'  →  objectFit: 'cover'
 
-MUDAR A COR DA VINHETA:
-  // No radial-gradient da vinheta:
-  background: \`radial-gradient(
-    ellipse at center,
-    transparent 55%,
-    #1a0010 100%   ← use a mesma cor do corBg do canal
-  )\`
-
 OCULTAR O BADGE DE PÁGINA:
   // Remova o primeiro div do SlideContentManga (posição absolute top:10)
 
 ADICIONAR NÚMERO DA PÁGINA GRANDE:
-  // No SlideContentManga, após o Image:
   <div style={{
     position:'absolute', bottom:20, right:20, zIndex:3,
     fontFamily:"'Orbitron',monospace", fontSize:11,
@@ -521,14 +518,13 @@ LOCALIZAÇÃO DO COMPONENTE:
   /app/components/tv/GTNewsTicker.tsx
 
 COMO EDITAR AS NOTÍCIAS DO TICKER:
-  Dentro do GTNewsTicker, procure o array de textos:
   const NEWS_ITEMS = [
     "🔴 AO VIVO · Reunião geral às 15h",
     "📦 PCP · Meta de produção 98% atingida",
     // adicione aqui
   ];
 
-TORNAR AS NOTÍCIAS DINÂMICAS (fetch da API):
+TORNAR AS NOTÍCIAS DINÂMICAS:
   useEffect(() => {
     fetch('/api/noticias').then(r=>r.json()).then(setNews);
   }, []);`,
@@ -539,12 +535,11 @@ TORNAR AS NOTÍCIAS DINÂMICAS (fetch da API):
         conteudo: `O ticker padrão tem fundo escuro com texto colorido.
 
 MUDAR A COR DO TICKER PARA ACOMPANHAR O CANAL:
-  // Em page.tsx, passe a cor do canal:
   <GTNewsTicker
     speed={80}
     height={TICKER_H}
     controls={false}
-    accentColor={canal.cor}   ← adicione esta prop
+    accentColor={canal.cor}
   />
 
   // Em GTNewsTicker.tsx, receba e use:
@@ -554,10 +549,6 @@ MUDAR A COR DO TICKER PARA ACOMPANHAR O CANAL:
 ESTILO BREAKING NEWS (fundo vermelho pulsante):
   background: '#ff0000'
   animation: 'pulse 1s ease-in-out infinite'
-  @keyframes pulse {
-    0%,100% { opacity: 1; }
-    50%      { opacity: 0.85; }
-  }
 
 ADICIONAR ÍCONE "AO VIVO" PULSANTE:
   <span style={{
@@ -617,15 +608,17 @@ CONCEITO:
 IMPLEMENTAÇÃO:
   // Estender CanalSlide:
   schedule?: {
-    horaInicio: string;  // '08:00'
-    horaFim:    string;  // '18:00'
-    diasSemana: number[]; // 0=dom, 1=seg...
+    horaInicio: string;
+    horaFim:    string;
+    diasSemana: number[];
   };
 
   // Hook useScheduledSlides:
   function useScheduledSlides(slides: CanalSlide[]) {
     const now = new Date();
-    const hora = \`\${now.getHours()}:\${now.getMinutes()}\`;
+    const h = now.getHours().toString().padStart(2,'0');
+    const m = now.getMinutes().toString().padStart(2,'0');
+    const hora = h + ':' + m;
     const dia  = now.getDay();
     return slides.filter(s => {
       if (!s.schedule) return s.active;
@@ -635,21 +628,12 @@ IMPLEMENTAÇÃO:
         && hora >= horaInicio
         && hora <= horaFim;
     });
-  }
-
-  // No componente TvEmpresarial:
-  const slides = useScheduledSlides(
-    canal.slides.sort((a,b)=>a.order-b.order)
-  );`,
-        dica: "💡 Para atualizar a lista de slides ativos a cada minuto, use setInterval de 60000ms que force um re-render ou chame o hook dentro de um state de clock.",
+  }`,
+        dica: "💡 Para atualizar a lista de slides ativos a cada minuto, use setInterval de 60000ms que force um re-render.",
       },
       {
         titulo: "Upgrade 3 — Temas globais com CSS Variables",
         conteudo: `STATUS: 🟢 Implementável hoje
-
-CONCEITO:
-  Ao invés de espalhar cores por todo o código, centralizar
-  em CSS custom properties no :root.
 
 IMPLEMENTAÇÃO:
   // globals.css ou layout.tsx:
@@ -677,15 +661,11 @@ TEMAS PRONTOS PARA IMPLEMENTAR:
   'hacker'     → verde terminal, grain texture
   'hologram'   → ciano, partículas, blur pesado
   'broadcast'  → vermelho, estilo CNN/TV aberta`,
-        dica: "💡 Combinar data-theme com localStorage permite que cada TV em cada tela da empresa tenha seu próprio tema sem mudar o código.",
+        dica: "💡 Combinar data-theme com localStorage permite que cada TV tenha seu próprio tema sem mudar o código.",
       },
       {
         titulo: "Upgrade 4 — Conteúdo via Supabase (real-time)",
         conteudo: `STATUS: 🔵 Intermediário (requer Supabase configurado)
-
-CONCEITO:
-  Os slides deixam de viver no localStorage e passam para
-  uma tabela Supabase com realtime subscription.
 
 SCHEMA SUGERIDO:
   CREATE TABLE tv_slides (
@@ -702,8 +682,6 @@ SCHEMA SUGERIDO:
   );
 
 HOOK useLiveSlides:
-  import { createClient } from '@/lib/supabase/client';
-
   function useLiveSlides(canalId: string) {
     const [slides, setSlides] = useState([]);
     useEffect(() => {
@@ -711,23 +689,21 @@ HOOK useLiveSlides:
         .channel('tv_slides')
         .on('postgres_changes', {
           event: '*', schema: 'public', table: 'tv_slides',
-          filter: \`canal_id=eq.\${canalId}\`
-        }, payload => {
-          // atualizar estado local
-        })
+          filter: 'canal_id=eq.' + canalId
+        }, payload => { /* atualizar estado */ })
         .subscribe();
       return () => sub.unsubscribe();
     }, [canalId]);
     return slides;
   }`,
-        dica: "💡 Com Supabase realtime, mudanças no painel admin aparecem na TV em <1s sem reload — ideal para comunicados urgentes.",
+        dica: "💡 Com Supabase realtime, mudanças no painel admin aparecem na TV em menos de 1s sem reload — ideal para comunicados urgentes.",
       },
     ],
   },
 ];
 
 // ── Utilitário: efeito de digitação ──────────────────────────────────────────
-function useTypewriter(text: string, speed = 8)  {
+function useTypewriter(text: string, speed = 8) {
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(false);
   useEffect(() => {
@@ -745,7 +721,11 @@ function useTypewriter(text: string, speed = 8)  {
 }
 
 // ── Componente: linha de terminal com prompt ──────────────────────────────────
-function TermLine({ children, color = C.green, prompt = ">" }) {
+function TermLine({ children, color = C.green, prompt = ">" }: {
+  children: React.ReactNode;
+  color?: string;
+  prompt?: string;
+}) {
   return (
     <div style={{ display: "flex", gap: 8, marginBottom: 2 }}>
       <span style={{ color: C.dim, fontFamily: "'Share Tech Mono',monospace", flexShrink: 0 }}>{prompt}</span>
@@ -755,7 +735,7 @@ function TermLine({ children, color = C.green, prompt = ">" }) {
 }
 
 // ── Componente: bloco de código ───────────────────────────────────────────────
-function CodeBlock({ children }) {
+function CodeBlock({ children }: { children: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <div style={{ position: "relative", margin: "12px 0", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(0,255,65,0.03)", overflow: "hidden" }}>
@@ -772,7 +752,7 @@ function CodeBlock({ children }) {
 }
 
 // ── Componente: dica destacada ────────────────────────────────────────────────
-function DicaBox({ children }) {
+function DicaBox({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ margin: "14px 0 0", padding: "10px 14px", borderLeft: `3px solid ${C.gold}`, background: "rgba(255,215,0,0.05)", borderRadius: "0 6px 6px 0" }}>
       <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: 11, color: C.gold, lineHeight: 1.7 }}>{children}</span>
@@ -782,8 +762,7 @@ function DicaBox({ children }) {
 
 // ── Componente: editor de tema ao vivo ────────────────────────────────────────
 function TemaEditor() {
-  const [tema, setTema] = useState({ cor: "#00ff41", corBg1: "#020a04", corBg2: "#001a0a", corBorder: "#00ff41", nomeSigla: "GT", nomeCanal: "GT NETWORK", icone: "📺" });
-  const [copied, setCopied] = useState(false);
+  const [tema, setTema] = useState<TemaState>({ cor: "#00ff41", corBg1: "#020a04", corBg2: "#001a0a", corBorder: "#00ff41", nomeSigla: "GT", nomeCanal: "GT NETWORK", icone: "📺" });
 
   const css = `// updateCanal('principal', {
   cor:   '${tema.cor}',
@@ -793,11 +772,19 @@ function TemaEditor() {
   icone: '${tema.icone}',
 });`;
 
+  const campos: { label: string; key: keyof TemaState; type: string; placeholder?: string }[] = [
+    { label: "COR PRIMÁRIA", key: "cor",       type: "color" },
+    { label: "BG ESCURO 1",  key: "corBg1",    type: "color" },
+    { label: "BG ESCURO 2",  key: "corBg2",    type: "color" },
+    { label: "ÍCONE",        key: "icone",      type: "text", placeholder: "📺" },
+    { label: "SIGLA",        key: "nomeSigla",  type: "text", placeholder: "GT" },
+    { label: "NOME",         key: "nomeCanal",  type: "text", placeholder: "GT NETWORK" },
+  ];
+
   return (
     <div style={{ marginTop: 16 }}>
       <div style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: 10, color: C.dim, letterSpacing: 2, marginBottom: 12 }}>▸ EDITOR DE TEMA AO VIVO</div>
 
-      {/* Preview */}
       <div style={{ position: "relative", height: 120, borderRadius: 10, overflow: "hidden", border: `1px solid ${tema.cor}44`, marginBottom: 12, background: `linear-gradient(135deg,${tema.corBg1},${tema.corBg2})` }}>
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 30% 40%, ${tema.cor}15 0%,transparent 60%)` }} />
         <div style={{ position: "absolute", top: 10, left: 12, display: "flex", alignItems: "center", gap: 8 }}>
@@ -814,21 +801,17 @@ function TemaEditor() {
         <div style={{ position: "absolute", bottom: 8, right: 12, fontFamily: "'Share Tech Mono',monospace", fontSize: 9, color: `${tema.cor}88`, letterSpacing: 1 }}>PREVIEW</div>
       </div>
 
-      {/* Controles */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
-        {[
-          { label: "COR PRIMÁRIA", key: "cor", type: "color" },
-          { label: "BG ESCURO 1", key: "corBg1", type: "color" },
-          { label: "BG ESCURO 2", key: "corBg2", type: "color" },
-          { label: "ÍCONE", key: "icone", type: "text", placeholder: "📺" },
-          { label: "SIGLA", key: "nomeSigla", type: "text", placeholder: "GT" },
-          { label: "NOME", key: "nomeCanal", type: "text", placeholder: "GT NETWORK" },
-        ].map(({ label, key, type, placeholder }) => (
+        {campos.map(({ label, key, type, placeholder }) => (
           <div key={key}>
             <div style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: 8, color: C.dim, letterSpacing: 1.5, marginBottom: 4 }}>{label}</div>
-            <input type={type} value={tema[key]} placeholder={placeholder}
+            <input
+              type={type}
+              value={tema[key]}
+              placeholder={placeholder}
               onChange={e => setTema(t => ({ ...t, [key]: e.target.value }))}
-              style={{ width: "100%", background: "rgba(0,255,65,0.05)", border: `1px solid ${C.border}`, borderRadius: 5, padding: type === "color" ? "2px 4px" : "5px 8px", color: C.white, fontFamily: "'Share Tech Mono',monospace", fontSize: 11, outline: "none", height: type === "color" ? 30 : "auto", cursor: type === "color" ? "pointer" : "text", boxSizing: "border-box" }} />
+              style={{ width: "100%", background: "rgba(0,255,65,0.05)", border: `1px solid ${C.border}`, borderRadius: 5, padding: type === "color" ? "2px 4px" : "5px 8px", color: C.white, fontFamily: "'Share Tech Mono',monospace", fontSize: 11, outline: "none", height: type === "color" ? 30 : "auto", cursor: type === "color" ? "pointer" : "text", boxSizing: "border-box" }}
+            />
           </div>
         ))}
       </div>
@@ -842,7 +825,8 @@ function TemaEditor() {
           { nome: "NEON GTN",  cor: "#00ff41", bg1: "#020a04", bg2: "#001a0a", icone: "📺", sigla: "GT" },
           { nome: "SOLAR",     cor: "#ffd700", bg1: "#1a1200", bg2: "#0f0b00", icone: "☀️", sigla: "SL" },
         ].map(p => (
-          <button key={p.nome} onClick={() => setTema({ cor: p.cor, corBg1: p.bg1, corBg2: p.bg2, corBorder: p.cor, nomeSigla: p.sigla, nomeCanal: p.nome, icone: p.icone })}
+          <button key={p.nome}
+            onClick={() => setTema({ cor: p.cor, corBg1: p.bg1, corBg2: p.bg2, corBorder: p.cor, nomeSigla: p.sigla, nomeCanal: p.nome, icone: p.icone })}
             style={{ flex: 1, padding: "5px 4px", background: `${p.cor}12`, border: `1px solid ${p.cor}44`, borderRadius: 5, color: p.cor, fontFamily: "'Share Tech Mono',monospace", fontSize: 8, cursor: "pointer", letterSpacing: 1, transition: "all .2s" }}
             onMouseEnter={e => (e.currentTarget.style.background = `${p.cor}25`)}
             onMouseLeave={e => (e.currentTarget.style.background = `${p.cor}12`)}>
@@ -855,11 +839,11 @@ function TemaEditor() {
 }
 
 // ── Componente: AI Assistant integrado ───────────────────────────────────────
-function AIAssistant({ contexto }) {
-  const [input, setInput] = useState("");
-  const [msgs, setMsgs] = useState([]);
+function AIAssistant({ contexto }: { contexto: string }) {
+  const [input,   setInput]   = useState("");
+  const [msgs,    setMsgs]    = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
-  const bottomRef = useRef(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
 
@@ -877,18 +861,17 @@ function AIAssistant({ contexto }) {
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
           system: `Você é o GT TV Assistant — especialista técnico na TV Empresarial do Growth Tracker.
-O sistema usa Next.js App Router, TypeScript, Tailwind, com estado gerenciado por useChannelConfig (localStorage).
+O sistema usa Next.js App Router, TypeScript, com estado gerenciado por useChannelConfig (localStorage).
 Contexto atual do usuário: ${contexto}
-Responda em português, de forma direta e técnica. Use exemplos de código quando útil.
-Formate código com \`\`\` e seja conciso (máx 300 palavras).`,
+Responda em português, de forma direta e técnica. Use exemplos de código quando útil. Seja conciso (máx 300 palavras).`,
           messages: [
             ...msgs.map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })),
-            { role: "user", content: q }
+            { role: "user", content: q },
           ],
         }),
       });
       const d = await res.json();
-      const txt = d.content?.find(c => c.type === "text")?.text ?? "Sem resposta.";
+      const txt = (d.content as Array<{ type: string; text: string }>)?.find(c => c.type === "text")?.text ?? "Sem resposta.";
       setMsgs(m => [...m, { role: "ai", text: txt }]);
     } catch {
       setMsgs(m => [...m, { role: "ai", text: "⚠️ Erro ao conectar. Verifique sua conexão." }]);
@@ -904,9 +887,7 @@ Formate código com \`\`\` e seja conciso (máx 300 palavras).`,
         <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: 8, color: C.dim, marginLeft: "auto" }}>PERGUNTE SOBRE ESTE MÓDULO</span>
       </div>
       <div style={{ height: 180, overflowY: "auto", padding: "10px 12px", background: "rgba(0,0,0,.6)" }}>
-        {msgs.length === 0 && (
-          <TermLine color={C.dim} prompt="$">Faça uma pergunta sobre este módulo...</TermLine>
-        )}
+        {msgs.length === 0 && <TermLine color={C.dim} prompt="$">Faça uma pergunta sobre este módulo...</TermLine>}
         {msgs.map((m, i) => (
           <div key={i} style={{ marginBottom: 10 }}>
             <TermLine prompt={m.role === "user" ? "você>" : "ai>"} color={m.role === "user" ? C.cyan : C.green}>
@@ -926,7 +907,7 @@ Formate código com \`\`\` e seja conciso (máx 300 palavras).`,
           style={{ flex: 1, background: "rgba(0,255,65,0.04)", border: "none", padding: "8px 12px", color: C.white, fontFamily: "'Share Tech Mono',monospace", fontSize: 11, outline: "none" }}
         />
         <button onClick={send} disabled={loading}
-          style={{ padding: "0 16px", background: loading ? "transparent" : "rgba(0,255,65,0.1)", border: "none", borderLeft: `1px solid ${C.border}`, color: loading ? C.dimmer : C.green, fontFamily: "'Share Tech Mono',monospace", fontSize: 10, cursor: loading ? "default" : "pointer", letterSpacing: 1, transition: "background .2s" }}>
+          style={{ padding: "0 16px", background: loading ? "transparent" : "rgba(0,255,65,0.1)", border: "none", borderLeft: `1px solid ${C.border}`, color: loading ? C.dimmer : C.green, fontFamily: "'Share Tech Mono',monospace", fontSize: 10, cursor: loading ? "default" : "pointer", letterSpacing: 1 }}>
           {loading ? "..." : "ENVIAR"}
         </button>
       </div>
@@ -935,13 +916,13 @@ Formate código com \`\`\` e seja conciso (máx 300 palavras).`,
 }
 
 // ── Componente: progresso do curso ────────────────────────────────────────────
-function Progresso({ concluidos, total }) {
+function Progresso({ concluidos, total }: { concluidos: number; total: number }) {
   const pct = Math.round((concluidos / total) * 100);
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
         <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: 9, color: C.dim, letterSpacing: 2 }}>PROGRESSO DO CURSO</span>
-        <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: 9, color: C.green, letterSpacing: 1 }}>{concluidos}/{total} MÓDULOS · {pct}%</span>
+        <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: 9, color: C.green, letterSpacing: 1 }}>{concluidos}/{total} · {pct}%</span>
       </div>
       <div style={{ height: 4, background: C.dimmer, borderRadius: 2, overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg,${C.green},${C.cyan})`, boxShadow: `0 0 8px ${C.green}88`, transition: "width .6s ease", borderRadius: 2 }} />
@@ -951,20 +932,21 @@ function Progresso({ concluidos, total }) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// COMPONENTE PRINCIPAL
-// ═════════════════════════════════════════════════════════════════════════════
 export default function GTTVCurso() {
-  const [moduloAtivo, setModuloAtivo]   = useState(null);
-  const [secaoAtiva,  setSecaoAtiva]    = useState(0);
-  const [concluidos,  setConcluidos]    = useState(new Set());
-  const [booted,      setBooted]        = useState(false);
-  const [bootStep,    setBootStep]      = useState(0);
+  const [moduloAtivo, setModuloAtivo] = useState<string | null>(null);
+  const [secaoAtiva,  setSecaoAtiva]  = useState(0);
+  const [concluidos,  setConcluidos]  = useState<Set<string>>(new Set());
+  const [booted,      setBooted]      = useState(false);
+  const [bootStep,    setBootStep]    = useState(0);
+
+  // suppress unused warning — hook kept for future use
+  void useTypewriter;
 
   const BOOT_LINES = [
     "GT_TV_SYSTEM v3.4.1 · INICIALIZANDO...",
     "▸ Carregando módulos de treinamento...",
     "▸ Conectando ao AI Assistant...",
-    "▸ Compilando 6 módulos / 21 seções...",
+    "▸ Compilando 7 módulos / 22 seções...",
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
     "✓ SISTEMA PRONTO · BEM-VINDO AO CURSO",
   ];
@@ -978,14 +960,14 @@ export default function GTTVCurso() {
       });
     }, 300);
     return () => clearInterval(id);
-  }, [booted]);
+  }, [booted, BOOT_LINES.length]);
 
-  const marcarConcluida = (modId, secIdx) => {
+  const marcarConcluida = (modId: string, secIdx: number) => {
     setConcluidos(s => new Set([...s, `${modId}-${secIdx}`]));
   };
 
-  const moduloAtual = MODULOS.find(m => m.id === moduloAtivo);
-  const secaoAtual  = moduloAtual?.secoes[secaoAtiva];
+  const moduloAtual = MODULOS.find(m => m.id === moduloAtivo) ?? null;
+  const secaoAtual  = moduloAtual?.secoes[secaoAtiva] ?? null;
   const totalSecoes = MODULOS.reduce((acc, m) => acc + m.secoes.length, 0);
 
   // ── BOOT SCREEN ────────────────────────────────────────────────────────────
@@ -994,9 +976,7 @@ export default function GTTVCurso() {
       <div style={{ maxWidth: 480, width: "100%" }}>
         <div style={{ fontSize: 28, marginBottom: 20, textAlign: "center", filter: `drop-shadow(0 0 20px ${C.green})` }}>📺</div>
         {BOOT_LINES.slice(0, bootStep + 1).map((line, i) => (
-          <div key={i} style={{ marginBottom: 6, color: i === bootStep ? C.green : C.dim, fontSize: 12, letterSpacing: 1, animation: i === bootStep ? "none" : undefined }}>
-            {line}
-          </div>
+          <div key={i} style={{ marginBottom: 6, color: i === bootStep ? C.green : C.dim, fontSize: 12, letterSpacing: 1 }}>{line}</div>
         ))}
         <div style={{ marginTop: 16, height: 2, background: C.dimmer, borderRadius: 1, overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${((bootStep + 1) / BOOT_LINES.length) * 100}%`, background: C.green, transition: "width .3s ease" }} />
@@ -1006,20 +986,16 @@ export default function GTTVCurso() {
   );
 
   // ── LEITOR DE SEÇÃO ────────────────────────────────────────────────────────
-  if (moduloAtivo && secaoAtual) {
+  if (moduloAtivo && moduloAtual && secaoAtual) {
     const totalSecaoModulo = moduloAtual.secoes.length;
-    const isLast = secaoAtiva === totalSecaoModulo - 1;
+    const isLast  = secaoAtiva === totalSecaoModulo - 1;
     const jaFeita = concluidos.has(`${moduloAtivo}-${secaoAtiva}`);
-
-    // Detecta se é a seção do editor de tema
     const isEditorTema = secaoAtual.titulo.includes("Trocar o tema visual");
 
     return (
       <div style={{ minHeight: "100vh", background: C.bg, color: C.white, fontFamily: "'Share Tech Mono',monospace" }}>
-        {/* CRT scanlines sutil */}
         <div style={{ position: "fixed", inset: 0, backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.18) 2px,rgba(0,0,0,.18) 4px)", pointerEvents: "none", zIndex: 100 }} />
 
-        {/* Header */}
         <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(2,10,4,.95)", backdropFilter: "blur(10px)", borderBottom: `1px solid ${C.border}`, padding: "10px 16px", display: "flex", alignItems: "center", gap: 10 }}>
           <button onClick={() => { setModuloAtivo(null); setSecaoAtiva(0); }}
             style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 5, color: C.dim, fontSize: 9, cursor: "pointer", padding: "3px 8px", letterSpacing: 1, fontFamily: "'Share Tech Mono',monospace", transition: "color .2s" }}
@@ -1033,21 +1009,16 @@ export default function GTTVCurso() {
         </div>
 
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 80px" }}>
-
-          {/* Título da seção */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 8, color: C.dim, letterSpacing: 3, marginBottom: 8 }}>
-              {moduloAtual.nivel} · SEÇÃO {secaoAtiva + 1}
-            </div>
+            <div style={{ fontSize: 8, color: C.dim, letterSpacing: 3, marginBottom: 8 }}>{moduloAtual.nivel} · SEÇÃO {secaoAtiva + 1}</div>
             <h2 style={{ margin: 0, fontFamily: "'Orbitron',monospace", fontSize: "clamp(14px,3vw,20px)", color: moduloAtual.cor, letterSpacing: 1, textShadow: `0 0 20px ${moduloAtual.cor}55`, lineHeight: 1.3 }}>
               {secaoAtual.titulo}
             </h2>
           </div>
 
-          {/* Conteúdo principal */}
           <div style={{ background: "rgba(0,255,65,0.02)", border: `1px solid ${C.border}`, borderRadius: 8, padding: "16px", marginBottom: 16 }}>
             {secaoAtual.conteudo.split('\n').map((line, i) => {
-              const isCode = line.startsWith('  ') && line.trim().length > 0;
+              const isCode   = line.startsWith('  ') && line.trim().length > 0;
               const isHeader = /^[A-Z\s·]+:$/.test(line.trim()) || /^━+$/.test(line.trim());
               return (
                 <div key={i} style={{ marginBottom: isHeader ? 6 : 1 }}>
@@ -1063,49 +1034,39 @@ export default function GTTVCurso() {
             })}
           </div>
 
-          {/* Dica */}
           {secaoAtual.dica && <DicaBox>{secaoAtual.dica}</DicaBox>}
-
-          {/* Editor de tema ao vivo */}
           {isEditorTema && <TemaEditor />}
-
-          {/* AI Assistant */}
           <AIAssistant contexto={`Módulo: ${moduloAtual.titulo} | Seção: ${secaoAtual.titulo}`} />
 
-          {/* Navegação */}
           <div style={{ marginTop: 24, display: "flex", gap: 10, alignItems: "center" }}>
             {secaoAtiva > 0 && (
               <button onClick={() => setSecaoAtiva(s => s - 1)}
-                style={{ padding: "8px 16px", background: "transparent", border: `1px solid ${C.border}`, borderRadius: 6, color: C.dim, fontFamily: "'Share Tech Mono',monospace", fontSize: 10, cursor: "pointer", letterSpacing: 1, transition: "all .2s" }}
+                style={{ padding: "8px 16px", background: "transparent", border: `1px solid ${C.border}`, borderRadius: 6, color: C.dim, fontFamily: "'Share Tech Mono',monospace", fontSize: 10, cursor: "pointer", letterSpacing: 1 }}
                 onMouseEnter={e => { e.currentTarget.style.color = C.green; e.currentTarget.style.borderColor = C.green; }}
                 onMouseLeave={e => { e.currentTarget.style.color = C.dim; e.currentTarget.style.borderColor = C.border; }}>
                 ← ANTERIOR
               </button>
             )}
             <div style={{ flex: 1 }} />
-            {!jaFeita && (
-              <button onClick={() => marcarConcluida(moduloAtivo, secaoAtiva)}
-                style={{ padding: "6px 14px", background: "rgba(0,255,65,0.08)", border: `1px solid ${C.green}55`, borderRadius: 6, color: C.green, fontFamily: "'Share Tech Mono',monospace", fontSize: 9, cursor: "pointer", letterSpacing: 1 }}>
-                ✓ MARCAR FEITO
-              </button>
-            )}
-            {jaFeita && <span style={{ fontSize: 9, color: C.dim, letterSpacing: 1 }}>✓ CONCLUÍDA</span>}
+            {!jaFeita
+              ? <button onClick={() => marcarConcluida(moduloAtivo, secaoAtiva)} style={{ padding: "6px 14px", background: "rgba(0,255,65,0.08)", border: `1px solid ${C.green}55`, borderRadius: 6, color: C.green, fontFamily: "'Share Tech Mono',monospace", fontSize: 9, cursor: "pointer", letterSpacing: 1 }}>✓ MARCAR FEITO</button>
+              : <span style={{ fontSize: 9, color: C.dim, letterSpacing: 1 }}>✓ CONCLUÍDA</span>
+            }
             {!isLast ? (
-              <button onClick={() => { setSecaoAtiva(s => s + 1); }}
-                style={{ padding: "8px 20px", background: `${moduloAtual.cor}15`, border: `1px solid ${moduloAtual.cor}55`, borderRadius: 6, color: moduloAtual.cor, fontFamily: "'Share Tech Mono',monospace", fontSize: 10, cursor: "pointer", letterSpacing: 1, transition: "all .2s", boxShadow: `0 0 10px ${moduloAtual.cor}22` }}
+              <button onClick={() => setSecaoAtiva(s => s + 1)}
+                style={{ padding: "8px 20px", background: `${moduloAtual.cor}15`, border: `1px solid ${moduloAtual.cor}55`, borderRadius: 6, color: moduloAtual.cor, fontFamily: "'Share Tech Mono',monospace", fontSize: 10, cursor: "pointer", letterSpacing: 1, boxShadow: `0 0 10px ${moduloAtual.cor}22` }}
                 onMouseEnter={e => (e.currentTarget.style.background = `${moduloAtual.cor}25`)}
                 onMouseLeave={e => (e.currentTarget.style.background = `${moduloAtual.cor}15`)}>
                 PRÓXIMA →
               </button>
             ) : (
               <button onClick={() => { marcarConcluida(moduloAtivo, secaoAtiva); setModuloAtivo(null); setSecaoAtiva(0); }}
-                style={{ padding: "8px 20px", background: `${C.green}15`, border: `1px solid ${C.green}55`, borderRadius: 6, color: C.green, fontFamily: "'Share Tech Mono',monospace", fontSize: 10, cursor: "pointer", letterSpacing: 1, boxShadow: `0 0 12px ${C.green}33` }}>
+                style={{ padding: "8px 20px", background: `${C.green}15`, border: `1px solid ${C.green}55`, borderRadius: 6, color: C.green, fontFamily: "'Share Tech Mono',monospace", fontSize: 10, cursor: "pointer", letterSpacing: 1 }}>
                 ✓ CONCLUIR MÓDULO
               </button>
             )}
           </div>
 
-          {/* Mini índice do módulo */}
           <div style={{ marginTop: 28, padding: "12px 14px", background: "rgba(0,255,65,0.02)", border: `1px solid ${C.border}`, borderRadius: 8 }}>
             <div style={{ fontSize: 8, color: C.dimmer, letterSpacing: 2, marginBottom: 10 }}>SEÇÕES DESTE MÓDULO</div>
             {moduloAtual.secoes.map((s, i) => (
@@ -1123,16 +1084,11 @@ export default function GTTVCurso() {
     );
   }
 
-  // ── TELA PRINCIPAL — LISTA DE MÓDULOS ─────────────────────────────────────
+  // ── TELA PRINCIPAL ─────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.white, fontFamily: "'Share Tech Mono',monospace" }}>
-      {/* CRT scanlines */}
       <div style={{ position: "fixed", inset: 0, backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px)", pointerEvents: "none", zIndex: 100 }} />
 
-      {/* Noise grain overlay */}
-      <div style={{ position: "fixed", inset: 0, opacity: .025, backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", pointerEvents: "none", zIndex: 99 }} />
-
-      {/* Header */}
       <div style={{ borderBottom: `1px solid ${C.border}`, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, background: "rgba(0,0,0,.4)", backdropFilter: "blur(8px)", position: "sticky", top: 0, zIndex: 50 }}>
         <span style={{ fontSize: 22, filter: `drop-shadow(0 0 10px ${C.green})` }}>📺</span>
         <div>
@@ -1146,11 +1102,8 @@ export default function GTTVCurso() {
       </div>
 
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 60px" }}>
-
-        {/* Progresso */}
         <Progresso concluidos={concluidos.size} total={totalSecoes} />
 
-        {/* Intro terminal */}
         <div style={{ padding: "14px", background: C.panel, border: `1px solid ${C.border}`, borderRadius: 8, marginBottom: 24 }}>
           <TermLine prompt="$" color={C.dim}>gt-tv --curso --nivel=avancado</TermLine>
           <TermLine>Curso completo: {MODULOS.length} módulos · {totalSecoes} seções</TermLine>
@@ -1158,12 +1111,11 @@ export default function GTTVCurso() {
           <TermLine color={C.gold}>AI Assistant disponível em cada módulo para dúvidas em tempo real</TermLine>
         </div>
 
-        {/* Grid de módulos */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {MODULOS.map((m, mi) => {
-            const totalM   = m.secoes.length;
-            const feitasM  = m.secoes.filter((_, si) => concluidos.has(`${m.id}-${si}`)).length;
-            const pctM     = Math.round((feitasM / totalM) * 100);
+          {MODULOS.map((m) => {
+            const totalM    = m.secoes.length;
+            const feitasM   = m.secoes.filter((_, si) => concluidos.has(`${m.id}-${si}`)).length;
+            const pctM      = Math.round((feitasM / totalM) * 100);
             const concluido = pctM === 100;
 
             return (
@@ -1172,7 +1124,6 @@ export default function GTTVCurso() {
                 onMouseEnter={e => { e.currentTarget.style.background = `${m.cor}10`; e.currentTarget.style.borderColor = `${m.cor}66`; e.currentTarget.style.transform = "translateX(4px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = concluido ? `${m.cor}08` : C.panel; e.currentTarget.style.borderColor = concluido ? `${m.cor}55` : C.border; e.currentTarget.style.transform = ""; }}>
 
-                {/* Barra de progresso do módulo */}
                 <div style={{ position: "absolute", bottom: 0, left: 0, width: `${pctM}%`, height: 2, background: m.cor, boxShadow: `0 0 6px ${m.cor}`, transition: "width .5s ease" }} />
 
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -1183,25 +1134,22 @@ export default function GTTVCurso() {
                       <span style={{ fontSize: 7, padding: "2px 7px", background: `${m.cor}15`, border: `1px solid ${m.cor}33`, borderRadius: 10, color: m.cor, letterSpacing: 1.5, flexShrink: 0 }}>{m.nivel}</span>
                     </div>
                     <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                      <span style={{ fontSize: 9, color: C.dim, letterSpacing: .5 }}>⏱ {m.duracao}</span>
+                      <span style={{ fontSize: 9, color: C.dim }}>⏱ {m.duracao}</span>
                       <span style={{ fontSize: 9, color: C.dim }}>·</span>
                       <span style={{ fontSize: 9, color: C.dim }}>{totalM} seções</span>
                       {feitasM > 0 && <span style={{ fontSize: 9, color: m.cor }}>· {feitasM}/{totalM} feitas</span>}
                     </div>
                   </div>
-                  <div style={{ flexShrink: 0, textAlign: "right" }}>
-                    {concluido ? (
-                      <span style={{ fontSize: 16, filter: `drop-shadow(0 0 6px ${m.cor})` }}>✓</span>
-                    ) : (
-                      <span style={{ fontSize: 14, color: C.dim }}>›</span>
-                    )}
+                  <div style={{ flexShrink: 0 }}>
+                    {concluido
+                      ? <span style={{ fontSize: 16, filter: `drop-shadow(0 0 6px ${m.cor})` }}>✓</span>
+                      : <span style={{ fontSize: 14, color: C.dim }}>›</span>}
                   </div>
                 </div>
 
-                {/* Títulos das seções (mini-preview) */}
                 <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {m.secoes.map((s, si) => (
-                    <span key={si} style={{ fontSize: 8, padding: "2px 8px", background: concluidos.has(`${m.id}-${si}`) ? `${m.cor}15` : "rgba(255,255,255,.03)", border: `1px solid ${concluidos.has(`${m.id}-${si}`) ? m.cor + "44" : "rgba(255,255,255,.08)"}`, borderRadius: 10, color: concluidos.has(`${m.id}-${si}`) ? m.cor : "rgba(255,255,255,.3)", letterSpacing: .5 }}>
+                    <span key={si} style={{ fontSize: 8, padding: "2px 8px", background: concluidos.has(`${m.id}-${si}`) ? `${m.cor}15` : "rgba(255,255,255,.03)", border: `1px solid ${concluidos.has(`${m.id}-${si}`) ? m.cor + "44" : "rgba(255,255,255,.08)"}`, borderRadius: 10, color: concluidos.has(`${m.id}-${si}`) ? m.cor : "rgba(255,255,255,.3)" }}>
                       {s.titulo.length > 28 ? s.titulo.slice(0, 28) + "…" : s.titulo}
                     </span>
                   ))}
@@ -1211,16 +1159,13 @@ export default function GTTVCurso() {
           })}
         </div>
 
-        {/* Footer */}
         <div style={{ marginTop: 32, padding: "14px", background: C.panel, border: `1px solid ${C.border}`, borderRadius: 8, textAlign: "center" }}>
           <div style={{ fontSize: 9, color: C.dimmer, letterSpacing: 2, lineHeight: 1.8 }}>
             GT TV EMPRESARIAL · GROWTH TRACKER<br />
             {MODULOS.length} MÓDULOS · {totalSecoes} SEÇÕES · AI-POWERED
           </div>
           <div style={{ marginTop: 8, height: 1, background: `linear-gradient(90deg,transparent,${C.dimmer},transparent)` }} />
-          <div style={{ marginTop: 8, fontSize: 8, color: C.dimmer, letterSpacing: 1 }}>
-            VERSÃO 3.4.1 · NEXT.JS APP ROUTER · TYPESCRIPT
-          </div>
+          <div style={{ marginTop: 8, fontSize: 8, color: C.dimmer, letterSpacing: 1 }}>VERSÃO 3.4.1 · NEXT.JS APP ROUTER · TYPESCRIPT</div>
         </div>
       </div>
     </div>
