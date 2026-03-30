@@ -727,7 +727,7 @@ HOOK useLiveSlides:
 ];
 
 // ── Utilitário: efeito de digitação ──────────────────────────────────────────
-function useTypewriter(text, speed = 8) {
+function useTypewriter(text: string, speed = 8)  {
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(false);
   useEffect(() => {
