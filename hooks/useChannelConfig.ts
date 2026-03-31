@@ -12,7 +12,8 @@ export type CanalId =
   | 'engenharia'
   | 'pcp'
   | 'seguranca'
-  | 'gestao';
+  | 'gestao'
+  | 'manga';                        // ← GT Manga
 
 export interface CanalSlide {
   id:      string;
@@ -21,6 +22,9 @@ export interface CanalSlide {
   active:  boolean;
   order:   number;
   custom?: { titulo: string; corpo: string; rodape?: string; };
+  // ── campos extras para o canal manga ──────────────────────────────────────
+  tipo?:   'manga';                 // discriminador
+  src?:    string;                  // caminho da imagem
 }
 
 export interface Canal {
@@ -28,10 +32,12 @@ export interface Canal {
   nome:    string;
   sigla:   string;
   icone:   string;
-  cor:     string;       // cor primária do canal
-  corBg:   string;       // background gradiente
+  cor:     string;
+  corBg:   string;
   ativo:   boolean;
   slides:  CanalSlide[];
+  // flag opcional: o conteúdo do canal é carregado dinamicamente
+  dynamic?: boolean;
 }
 
 // ── Canais padrão ─────────────────────────────────────────────────────────────
@@ -62,10 +68,10 @@ export const CANAIS_DEFAULT: Canal[] = [
     cor: '#00ff88', corBg: 'linear-gradient(135deg,#001a0d,#00100a)',
     ativo: true,
     slides: [
-      { id:'qa-indicadores',  label:'Indicadores',     icon:'📊', active:true,  order:0, custom:{ titulo:'Indicadores de Qualidade',  corpo:'IQP, taxa de rejeição, aprovação em lote e conformidade do período.', rodape:'Qualidade · Atualizado diariamente' }},
-      { id:'qa-nao-conformidades', label:'Não Conformidades', icon:'⚠️', active:true, order:1, custom:{ titulo:'Não Conformidades Abertas', corpo:'Registros em tratamento e prazos de resolução pendentes.', rodape:'Canal QA' }},
-      { id:'qa-auditorias',   label:'Auditorias',      icon:'🔎', active:true,  order:2, custom:{ titulo:'Calendário de Auditorias',   corpo:'Próximas auditorias internas e externas programadas.', rodape:'Preparação obrigatória' }},
-      { id:'qa-normas',       label:'Normas e Docs',   icon:'📋', active:false, order:3, custom:{ titulo:'Normas e Documentação',      corpo:'ISO, procedimentos internos e documentos de qualidade vigentes.', rodape:'Canal QA' }},
+      { id:'qa-indicadores',       label:'Indicadores',        icon:'📊', active:true,  order:0, custom:{ titulo:'Indicadores de Qualidade',   corpo:'IQP, taxa de rejeição, aprovação em lote e conformidade do período.', rodape:'Qualidade · Atualizado diariamente' }},
+      { id:'qa-nao-conformidades', label:'Não Conformidades',  icon:'⚠️', active:true,  order:1, custom:{ titulo:'Não Conformidades Abertas',  corpo:'Registros em tratamento e prazos de resolução pendentes.', rodape:'Canal QA' }},
+      { id:'qa-auditorias',        label:'Auditorias',         icon:'🔎', active:true,  order:2, custom:{ titulo:'Calendário de Auditorias',    corpo:'Próximas auditorias internas e externas programadas.', rodape:'Preparação obrigatória' }},
+      { id:'qa-normas',            label:'Normas e Docs',      icon:'📋', active:false, order:3, custom:{ titulo:'Normas e Documentação',       corpo:'ISO, procedimentos internos e documentos de qualidade vigentes.', rodape:'Canal QA' }},
     ],
   },
   {
@@ -73,10 +79,10 @@ export const CANAIS_DEFAULT: Canal[] = [
     cor: '#ffd700', corBg: 'linear-gradient(135deg,#1a1500,#0f0e00)',
     ativo: true,
     slides: [
-      { id:'eng-novos-itens',  label:'Novos Itens',    icon:'🆕', active:true,  order:0, custom:{ titulo:'Itens em Implantação',       corpo:'Novos produtos e componentes em processo de homologação e entrada em linha.', rodape:'Engenharia · NPI' }},
-      { id:'eng-projetos',     label:'Projetos',       icon:'📐', active:true,  order:1, custom:{ titulo:'Projetos em Andamento',       corpo:'Status dos projetos de engenharia: desenvolvimento, validação e liberação.', rodape:'Canal ENG' }},
-      { id:'eng-alteracoes',   label:'Alterações',     icon:'🔄', active:true,  order:2, custom:{ titulo:'Alterações de Engenharia',    corpo:'ECNs abertas e alterações de produto em aprovação no período.', rodape:'Aprovação obrigatória antes de produzir' }},
-      { id:'eng-ferramental',  label:'Ferramental',    icon:'🔧', active:false, order:3, custom:{ titulo:'Ferramental e Gabaritos',     corpo:'Solicitações de ferramental, gabaritos em manutenção e novas aquisições.', rodape:'Canal ENG' }},
+      { id:'eng-novos-itens', label:'Novos Itens',  icon:'🆕', active:true,  order:0, custom:{ titulo:'Itens em Implantação',    corpo:'Novos produtos e componentes em processo de homologação e entrada em linha.', rodape:'Engenharia · NPI' }},
+      { id:'eng-projetos',    label:'Projetos',     icon:'📐', active:true,  order:1, custom:{ titulo:'Projetos em Andamento',    corpo:'Status dos projetos de engenharia: desenvolvimento, validação e liberação.', rodape:'Canal ENG' }},
+      { id:'eng-alteracoes',  label:'Alterações',   icon:'🔄', active:true,  order:2, custom:{ titulo:'Alterações de Engenharia', corpo:'ECNs abertas e alterações de produto em aprovação no período.', rodape:'Aprovação obrigatória antes de produzir' }},
+      { id:'eng-ferramental', label:'Ferramental',  icon:'🔧', active:false, order:3, custom:{ titulo:'Ferramental e Gabaritos',  corpo:'Solicitações de ferramental, gabaritos em manutenção e novas aquisições.', rodape:'Canal ENG' }},
     ],
   },
   {
@@ -84,10 +90,10 @@ export const CANAIS_DEFAULT: Canal[] = [
     cor: '#ff8c42', corBg: 'linear-gradient(135deg,#1a0800,#100500)',
     ativo: true,
     slides: [
-      { id:'pcp-producao',     label:'Produção do Dia', icon:'🏭', active:true,  order:0, custom:{ titulo:'Produção do Dia',            corpo:'Ordens abertas, apontamentos e performance das linhas no turno atual.', rodape:'PCP · Atualização por turno' }},
-      { id:'pcp-sequencia',    label:'Sequência',       icon:'📋', active:true,  order:1, custom:{ titulo:'Sequência de Produção',       corpo:'Ordem de fabricação programada para hoje e os próximos 2 dias.', rodape:'Canal PCP' }},
-      { id:'pcp-estoque',      label:'Estoque',         icon:'📦', active:true,  order:2, custom:{ titulo:'Posição de Estoque',          corpo:'Materiais críticos, rupturas e itens com reposição urgente.', rodape:'Acionar compras se crítico' }},
-      { id:'pcp-atraso',       label:'Atrasos',         icon:'⏰', active:false, order:3, custom:{ titulo:'Ordens com Atraso',           corpo:'Ordens de produção atrasadas e ações corretivas em andamento.', rodape:'Canal PCP' }},
+      { id:'pcp-producao',  label:'Produção do Dia', icon:'🏭', active:true,  order:0, custom:{ titulo:'Produção do Dia',       corpo:'Ordens abertas, apontamentos e performance das linhas no turno atual.', rodape:'PCP · Atualização por turno' }},
+      { id:'pcp-sequencia', label:'Sequência',       icon:'📋', active:true,  order:1, custom:{ titulo:'Sequência de Produção',  corpo:'Ordem de fabricação programada para hoje e os próximos 2 dias.', rodape:'Canal PCP' }},
+      { id:'pcp-estoque',   label:'Estoque',         icon:'📦', active:true,  order:2, custom:{ titulo:'Posição de Estoque',     corpo:'Materiais críticos, rupturas e itens com reposição urgente.', rodape:'Acionar compras se crítico' }},
+      { id:'pcp-atraso',    label:'Atrasos',         icon:'⏰', active:false, order:3, custom:{ titulo:'Ordens com Atraso',      corpo:'Ordens de produção atrasadas e ações corretivas em andamento.', rodape:'Canal PCP' }},
     ],
   },
   {
@@ -95,10 +101,10 @@ export const CANAIS_DEFAULT: Canal[] = [
     cor: '#ff4d6d', corBg: 'linear-gradient(135deg,#1a0005,#100004)',
     ativo: true,
     slides: [
-      { id:'seg-dds',          label:'DDS',             icon:'📢', active:true,  order:0, custom:{ titulo:'DDS · Diálogo de Segurança',  corpo:'Tema de segurança do dia. Atenção obrigatória antes do início da jornada.', rodape:'Segurança · Tolerância zero' }},
-      { id:'seg-indicadores',  label:'Indicadores',     icon:'📊', active:true,  order:1, custom:{ titulo:'Indicadores de Segurança',    corpo:'Dias sem acidente, near misses registrados e ações preventivas do mês.', rodape:'Canal SEG' }},
-      { id:'seg-epi',          label:'EPIs',            icon:'🥽', active:true,  order:2, custom:{ titulo:'EPIs e Equipamentos',         corpo:'Uso obrigatório, validade dos equipamentos e solicitações pendentes.', rodape:'EPI é obrigação, não opção' }},
-      { id:'seg-emergencia',   label:'Emergências',     icon:'🚨', active:false, order:3, custom:{ titulo:'Procedimentos de Emergência',  corpo:'Rotas de fuga, pontos de encontro e ramais de emergência.', rodape:'Canal SEG' }},
+      { id:'seg-dds',         label:'DDS',          icon:'📢', active:true,  order:0, custom:{ titulo:'DDS · Diálogo de Segurança', corpo:'Tema de segurança do dia. Atenção obrigatória antes do início da jornada.', rodape:'Segurança · Tolerância zero' }},
+      { id:'seg-indicadores', label:'Indicadores',  icon:'📊', active:true,  order:1, custom:{ titulo:'Indicadores de Segurança',   corpo:'Dias sem acidente, near misses registrados e ações preventivas do mês.', rodape:'Canal SEG' }},
+      { id:'seg-epi',         label:'EPIs',         icon:'🥽', active:true,  order:2, custom:{ titulo:'EPIs e Equipamentos',        corpo:'Uso obrigatório, validade dos equipamentos e solicitações pendentes.', rodape:'EPI é obrigação, não opção' }},
+      { id:'seg-emergencia',  label:'Emergências',  icon:'🚨', active:false, order:3, custom:{ titulo:'Procedimentos de Emergência', corpo:'Rotas de fuga, pontos de encontro e ramais de emergência.', rodape:'Canal SEG' }},
     ],
   },
   {
@@ -106,10 +112,34 @@ export const CANAIS_DEFAULT: Canal[] = [
     cor: '#c084fc', corBg: 'linear-gradient(135deg,#140028,#0a0018)',
     ativo: true,
     slides: [
-      { id:'gg-kpis',          label:'KPIs',            icon:'📈', active:true,  order:0, custom:{ titulo:'KPIs Estratégicos',          corpo:'OEE, OTIF, NPS e demais indicadores críticos do período.', rodape:'Gestão Geral · Visão executiva' }},
-      { id:'gg-metas',         label:'Metas',           icon:'🎯', active:true,  order:1, custom:{ titulo:'Metas do Mês',               corpo:'Performance vs. meta por área. Destaque para times acima do target.', rodape:'Canal GG' }},
-      { id:'gg-comunicados',   label:'Comunicados',     icon:'📣', active:true,  order:2, custom:{ titulo:'Comunicados da Direção',      corpo:'Informes estratégicos, mudanças organizacionais e diretrizes da liderança.', rodape:'Gestão Geral' }},
-      { id:'gg-resultados',    label:'Resultados',      icon:'💹', active:false, order:3, custom:{ titulo:'Resultados do Período',       corpo:'Fechamento financeiro, faturamento e resultado operacional consolidado.', rodape:'Confidencial · Apenas gestores' }},
+      { id:'gg-kpis',        label:'KPIs',         icon:'📈', active:true,  order:0, custom:{ titulo:'KPIs Estratégicos',     corpo:'OEE, OTIF, NPS e demais indicadores críticos do período.', rodape:'Gestão Geral · Visão executiva' }},
+      { id:'gg-metas',       label:'Metas',        icon:'🎯', active:true,  order:1, custom:{ titulo:'Metas do Mês',          corpo:'Performance vs. meta por área. Destaque para times acima do target.', rodape:'Canal GG' }},
+      { id:'gg-comunicados', label:'Comunicados',  icon:'📣', active:true,  order:2, custom:{ titulo:'Comunicados da Direção', corpo:'Informes estratégicos, mudanças organizacionais e diretrizes da liderança.', rodape:'Gestão Geral' }},
+      { id:'gg-resultados',  label:'Resultados',   icon:'💹', active:false, order:3, custom:{ titulo:'Resultados do Período',  corpo:'Fechamento financeiro, faturamento e resultado operacional consolidado.', rodape:'Confidencial · Apenas gestores' }},
+    ],
+  },
+
+  // ── GT Manga ─────────────────────────────────────────────────────────────────
+  {
+    id:      'manga',
+    nome:    'GT Manga',
+    sigla:   'MGK',
+    icone:   '📖',
+    cor:     '#ff6b9d',
+    corBg:   'linear-gradient(135deg,#1a0010,#0d0008)',
+    ativo:   true,
+    dynamic: true,          // páginas carregadas da API /api/manga-tv
+    slides: [
+      // placeholder — substituído em runtime pelo hook useMangaSlides
+      {
+        id:     'manga-loading',
+        label:  'Carregando...',
+        icon:   '📖',
+        active: true,
+        order:  0,
+        tipo:   'manga',
+        custom: { titulo: 'GT Manga', corpo: 'Capítulo 1', rodape: 'GT MANGA · AO VIVO' },
+      },
     ],
   },
 ];
@@ -124,8 +154,8 @@ function isValid(d: unknown): d is Canal[] {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 export function useChannelConfig() {
-  const [canais,  setCanais]  = useState<Canal[]>(CANAIS_DEFAULT);
-  const [loaded,  setLoaded]  = useState(false);
+  const [canais,     setCanais]     = useState<Canal[]>(CANAIS_DEFAULT);
+  const [loaded,     setLoaded]     = useState(false);
   const [canalAtivo, setCanalAtivo] = useState<CanalId>('principal');
 
   useEffect(() => {
@@ -134,7 +164,12 @@ export function useChannelConfig() {
       const raw = localStorage.getItem(LS_KEY);
       if (raw && ver >= VERSION) {
         const parsed = JSON.parse(raw);
-        if (isValid(parsed)) { setCanais(parsed); }
+        if (isValid(parsed)) {
+          // Garante que o canal manga está sempre presente mesmo em saves antigos
+          const hasManga = parsed.some((c: Canal) => c.id === 'manga');
+          const final    = hasManga ? parsed : [...parsed, CANAIS_DEFAULT.find(c => c.id === 'manga')!];
+          setCanais(final);
+        }
       }
     } catch {}
     setLoaded(true);
@@ -142,8 +177,8 @@ export function useChannelConfig() {
 
   const persist = (next: Canal[]) => {
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify(next));
-      localStorage.setItem(LS_VER, String(VERSION));
+      localStorage.setItem(LS_KEY,  JSON.stringify(next));
+      localStorage.setItem(LS_VER,  String(VERSION));
     } catch {}
   };
 
@@ -182,12 +217,22 @@ export function useChannelConfig() {
     });
   }, []);
 
-  const reset = useCallback(() => { setCanais(CANAIS_DEFAULT); persist(CANAIS_DEFAULT); }, []);
+  // Injeta slides dinâmicos do manga no estado sem persistir (são gerados da API)
+  const injectMangaSlides = useCallback((slides: CanalSlide[]) => {
+    setCanais(prev => prev.map(c =>
+      c.id === 'manga' ? { ...c, slides } : c
+    ));
+  }, []);
+
+  const reset = useCallback(() => {
+    setCanais(CANAIS_DEFAULT); persist(CANAIS_DEFAULT);
+  }, []);
 
   const canal = canais.find(c => c.id === canalAtivo) ?? canais[0];
 
   return {
     canais, canal, canalAtivo, loaded,
     setCanalAtivo, updateCanal, updateSlide, addSlide, removeSlide, reset,
+    injectMangaSlides,
   };
 }
