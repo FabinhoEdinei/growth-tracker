@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { GTNewsTicker }     from '@/app/components/tv/GTNewsTicker';
 import { useChannelConfig } from '@/hooks/useChannelConfig';
-import type { Canal, CanalId } from '@/hooks/useChannelConfig';
+import type { Canal, CanalId, CanalSlide } from '@/hooks/useChannelConfig';
 
 const SLIDE_MS = 8000;
 const TICKER_H = 44;
@@ -47,11 +48,17 @@ function ChannelSelector({ canais, canalAtivo, onSelect, visible }: {
   );
 }
 
-// ── Conteúdo do slide ─────────────────────────────────────────────────────────
+// ── Slide padrão (texto) ──────────────────────────────────────────────────────
 function SlideContent({ canal, idx }: { canal: Canal; idx: number }) {
   const slides = canal.slides.filter(s=>s.active).sort((a,b)=>a.order-b.order);
   const slide  = slides[idx];
   if (!slide) return null;
+
+  // Redireciona para o render de imagem manga
+  if (slide.tipo === 'manga' && slide.src) {
+    return <SlideContentManga slide={slide} canal={canal} />;
+  }
+
   const d = slide.custom;
   if (!d) return (
     <div style={{ textAlign:'center', color:'rgba(255,255,255,.4)', fontFamily:"'Courier New',monospace", fontSize:12 }}>
@@ -67,6 +74,55 @@ function SlideContent({ canal, idx }: { canal: Canal; idx: number }) {
       <h2 style={{ margin:'0 0 14px', fontFamily:"-apple-system,sans-serif", fontSize:'clamp(18px,4vw,26px)', fontWeight:900, color:'#fff', lineHeight:1.2, textShadow:`0 0 20px ${canal.cor}44` }}>{d.titulo}</h2>
       <p style={{ margin:'0 auto 16px', maxWidth:480, fontFamily:"-apple-system,sans-serif", fontSize:13, color:'rgba(255,255,255,.7)', lineHeight:1.7 }}>{d.corpo}</p>
       {d.rodape && <div style={{ fontFamily:"'Courier New',monospace", fontSize:9, color:`${canal.cor}88`, letterSpacing:2, textTransform:'uppercase' }}>{d.rodape}</div>}
+    </div>
+  );
+}
+
+// ── Slide de imagem — canal Manga ─────────────────────────────────────────────
+function SlideContentManga({ slide, canal }: { slide: CanalSlide; canal: Canal }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+    }}>
+      {/* Badge do canal */}
+      <div style={{
+        position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+        zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '3px 12px',
+        background: `${canal.cor}18`,
+        border: `1px solid ${canal.cor}44`,
+        borderRadius: 20,
+        fontFamily: "'Courier New',monospace", fontSize: 9, fontWeight: 900,
+        color: canal.cor, letterSpacing: 2,
+        textShadow: `0 0 8px ${canal.cor}88`,
+        pointerEvents: 'none',
+      }}>
+        {canal.icone} {canal.sigla} · {slide.label.toUpperCase()}
+      </div>
+
+      {/* Imagem full-fit */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Image
+          src={slide.src!}
+          alt={slide.label}
+          fill
+          style={{ objectFit: 'contain' }}
+          priority
+          sizes="100vw"
+        />
+      </div>
+
+      {/* Vinheta nas bordas */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `radial-gradient(ellipse at center, transparent 55%, ${canal.corBg.includes('1a0010') ? '#1a0010' : '#000'}88 100%)`,
+        pointerEvents: 'none', zIndex: 1,
+      }}/>
     </div>
   );
 }
@@ -94,9 +150,43 @@ function ProgressBar({ color, paused, uid }: { color:string; paused:boolean; uid
   );
 }
 
+// ── Hook: carrega páginas do manga e injeta no canal ─────────────────────────
+function useMangaLoader(
+  canalAtivo: CanalId,
+  injectMangaSlides: (slides: CanalSlide[]) => void,
+) {
+  const loaded = useRef(false);
+
+  useEffect(() => {
+    if (canalAtivo !== 'manga' || loaded.current) return;
+    loaded.current = true;
+
+    fetch('/api/manga-tv')
+      .then(r => r.json())
+      .then(({ pages }: { pages: { index: number; src: string; label: string }[] }) => {
+        if (!pages?.length) return;
+        const slides: CanalSlide[] = pages.map((p, i) => ({
+          id:     `manga-p${p.index}`,
+          label:  p.label,
+          icon:   '📄',
+          active: true,
+          order:  i,
+          tipo:   'manga' as const,
+          src:    p.src,
+        }));
+        injectMangaSlides(slides);
+      })
+      .catch(err => console.error('[GT Manga TV] erro ao carregar páginas:', err));
+  }, [canalAtivo, injectMangaSlides]);
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 export default function TvEmpresarial() {
-  const { canais, canal, canalAtivo, loaded, setCanalAtivo } = useChannelConfig();
+  const {
+    canais, canal, canalAtivo, loaded,
+    setCanalAtivo, injectMangaSlides,
+  } = useChannelConfig();
+
   const [cur,        setCur]        = useState(0);
   const [outgoing,   setOutgoing]   = useState<number|null>(null);
   const [dir,        setDir]        = useState<Dir>('left');
@@ -104,8 +194,11 @@ export default function TvEmpresarial() {
   const [busy,       setBusy]       = useState(false);
   const [showUI,     setShowUI]     = useState(true);
   const [showCanais, setShowCanais] = useState(false);
-  const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
-  const uiRef   =useRef<ReturnType<typeof setTimeout>|null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval>|null>(null);
+  const uiRef    = useRef<ReturnType<typeof setTimeout>|null>(null);
+
+  // Carrega páginas do manga quando o canal for selecionado
+  useMangaLoader(canalAtivo, injectMangaSlides);
 
   const slides  = canal.slides.filter(s=>s.active).sort((a,b)=>a.order-b.order);
   const total   = slides.length;
@@ -157,9 +250,10 @@ export default function TvEmpresarial() {
     </div>
   );
 
-  const enterFrom=dir==='left'?'100%':'-100%';
-  const exitTo   =dir==='left'?'-100%':'100%';
-  const offset   =showCanais?72:0;
+  const isMangaChannel = canalAtivo === 'manga';
+  const enterFrom = dir==='left'?'100%':'-100%';
+  const exitTo    = dir==='left'?'-100%':'100%';
+  const offset    = showCanais ? 72 : 0;
 
   return(
     <div style={{position:'fixed',inset:0,background:canal.corBg,overflow:'hidden',userSelect:'none'}} onMouseMove={nudgeUI} onTouchStart={nudgeUI}>
@@ -176,7 +270,9 @@ export default function TvEmpresarial() {
         {outgoing!==null&&slides[outgoing]&&(
           <div key={`out-${outgoing}`} style={{position:'absolute',inset:0,zIndex:1,animation:`gtExit 480ms cubic-bezier(.4,0,.2,1) forwards`,['--gt-exit' as any]:exitTo}}>
             <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column'}}>
-              <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'56px 24px 16px'}}><SlideContent canal={canal} idx={outgoing}/></div>
+              <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding: isMangaChannel ? '48px 0 8px' : '56px 24px 16px',position:'relative'}}>
+                <SlideContent canal={canal} idx={outgoing}/>
+              </div>
             </div>
           </div>
         )}
@@ -184,7 +280,12 @@ export default function TvEmpresarial() {
         <div key={`in-${safeCur}-${canalAtivo}`} style={{position:'absolute',inset:0,zIndex:2,animation:`gtEnter 480ms cubic-bezier(.4,0,.2,1) forwards`,['--gt-enter' as any]:enterFrom,cursor:'pointer'}}
           onClick={()=>{setPaused(p=>!p);nudgeUI();}}>
           <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column'}}>
-            <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'56px 24px 16px',overflow:'hidden',position:'relative',zIndex:1}}>
+            <div style={{
+              flex:1,
+              display:'flex',alignItems:'center',justifyContent:'center',
+              padding: isMangaChannel ? '48px 0 8px' : '56px 24px 16px',
+              overflow:'hidden', position:'relative', zIndex:1,
+            }}>
               <SlideContent canal={canal} idx={safeCur}/>
             </div>
             <ProgressBar color={canal.cor} paused={paused} uid={`${canalAtivo}-${safeCur}`}/>
@@ -216,11 +317,21 @@ export default function TvEmpresarial() {
             {!paused&&<span style={{fontFamily:"'Courier New',monospace",fontSize:7,color:'#ff0044',fontWeight:900,letterSpacing:2,animation:'gtBlink 1s step-end infinite'}}>● AO VIVO</span>}
           </div>
 
-          <div style={{display:'flex',alignItems:'center',gap:4}}>
-            {slides.map((_,i)=>(
-              <button key={i} onClick={()=>{goTo(i,i>safeCur?'left':'right');nudgeUI();}} style={{width:i===safeCur?18:6,height:6,borderRadius:3,background:i===safeCur?canal.cor:'rgba(255,255,255,.2)',border:'none',cursor:'pointer',padding:0,boxShadow:i===safeCur?`0 0 6px ${canal.cor}`:'none',transition:'all .35s'}}/>
-            ))}
-          </div>
+          {/* Dots de navegação — ocultos no manga (muitas páginas) */}
+          {!isMangaChannel && (
+            <div style={{display:'flex',alignItems:'center',gap:4}}>
+              {slides.map((_,i)=>(
+                <button key={i} onClick={()=>{goTo(i,i>safeCur?'left':'right');nudgeUI();}} style={{width:i===safeCur?18:6,height:6,borderRadius:3,background:i===safeCur?canal.cor:'rgba(255,255,255,.2)',border:'none',cursor:'pointer',padding:0,boxShadow:i===safeCur?`0 0 6px ${canal.cor}`:'none',transition:'all .35s'}}/>
+              ))}
+            </div>
+          )}
+
+          {/* Contador de páginas para o canal manga */}
+          {isMangaChannel && total > 0 && (
+            <div style={{fontFamily:"'Courier New',monospace",fontSize:10,color:canal.cor,letterSpacing:2,fontWeight:900,textShadow:`0 0 8px ${canal.cor}88`}}>
+              {safeCur + 1} / {total}
+            </div>
+          )}
 
           <div style={{display:'flex',gap:5}}>
             <Link href="/tv-empresarial/canais" style={{fontFamily:"'Courier New',monospace",fontSize:8,color:'rgba(255,255,255,.5)',textDecoration:'none',padding:'4px 9px',border:'1px solid rgba(255,255,255,.12)',borderRadius:10,letterSpacing:1}}>⚙️ CANAIS</Link>
@@ -242,7 +353,9 @@ export default function TvEmpresarial() {
             <span style={{fontSize:12}}>{slides[safeCur]?.icon}</span>
             <span style={{fontFamily:"'Courier New',monospace",fontSize:8,color:'rgba(255,255,255,.5)',letterSpacing:1.5,fontWeight:700}}>{slides[safeCur]?.label?.toUpperCase()}</span>
           </div>
-          <div style={{fontFamily:"'Courier New',monospace",fontSize:8,background:'rgba(0,0,0,.65)',border:'1px solid rgba(255,255,255,.12)',borderRadius:7,padding:'3px 9px',color:'rgba(255,255,255,.4)',letterSpacing:1}}>{safeCur+1}/{total}</div>
+          {!isMangaChannel && (
+            <div style={{fontFamily:"'Courier New',monospace",fontSize:8,background:'rgba(0,0,0,.65)',border:'1px solid rgba(255,255,255,.12)',borderRadius:7,padding:'3px 9px',color:'rgba(255,255,255,.4)',letterSpacing:1}}>{safeCur+1}/{total}</div>
+          )}
         </div>
       </div>
 
