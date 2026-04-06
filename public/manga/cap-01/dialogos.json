@@ -92,7 +92,28 @@
       "cor": "#a0a0b0",
       "avatar": "/manga/avatares/sistema.png",
         "autoMs": 4000
-       }
+       }, 
+    {
+      "pagina": 5,
+      "personagem": "Fabinho",
+      "fala": "Esse lugar com essa bagunça me faz lembrar como era bagunça interna também, sem planos o futuro incerto",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+            {
+      "pagina": 6,
+      "personagem": "Fabinho",
+      "fala": "Cafa dia se torna uma jornadade ida e volta não importa o sistemaque vive alto e baixo sempre vam esta brigando pelo controle e o meio faz parte do dia a dia",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+    {
+      "pagina": 7,
+      "personagem": "Fabinho",
+      "fala": "O que é rotina afinal",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
    
   ]
 }
