@@ -1,8 +1,8 @@
 ---
-author: Fabio Edinei
-category: Historiografia e Arqueologia Bíblica
+author: "Fabio Edinei"
+category: "Geral"
 date: 2026-04-09
-description: Breve relato historiográfico sobre a Torre de Babel, reunindo as perspectivas de historiadores antigos, críticos bíblicos modernos e arqueólogos que investigaram suas origens e significados.
+description: "Breve relato historiográfico sobre a Torre de Babel, reunindo as perspectivas de historiadores antigos, críticos bíblicos modernos e arqueólogos que investigaram suas origens e significados."
 keywords:
 - Torre de Babel
 - historiografia bíblica
@@ -11,7 +11,7 @@ keywords:
 - Gênesis 11
 - crítica textual
 - zigurate
-slug:torre-de-babel-historiadores-arqueologia
+slug:"torre-de-babel-historiadores-arqueologia"
 title: "A Torre de Babel na Historiografia: Relatos, Análises e Perspectivas Acadêmicas"
 ---
 
