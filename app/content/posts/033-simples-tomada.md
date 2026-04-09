@@ -1,13 +1,13 @@
 ---
-author: Fabio Edinei
-category: Motorhome
+author: "Fabio Edinei"
+category: "Motorhome"
 date: 2026-04-06
 description: Guia definitivo sobre sistema elétrico para acebder uma lâmpada.
 keywords:
 - motorhome
 - energia motorhome
 - sistema elétrico camper motorhome
-slug: sistema-eletrico-motorhome-luzes
+slug: "sistema-eletrico-motorhome-luzes"
 title: "Sistema Elétrico de Motorhome: lâmpadas
 ---
 
