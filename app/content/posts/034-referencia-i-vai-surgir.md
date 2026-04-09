@@ -11,7 +11,7 @@ keywords:
 - Gênesis 11
 - crítica textual
 - zigurate
-slug: torre-de-babel-historiadores-arqueologia
+slug:torre-de-babel-historiadores-arqueologia
 title: "A Torre de Babel na Historiografia: Relatos, Análises e Perspectivas Acadêmicas"
 ---
 
