@@ -257,7 +257,7 @@ function MangaReader({ cap, dark, onBack, onToggleDark, paginaInicial = 0 }: {
             script={script}
             paginaAtual={page}
             dark={dark}
-            capId={cap.id}           {/* ← NOVO */}
+            capId={cap.id}
             onPageChange={handleDialogEnd}
           />
         </div>
@@ -377,7 +377,7 @@ export default function MangaPage() {
     <MangaReader
       cap={capAtivo}
       dark={dark}
-      paginaInicial={paginaInicial}   {/* ← NOVO */}
+      paginaInicial={paginaInicial}
       onBack={()=>setCapAtivo(null)}
       onToggleDark={()=>setDark(d=>!d)}
     />
