@@ -9,7 +9,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { TouchEvent as RTouch } from 'react';
 import Link  from 'next/link';
 import Image from 'next/image';
-import RPGDialogBox, { type RPGScript } from '@/app/components/manga/RPGDialogBox';
+import RPGDialogBox, { type RPGScript, MANGA_RETURN_KEY, type MangaReturnData } from '@/app/components/manga/RPGDialogBox';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 interface MangaPage     { index: number; src: string; }
@@ -45,11 +45,10 @@ function useRPGScript(capId: string | null) {
   useEffect(() => {
     if (!capId) { setScript(null); return; }
     setLoading(true);
-    // Tenta carregar /manga/{capId}/dialogos.json
     fetch(`/manga/${capId}/dialogos.json`)
       .then(r => { if (!r.ok) throw new Error('sem diálogos'); return r.json(); })
       .then(d  => { setScript(d); setLoading(false); })
-      .catch(() => { setScript(null); setLoading(false); }); // sem diálogos = ok
+      .catch(() => { setScript(null); setLoading(false); });
   }, [capId]);
   return { script, loadingScript: loading };
 }
@@ -124,18 +123,17 @@ function CapituloSelector({ capitulos, dark, onSelect }: {
 // ─────────────────────────────────────────────────────────────────────────────
 // LEITOR PRINCIPAL
 // ─────────────────────────────────────────────────────────────────────────────
-function MangaReader({ cap, dark, onBack, onToggleDark }: {
+function MangaReader({ cap, dark, onBack, onToggleDark, paginaInicial = 0 }: {
   cap: MangaCapitulo; dark: boolean; onBack: ()=>void; onToggleDark: ()=>void;
+  paginaInicial?: number; // ← NOVO
 }) {
-  const [page,       setPage]       = useState(0);
+  const [page,       setPage]       = useState(paginaInicial); // ← usa paginaInicial
   const [showUI,     setShowUI]     = useState(true);
   const [dir,        setDir]        = useState<'left'|'right'>('left');
   const [animating,  setAnimating]  = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
-  // RPG script do capítulo
   const { script } = useRPGScript(cap.id);
-  // Controla se a caixa de diálogo está ativa nesta página
   const [dialogAtivo, setDialogAtivo] = useState(true);
 
   const uiRef    = useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -143,14 +141,11 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
   const total    = cap.pages.length;
   const pct      = total > 1 ? (page/(total-1))*100 : 0;
 
-  // Verifica se há diálogos para esta página
   const temDialogo = (pg: number) =>
     (script?.dialogos ?? []).some(d => (d.pagina ?? 0) === pg);
 
-  // Reset dialog ao mudar de página
   useEffect(() => { setDialogAtivo(true); }, [page]);
 
-  // ── UI timeout ──────────────────────────────────────────────────────────────
   const nudgeUI = useCallback(() => {
     setShowUI(true);
     if (uiRef.current) clearTimeout(uiRef.current);
@@ -158,7 +153,6 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
   }, []);
   useEffect(() => { nudgeUI(); }, []);
 
-  // ── Navegação ───────────────────────────────────────────────────────────────
   const goTo = useCallback((idx: number, d: 'left'|'right') => {
     if (idx < 0 || idx >= total || animating) return;
     setAnimating(true);
@@ -169,10 +163,8 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
   const goNext = useCallback(() => goTo(page+1,'left'),  [page,goTo]);
   const goPrev = useCallback(() => goTo(page-1,'right'), [page,goTo]);
 
-  // ── Teclado ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      // Não navega se diálogo ativo — o diálogo captura o espaço/enter
       if (dialogAtivo && temDialogo(page) && (e.key===' '||e.key==='Enter')) return;
       nudgeUI();
       if (e.key==='ArrowRight'||e.key==='ArrowDown') goNext();
@@ -184,7 +176,6 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
     return () => window.removeEventListener('keydown', h);
   }, [goNext, goPrev, nudgeUI, onBack, dialogAtivo, page]);
 
-  // ── Swipe ───────────────────────────────────────────────────────────────────
   const onTS = (e: RTouch<HTMLDivElement>) => {
     const t = e.touches[0];
     touchRef.current = { x:t.clientX, y:t.clientY };
@@ -195,14 +186,12 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
     const dx = t.clientX - touchRef.current.x;
     const dy = Math.abs(t.clientY - touchRef.current.y);
     touchRef.current = null;
-    // Ignora swipe se diálogo ativo
     if (dialogAtivo && temDialogo(page)) return;
     if (Math.abs(dx) < SWIPE_THRESHOLD || dy > Math.abs(dx)) return;
     nudgeUI();
     dx < 0 ? goNext() : goPrev();
   };
 
-  // ── Fullscreen ──────────────────────────────────────────────────────────────
   const toggleFS = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen?.().catch(()=>{});
@@ -213,18 +202,16 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
     }
   };
 
-  // ── Click — só navega se não há diálogo ativo ────────────────────────────────
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('[data-hud]')) return;
     if ((e.target as HTMLElement).closest('[data-rpg]')) return;
     nudgeUI();
-    if (dialogAtivo && temDialogo(page)) return; // diálogo captura o toque
+    if (dialogAtivo && temDialogo(page)) return;
     const x = e.clientX / window.innerWidth;
     if (x < 0.35) goPrev();
     else if (x > 0.65) goNext();
   };
 
-  // ── Callback do RPG: diálogos terminaram → avança página ────────────────────
   const handleDialogEnd = useCallback((nextPage: number) => {
     setDialogAtivo(false);
     if (nextPage < total) goTo(nextPage, 'left');
@@ -270,6 +257,7 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
             script={script}
             paginaAtual={page}
             dark={dark}
+            capId={cap.id}           {/* ← NOVO */}
             onPageChange={handleDialogEnd}
           />
         </div>
@@ -278,19 +266,16 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
       {/* ── HUD ── */}
       <div data-hud="true" style={{ position:'absolute', inset:0, pointerEvents:'none', opacity:showUI?1:0, transition:'opacity .5s ease', zIndex:10 }}>
 
-        {/* Barra de progresso (topo) */}
         <div style={{ position:'absolute', top:0, left:0, right:0 }}>
           <ProgressBar pct={pct} color='#ff6b9d'/>
         </div>
 
-        {/* Header */}
         <div style={{ position:'absolute', top:0, left:0, right:0, padding:'8px 14px 12px', background:'linear-gradient(180deg,rgba(0,0,0,.8) 0%,transparent 100%)', display:'flex', alignItems:'center', justifyContent:'space-between', pointerEvents:'auto' }}>
           <button onClick={onBack} style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(0,0,0,.55)', border:'1px solid rgba(255,255,255,.15)', borderRadius:20, padding:'5px 12px', color:'#fff', fontSize:10, cursor:'pointer', backdropFilter:'blur(8px)', fontFamily:"'Courier New',monospace", letterSpacing:1 }}>
             ← CAPÍTULOS
           </button>
           <div style={{ fontSize:11, color:'rgba(255,255,255,.85)', fontFamily:"'Courier New',monospace", fontWeight:700, letterSpacing:1.5, textShadow:'0 1px 4px rgba(0,0,0,.8)' }}>{cap.titulo}</div>
           <div style={{ display:'flex', gap:5 }}>
-            {/* Toggle dialog */}
             {script && (
               <button onClick={()=>setDialogAtivo(d=>!d)} title="Diálogos RPG" style={{ width:30, height:30, borderRadius:'50%', background: dialogAtivo?'rgba(255,107,157,.3)':'rgba(0,0,0,.5)', border:`1px solid ${dialogAtivo?'rgba(255,107,157,.5)':'rgba(255,255,255,.15)'}`, color:'#fff', fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(8px)' }}>
                 💬
@@ -305,19 +290,15 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
           </div>
         </div>
 
-        {/* Footer */}
         <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'8px 14px 12px', background:'linear-gradient(0deg,rgba(0,0,0,.8) 0%,transparent 100%)', display:'flex', flexDirection:'column', gap:6, pointerEvents:'auto' }}>
-          {/* Miniaturas */}
           <div style={{ display:'flex', gap:3, overflowX:'auto', scrollbarWidth:'none' }}>
             {cap.pages.map((p,i) => (
               <button key={p.src} onClick={()=>goTo(i,i>page?'left':'right')} style={{ width:26, height:38, flexShrink:0, borderRadius:4, overflow:'hidden', border:`2px solid ${i===page?'#ff6b9d':'transparent'}`, background:'rgba(255,255,255,.1)', cursor:'pointer', padding:0, boxShadow:i===page?'0 0 8px #ff6b9d':'none', transition:'all .2s', position:'relative' }}>
                 <Image src={p.src} alt={`p${i+1}`} fill style={{objectFit:'cover'}}/>
-                {/* Indica se tem diálogo */}
                 {temDialogo(i) && <div style={{ position:'absolute', top:1, right:1, width:5, height:5, borderRadius:'50%', background:'#ff6b9d', boxShadow:'0 0 4px #ff6b9d' }}/>}
               </button>
             ))}
           </div>
-          {/* Contador */}
           <div style={{ textAlign:'center' }}>
             <span style={{ fontFamily:"'Courier New',monospace", fontSize:11, color:'rgba(255,255,255,.65)', letterSpacing:2, textShadow:'0 1px 4px rgba(0,0,0,.8)' }}>
               {page+1} / {total}
@@ -327,7 +308,7 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
         </div>
       </div>
 
-      {/* Fim do capítulo */}
+      {/* ── Fim do capítulo ── */}
       {page===total-1 && !animating && !dialogAtivo && (
         <div style={{ position:'absolute', inset:0, zIndex:20, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none' }}>
           <div style={{ padding:'20px 32px', background:dark?'rgba(0,0,0,.88)':'rgba(255,255,255,.92)', border:'1.5px solid #ff6b9d', borderRadius:16, backdropFilter:'blur(12px)', textAlign:'center', pointerEvents:'auto', animation:'popIn .4s cubic-bezier(.34,1.56,.64,1)' }}>
@@ -350,8 +331,31 @@ function MangaReader({ cap, dark, onBack, onToggleDark }: {
 // ═════════════════════════════════════════════════════════════════════════════
 export default function MangaPage() {
   const { capitulos, loading, error } = useMangaData();
-  const [capAtivo, setCapAtivo] = useState<MangaCapitulo|null>(null);
-  const [dark,     setDark]     = useState(true);
+  const [capAtivo,      setCapAtivo]      = useState<MangaCapitulo|null>(null);
+  const [dark,          setDark]          = useState(true);
+  const [paginaInicial, setPaginaInicial] = useState(0); // ← NOVO
+
+  // Restaura progresso salvo (ex: voltou do blog)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(MANGA_RETURN_KEY);
+      if (!raw || !capitulos.length) return;
+      const d: MangaReturnData = JSON.parse(raw);
+      const cap = capitulos.find(c => c.id === d.capId);
+      if (!cap) return;
+      localStorage.removeItem(MANGA_RETURN_KEY); // limpa após restaurar
+      setPaginaInicial(d.paginaIdx);
+      setCapAtivo(cap);
+    } catch {
+      // silencia
+    }
+  }, [capitulos]);
+
+  // Ao selecionar manualmente, sempre começa na pg 0
+  const handleSelect = (c: MangaCapitulo) => {
+    setPaginaInicial(0);
+    setCapAtivo(c);
+  };
 
   if (loading) return (
     <div style={{ minHeight:'100vh', background:'#080810', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16 }}>
@@ -370,8 +374,14 @@ export default function MangaPage() {
   );
 
   if (capAtivo) return (
-    <MangaReader cap={capAtivo} dark={dark} onBack={()=>setCapAtivo(null)} onToggleDark={()=>setDark(d=>!d)}/>
+    <MangaReader
+      cap={capAtivo}
+      dark={dark}
+      paginaInicial={paginaInicial}   {/* ← NOVO */}
+      onBack={()=>setCapAtivo(null)}
+      onToggleDark={()=>setDark(d=>!d)}
+    />
   );
 
-  return <CapituloSelector capitulos={capitulos} dark={dark} onSelect={c=>setCapAtivo(c)}/>;
+  return <CapituloSelector capitulos={capitulos} dark={dark} onSelect={handleSelect}/>;
 }
