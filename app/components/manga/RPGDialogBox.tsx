@@ -12,13 +12,13 @@ import Link from 'next/link';
 export interface RPGDialogo {
   personagem: string;
   fala:       string;
-  avatar?:    string;   // ex: "/manga/avatares/fabinho-avatar.png"
+  avatar?:    string;
   cor?:       string;
   autoMs?:    number;
   pagina?:    number;
   posicao?:   'base' | 'topo';
-  link?:      string;   // URL para navegar ao clicar no botão
-  linkLabel?: string;   // Texto do botão (default: "VER →")
+  link?:      string;
+  linkLabel?: string;
 }
 
 export interface RPGScript {
@@ -29,6 +29,7 @@ interface Props {
   script:        RPGScript | null;
   paginaAtual:   number;
   dark:          boolean;
+  capId?:        string;   // ← NOVO: id do capítulo para salvar progresso
   onPageChange?: (idx: number) => void;
 }
 
@@ -92,7 +93,6 @@ function Avatar({ src, nome, cor, size = 62 }: { src?: string; nome: string; cor
       position:      'relative',
       background:    `linear-gradient(135deg, ${cor}18, rgba(0,0,0,0.5))`,
     }}>
-      {/* Fallback visível enquanto carrega */}
       {!carregou && (
         <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
           <AvatarFallback nome={nome} cor={cor} size={size - 4} />
@@ -112,7 +112,6 @@ function Avatar({ src, nome, cor, size = 62 }: { src?: string; nome: string; cor
           display:        carregou ? 'block' : 'none',
         }}
       />
-      {/* Brilho de canto */}
       <div style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:1, background:`linear-gradient(135deg, ${cor}28 0%, transparent 55%)`, borderRadius:'inherit' }}/>
     </div>
   );
@@ -139,7 +138,6 @@ function ParticleButton({ cor, label, onClick }: { cor: string; label: string; o
       const p = phaseRef.current;
       ctx.clearRect(0, 0, W, H);
 
-      // Glow central
       const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 14);
       grad.addColorStop(0,   cor + 'ff');
       grad.addColorStop(0.4, cor + '88');
@@ -149,20 +147,17 @@ function ParticleButton({ cor, label, onClick }: { cor: string; label: string; o
       ctx.fillStyle = grad;
       ctx.fill();
 
-      // Núcleo brilhante
       ctx.beginPath();
       ctx.arc(cx, cy, 4 + Math.sin(p * 2) * 1.5, 0, Math.PI * 2);
       ctx.fillStyle = '#ffffff';
       ctx.fill();
 
-      // Anel orbital
       ctx.beginPath();
       ctx.arc(cx, cy, 16, 0, Math.PI * 2);
       ctx.strokeStyle = cor + '44';
       ctx.lineWidth   = 1;
       ctx.stroke();
 
-      // Partícula orbitando
       const ox = cx + Math.cos(p) * 16;
       const oy = cy + Math.sin(p) * 16;
       ctx.beginPath();
@@ -170,7 +165,6 @@ function ParticleButton({ cor, label, onClick }: { cor: string; label: string; o
       ctx.fillStyle = cor;
       ctx.fill();
 
-      // Segunda partícula (oposta + velocidade diferente)
       const ox2 = cx + Math.cos(p * 0.7 + Math.PI) * 16;
       const oy2 = cy + Math.sin(p * 0.7 + Math.PI) * 16;
       ctx.beginPath();
@@ -190,15 +184,15 @@ function ParticleButton({ cor, label, onClick }: { cor: string; label: string; o
       onClick={e => { e.stopPropagation(); onClick(); }}
       title={label}
       style={{
-        background:   'none',
-        border:       'none',
-        padding:      0,
-        cursor:       'pointer',
-        display:      'flex',
-        flexDirection:'column',
-        alignItems:   'center',
-        gap:          2,
-        flexShrink:   0,
+        background:    'none',
+        border:        'none',
+        padding:       0,
+        cursor:        'pointer',
+        display:       'flex',
+        flexDirection: 'column',
+        alignItems:    'center',
+        gap:           2,
+        flexShrink:    0,
       }}
     >
       <canvas ref={canvasRef} style={{ width: 44, height: 44, display: 'block' }} />
@@ -213,10 +207,22 @@ function ParticleButton({ cor, label, onClick }: { cor: string; label: string; o
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Chave usada no localStorage
+// ─────────────────────────────────────────────────────────────────────────────
+export const MANGA_RETURN_KEY = 'manga_return_progress';
+
+export interface MangaReturnData {
+  capId:       string;
+  paginaIdx:   number;
+  dialogoIdx:  number;
+  savedAt:     number; // timestamp
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ═════════════════════════════════════════════════════════════════════════════
-export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }: Props) {
+export default function RPGDialogBox({ script, paginaAtual, dark, capId, onPageChange }: Props) {
   const dialogosDaPagina = script?.dialogos.filter(d => (d.pagina ?? 0) === paginaAtual) ?? [];
 
   const [idx,      setIdx]      = useState(0);
@@ -224,9 +230,9 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
   const [completo, setCompleto] = useState(false);
   const [visivel,  setVisivel]  = useState(false);
 
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autoRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const letterRef= useRef(0);
+  const timerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const letterRef = useRef(0);
 
   const dialogo = dialogosDaPagina[idx] ?? null;
 
@@ -267,7 +273,6 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const avancar = useCallback(() => {
     if (!dialogo) return;
-    // Primeiro toque: completa o texto
     if (!completo) {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (autoRef.current)  clearTimeout(autoRef.current);
@@ -285,6 +290,22 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
       onPageChange?.(paginaAtual + 1);
     }
   }, [dialogo, completo, idx, dialogosDaPagina.length, paginaAtual, onPageChange]);
+
+  // ── Salva progresso antes de navegar pro link ─────────────────────────────
+  const salvarProgresso = useCallback(() => {
+    if (!capId) return;
+    const data: MangaReturnData = {
+      capId,
+      paginaIdx:  paginaAtual,
+      dialogoIdx: idx,
+      savedAt:    Date.now(),
+    };
+    try {
+      localStorage.setItem(MANGA_RETURN_KEY, JSON.stringify(data));
+    } catch {
+      // localStorage indisponível (SSR ou privado) — silencia
+    }
+  }, [capId, paginaAtual, idx]);
 
   if (!visivel || !dialogo) return null;
 
@@ -322,7 +343,6 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
         borderRadius:  '10px 10px 0 0',
         position:      'relative', zIndex: 1,
       }}>
-        {/* Bolinha de status */}
         <div style={{ width:6, height:6, borderRadius:'50%', background:cor, boxShadow:`0 0 6px ${cor}`, animation:'rpgPulse 2s ease-in-out infinite', flexShrink:0 }}/>
         <span style={{ fontFamily:"'Courier New',monospace", fontSize:11, fontWeight:900, color:cor, letterSpacing:2, textShadow:`0 0 10px ${cor}88` }}>
           {dialogo.personagem.toUpperCase()}
@@ -332,11 +352,12 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
             {idx+1}/{dialogosDaPagina.length}
           </span>
         )}
-        {/* Botão de link para post/blog relacionado */}
+
+        {/* ── Botão de link — salva progresso antes de navegar ── */}
         {dialogo.link && (
           <Link
             href={dialogo.link}
-            onClick={e => e.stopPropagation()}
+            onClick={e => { e.stopPropagation(); salvarProgresso(); }}
             style={{
               marginLeft:    6,
               padding:       '2px 8px',
@@ -378,26 +399,21 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
         position:       'relative',
         overflow:       'hidden',
       }}>
-
-        {/* Scanlines */}
         <div style={{ position:'absolute', inset:0, pointerEvents:'none', backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.025) 3px,rgba(0,0,0,0.025) 4px)', borderRadius:'inherit' }}/>
-        {/* Brilho topo */}
         <div style={{ position:'absolute', top:0, left:0, right:0, height:1, background:`linear-gradient(90deg,transparent,${cor}50,transparent)`, pointerEvents:'none' }}/>
 
-        {/* ── Avatar ── */}
         <Avatar src={dialogo.avatar} nome={dialogo.personagem} cor={cor} size={58} />
 
-        {/* ── Texto ── */}
         <div style={{ flex:1, minWidth:0 }}>
           <p style={{
-            margin:       0,
-            fontSize:     13,
-            lineHeight:   1.7,
-            color:        txCor,
-            fontFamily:   "'Courier New',monospace",
-            letterSpacing:0.4,
-            whiteSpace:   'pre-wrap',
-            wordBreak:    'break-word',
+            margin:        0,
+            fontSize:      13,
+            lineHeight:    1.7,
+            color:         txCor,
+            fontFamily:    "'Courier New',monospace",
+            letterSpacing: 0.4,
+            whiteSpace:    'pre-wrap',
+            wordBreak:     'break-word',
           }}>
             {texto}
             {!completo && (
@@ -406,7 +422,6 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
           </p>
         </div>
 
-        {/* ── Botão partícula orbital ── */}
         {completo && (
           <ParticleButton
             cor={cor}
@@ -416,7 +431,6 @@ export default function RPGDialogBox({ script, paginaAtual, dark, onPageChange }
         )}
       </div>
 
-      {/* Barra de auto-progresso */}
       {completo && dialogo.autoMs && (
         <div style={{ height:2, background:'rgba(255,255,255,.06)', borderRadius:1, overflow:'hidden', marginTop:3 }}>
           <div style={{ height:'100%', background:`${cor}77`, animation:`rpgAuto ${dialogo.autoMs}ms linear forwards` }}/>
