@@ -16,7 +16,7 @@
       "cor": "#00d4ff"
     },
     {
-      "pagina": 1,
+      "pagina": 0,
       "personagem": "Narrador",
       "fala": "Era uma noite comum. Mas algo no horizonte digital mudaria tudo.",
       "cor": "#a0a0b0",
@@ -24,14 +24,14 @@
       "autoMs": 4000
     },
     {
-      "pagina": 1,
+      "pagina": 0,
       "personagem": "Fabinho",
       "fala": "Eu consigo ver os dados... consigo ver o crescimento.",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
     {
-      "pagina": 1,
+      "pagina": 0,
       "personagem": "Sistema",
       "fala": "Protocolo GT-Chain ativado. Minerando bloco #001...",
       "avatar": "/manga/avatares/sistema.png",
@@ -39,7 +39,7 @@
       "autoMs": 2500
     },
     {
-      "pagina": 2,
+      "pagina": 0,
       "personagem": "Narrador",
       "fala": "O que eu poderia falar sobre o role de ontem, se quero mudar uma coisa,mas uma reflexão fiz agora que se refere ao que vou escrever que sempre vai ser passado mas ideias futuras era nisso que tenho que mudar a direção dos pensamento pois viver debatendo ou remoendo passado não é mais meu foco.",
       "cor": "#a0a0b0",
@@ -47,14 +47,14 @@
       "autoMs": 4000
     },
     {
-      "pagina": 2,
+      "pagina": 0,
       "personagem": "Fabinho",
       "fala": "Ahhhhh, que preguiça... vamos lá! Ânimo cara, hoje eu começo no meu primeiro trabalho 😅",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
     {
-  "pagina": 2,
+  "pagina": 0,
   "personagem": "Sistema",
   "fala": "Quer saber mais sobre o sono? Depois volta na home — no blog tem um post falando sobre o assunto.",
   "avatar": "/manga/avatares/sistema.png",
@@ -64,21 +64,21 @@
   "linkLabel": "LER POST"
 }, 
     {
-      "pagina": 3,
+      "pagina": 0,
       "personagem": "Fabinho",
       "fala": "Agora sim, vou tomar esse café, e um pão novinho fofo igual essa chimia de abóbora...",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
     {
-      "pagina": 3,
+      "pagina": 0,
       "personagem": "Fabinho",
       "fala": "Até vou por uma camada a mais vai saber como vai ser o dia,",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
     {
-      "pagina": 3,
+      "pagina": 0,
       "personagem": "Narrador",
       "fala": "So uma informação importante,  ele comeu um pão de forma todo,aquele feito no formo de barro, na brincadeira de so mais um pouco se foi 1 e meio pote de chimia ",
       "cor": "#a0a0b0",
@@ -86,7 +86,7 @@
       "autoMs": 4000
     },
      { 
-      "pagina": 4,
+      "pagina": 0,
       "personagem": "Sistema",
       "fala": " Fabinho nunca foi isso ai de lavar as coisas, isso muda no futuro pois é como a vida ensina aos poucos.",
       "cor": "#a0a0b0",
@@ -94,21 +94,21 @@
         "autoMs": 4000
        }, 
     {
-      "pagina": 5,
+      "pagina": 0,
       "personagem": "Fabinho",
       "fala": "Esse lugar com essa bagunça me faz lembrar como era bagunça interna também, sem planos o futuro incerto",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
             {
-      "pagina": 6,
+      "pagina": 0,
       "personagem": "Fabinho",
       "fala": "Cada dia se torna uma jornadade ida e volta não importa o sistemaque vive alto e baixo sempre vam esta brigando pelo controle e o meio faz parte do dia a dia",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
     {
-      "pagina": 7,
+      "pagina": 0,
       "personagem": "Fabinho",
       "fala": "O que é rotina afinal",
       "avatar": "/manga/avatares/fabinho-avatar.png",
