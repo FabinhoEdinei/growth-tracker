@@ -1,0 +1,22 @@
+{
+  "dialogos": [
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "Conexão neural estabelecida. Bem-vindo ao capítulo 03 clicando no ok vc irá vai começar a ler, boa leitura!",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700",
+      "autoMs": 3500
+      
+    },
+        {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "O que eu poderia falar sobre o role de ontem, se quero mudar uma coisa,mas uma reflexão fiz agora que se refere ao que vou escrever que sempre vai ser passado mas ideias futuras era nisso que tenho que mudar a direção dos pensamento pois viver debatendo ou remoendo passado não é mais meu foco ",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    }
+    
+  ]
+  
+}
