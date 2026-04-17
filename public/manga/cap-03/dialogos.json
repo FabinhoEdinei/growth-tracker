@@ -3,7 +3,7 @@
     {
       "pagina": 0,
       "personagem": "Sistema",
-      "fala": "Conexão neural estabelecida. Bem-vindo ao Growth Tracker Universe. clicando no ok vc irá prosseguir!",
+      "fala": "Conexão neural estabelecida. Bem-vindo ao Growth Tracker Universe. clicando no ok irá prosseguir!",
       "avatar": "/manga/avatares/sistema.png",
       "cor": "#ffd700",
       "autoMs": 3500
@@ -11,14 +11,14 @@
     {
       "pagina": 0,
       "personagem": "Fabinho",
-      "fala": "O que eu estou deixando para o o Fabio  que vive no futuro daqui 5 anos, que ele vai usar melhordo que eu...?",
+      "fala": "O que eu estou deixando para  o Fabio  que vive no futuro, daqui uns 5 anos, que ele vai usar melhor do que eu...desse instante?",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
     {
       "pagina": 0,
       "personagem": "Narrador",
-      "fala": "Era uma noite comum. Mas algo no horizonte digital mudaria tudo.",
+      "fala": "Era bom eu ter feito isto antes!.",
       "cor": "#a0a0b0",
       "avatar": "/manga/avatares/narrador.png",
       "autoMs": 4000
