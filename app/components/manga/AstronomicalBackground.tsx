@@ -379,7 +379,7 @@ export const AstronomicalClockBackground: React.FC<
         />
 
         {/* Ponteiro das horas com sombra 3D */}
-        <g transform={`rotate(${hourAngle} 100 100)`}>
+        <g transform={`rotate(${hourAngle - 90} 100 100)`}>
           {/* Sombra */}
           <line
             x1="100"
@@ -406,7 +406,7 @@ export const AstronomicalClockBackground: React.FC<
         </g>
 
         {/* Ponteiro dos minutos com sombra 3D */}
-        <g transform={`rotate(${minuteAngle} 100 100)`}>
+        <g transform={`rotate(${minuteAngle - 90} 100 100)`}>
           {/* Sombra */}
           <line
             x1="100"
@@ -433,7 +433,7 @@ export const AstronomicalClockBackground: React.FC<
         </g>
 
         {/* Ponteiro dos segundos com sombra 3D */}
-        <g transform={`rotate(${secondAngle} 100 100)`}>
+        <g transform={`rotate(${secondAngle - 90} 100 100)`}>
           {/* Sombra */}
           <line
             x1="100"

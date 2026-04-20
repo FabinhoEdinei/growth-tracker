@@ -328,7 +328,7 @@ export const AstronomicalClockBackground: React.FC<
         <circle cx="100" cy="100" r="6" fill={CLOCK_COLORS.gold} filter="url(#shadow)" />
 
         {/* Ponteiro das horas */}
-        <g transform={`rotate(${hourAngle} 100 100)`}>
+        <g transform={`rotate(${hourAngle - 90} 100 100)`}>
           <line
             x1="100"
             y1="100"
@@ -342,7 +342,7 @@ export const AstronomicalClockBackground: React.FC<
         </g>
 
         {/* Ponteiro dos minutos */}
-        <g transform={`rotate(${minuteAngle} 100 100)`}>
+        <g transform={`rotate(${minuteAngle - 90} 100 100)`}>
           <line
             x1="100"
             y1="100"
@@ -356,7 +356,7 @@ export const AstronomicalClockBackground: React.FC<
         </g>
 
         {/* Ponteiro dos segundos (sutil) */}
-        <g transform={`rotate(${secondAngle} 100 100)`}>
+        <g transform={`rotate(${secondAngle - 90} 100 100)`}>
           <line
             x1="100"
             y1="100"
