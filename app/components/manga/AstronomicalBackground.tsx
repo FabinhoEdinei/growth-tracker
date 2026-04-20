@@ -13,6 +13,8 @@ interface AstronomicalClockBackgroundProps {
   size?: 'sm' | 'md' | 'lg' | 'full'
   opacity?: number // 0-1
   position?: 'center' | 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+  capId?: string
+  dark?: boolean
   clockState?: {
     hour: number
     minute: number
@@ -52,6 +54,8 @@ export const AstronomicalClockBackground: React.FC<
   size = 'full',
   opacity = 0.15,
   position = 'center',
+  capId,
+  dark = false,
   clockState = { hour: 14, minute: 35, second: 42 },
   showZodiac = true,
   blur = false,
@@ -85,6 +89,7 @@ export const AstronomicalClockBackground: React.FC<
       style={{
         opacity,
         filter: blur ? 'blur(2px)' : 'none',
+        background: dark ? 'rgba(8, 10, 16, 0.08)' : 'rgba(255, 255, 255, 0.08)',
       }}
     >
       <svg

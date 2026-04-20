@@ -18,7 +18,7 @@ import {
   NavigationButtons,
   OrnamentalDivider,
 } from './AstronomicalComponents'
-import { calculateClockAngles } from './astronomicalUtils'
+import { calculateClockAngles } from './AstronomicalUtils'
 import { CHAPTERS_METADATA, COLOR_PALETTE } from './types'
 
 // ============================================================================

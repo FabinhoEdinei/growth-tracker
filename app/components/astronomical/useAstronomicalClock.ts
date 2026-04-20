@@ -9,14 +9,14 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   AstronomicalClockState,
-  DetailedAstronomicalInfo,
   ANIMATION_CONFIG,
 } from './types'
 import {
   getCurrentAstronomicalState,
   getDetailedAstronomicalInfo,
   isValidDate,
-} from './astronomicalUtils'
+  type DetailedAstronomicalInfo,
+} from './AstronomicalUtils'
 
 export interface UseAstronomicalClockOptions {
   autoUpdate?: boolean

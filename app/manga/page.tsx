@@ -9,6 +9,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { TouchEvent as RTouch } from 'react';
 import Link  from 'next/link';
 import Image from 'next/image';
+import AstronomicalBackground from '@/app/components/manga/AstronomicalBackground';
+import { useAstronomicalClock } from '@/app/components/astronomical/useAstronomicalClock';
 import RPGDialogBox, { type RPGScript, MANGA_RETURN_KEY, type MangaReturnData } from '@/app/components/manga/RPGDialogBox';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -133,6 +135,7 @@ function MangaReader({ cap, dark, onBack, onToggleDark, paginaInicial = 0 }: {
   const [animating,  setAnimating]  = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
+  const { clockState } = useAstronomicalClock({ autoUpdate: true });
   const { script } = useRPGScript(cap.id);
   const [dialogAtivo, setDialogAtivo] = useState(true);
 
@@ -230,6 +233,14 @@ function MangaReader({ cap, dark, onBack, onToggleDark, paginaInicial = 0 }: {
       onMouseMove={nudgeUI}
     >
       {/* ── Imagem ── */}
+      {cap.id === 'cap-04' && (
+        <AstronomicalBackground
+          capId={cap.id}
+          dark={dark}
+          opacity={0.12}
+          clockState={clockState}
+        />
+      )}
       <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', padding: showUI?'50px 0 56px':'0', transition:'padding .3s ease' }}>
         {currentPage && (
           <div style={{ position:'relative', width:'100%', height:'100%', transform:`translateX(${translateX})`, opacity: animating ? 0.5 : 1, transition:'transform .22s ease, opacity .22s ease' }}>
