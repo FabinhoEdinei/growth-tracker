@@ -275,7 +275,7 @@ export const AstronomicalClockBackground: React.FC<
           opacity="0.6"
         />
 
-        {/* Símbolos zodiacais ao redor (simplificado) */}
+        {/* Símbolos zodiacais ao redor (simplificado) - DENTRO da borda azul */}
         {showZodiac &&
           [...Array(12)].map((_, i) => {
             // Deslocar para que Áries fique à direita (3 o'clock)
@@ -283,8 +283,8 @@ export const AstronomicalClockBackground: React.FC<
             const adjustedI = (i + 3) % 12
             const angle = (adjustedI * 360) / 12 - 90
             const radian = (angle * Math.PI) / 180
-            const x = 100 + 68 * Math.cos(radian)
-            const y = 100 + 68 * Math.sin(radian)
+            const x = 100 + 55 * Math.cos(radian)
+            const y = 100 + 55 * Math.sin(radian)
 
             const zodiacSymbols = [
               '♈', // Áries - i=0
