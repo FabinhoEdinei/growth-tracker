@@ -9,7 +9,7 @@
 
 import React, { useMemo } from 'react'
 import { useAstronomicalClock } from '../astronomical/useAstronomicalClock'
-import { calculateClockAngles } from '../astronomical/AstronomicalUtils'
+import { calculateClockAngles, calculateZodiacAngle, getZodiacIndexByDate } from '../astronomical/AstronomicalUtils'
 
 interface AstronomicalClockBackgroundProps {
   size?: 'sm' | 'md' | 'lg' | 'full'
@@ -68,21 +68,31 @@ export const AstronomicalClockBackground: React.FC<
     updateInterval: 1000,
   })
   const currentClockState = clockState || liveClockState
-  // Calcular ângulos
+  const currentDate = new Date(
+    0,
+    0,
+    0,
+    currentClockState.hour,
+    currentClockState.minute,
+    currentClockState.second,
+  )
+  
+  // Calcular ângulos dos ponteiros
   const { hour: hourAngle, minute: minuteAngle, second: secondAngle } = useMemo(
-    () =>
-      calculateClockAngles(
-        new Date(
-          0,
-          0,
-          0,
-          currentClockState.hour,
-          currentClockState.minute,
-          currentClockState.second,
-        ),
-      ),
+    () => calculateClockAngles(currentDate),
     [currentClockState],
   )
+  
+  // Calcular ângulo do signo zodiacal atual (para deslocar o centro)
+  const zodiacAngle = useMemo(
+    () => calculateZodiacAngle(new Date()),
+    [] // Só recalcular quando o dia muda
+  )
+  
+  // Calcular posição do centro baseado no signo zodiacal
+  const zodiacRadian = (zodiacAngle * Math.PI) / 180
+  const centerOffsetX = 8 * Math.cos(zodiacRadian)
+  const centerOffsetY = 8 * Math.sin(zodiacRadian)
 
   // Tamanhos mapeados
   const sizeMap = {
@@ -207,7 +217,7 @@ export const AstronomicalClockBackground: React.FC<
             'IX',
             'X',
             'XI',
-          ][i]
+          ][(i + 0) % 12] // Ordem correta: começa com XII no topo
 
           return (
             <text
@@ -268,24 +278,27 @@ export const AstronomicalClockBackground: React.FC<
         {/* Símbolos zodiacais ao redor (simplificado) */}
         {showZodiac &&
           [...Array(12)].map((_, i) => {
-            const angle = (i * 360) / 12 - 90
+            // Deslocar para que Áries fique à direita (3 o'clock)
+            // Áries é o primeiro signo, então use i=3 para colocá-lo à direita
+            const adjustedI = (i + 3) % 12
+            const angle = (adjustedI * 360) / 12 - 90
             const radian = (angle * Math.PI) / 180
             const x = 100 + 68 * Math.cos(radian)
             const y = 100 + 68 * Math.sin(radian)
 
             const zodiacSymbols = [
-              '♈',
-              '♉',
-              '♊',
-              '♋',
-              '♌',
-              '♍',
-              '♎',
-              '♏',
-              '♐',
-              '♑',
-              '♒',
-              '♓',
+              '♈', // Áries - i=0
+              '♉', // Touro - i=1
+              '♊', // Gêmeos - i=2
+              '♋', // Câncer - i=3
+              '♌', // Leão - i=4
+              '♍', // Virgem - i=5
+              '♎', // Libra - i=6
+              '♏', // Escorpião - i=7
+              '♐', // Sagitário - i=8
+              '♑', // Capricórnio - i=9
+              '♒', // Aquário - i=10
+              '♓', // Peixes - i=11
             ]
 
             return (
@@ -295,9 +308,10 @@ export const AstronomicalClockBackground: React.FC<
                 y={y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fontSize="7"
-                fill={CLOCK_COLORS.skyBlue}
-                opacity="0.7"
+                fontSize="8"
+                fontWeight="bold"
+                fill={CLOCK_COLORS.lightGold}
+                opacity="0.85"
               >
                 {zodiacSymbols[i]}
               </text>
@@ -347,9 +361,22 @@ export const AstronomicalClockBackground: React.FC<
           strokeWidth="1.5"
         />
 
-        {/* Centro com símbolo (Sol/Lua) com efeito 3D */}
-        <circle cx="100" cy="100" r="8" fill="#000" opacity="0.3" transform="translate(1,1)" />
-        <circle cx="100" cy="100" r="6" fill={CLOCK_COLORS.gold} filter="url(#centerGlow)" />
+        {/* Centro com símbolo (Sol/Lua) com efeito 3D - deslocado para o signo */}
+        <circle
+          cx={100 + centerOffsetX}
+          cy={100 + centerOffsetY}
+          r="8"
+          fill="#000"
+          opacity="0.3"
+          transform={`translate(1,1)`}
+        />
+        <circle
+          cx={100 + centerOffsetX}
+          cy={100 + centerOffsetY}
+          r="6"
+          fill={CLOCK_COLORS.gold}
+          filter="url(#centerGlow)"
+        />
 
         {/* Ponteiro das horas com sombra 3D */}
         <g transform={`rotate(${hourAngle} 100 100)`}>
@@ -432,8 +459,14 @@ export const AstronomicalClockBackground: React.FC<
           />
         </g>
 
-        {/* Diamante central (ornamentação real) com brilho */}
-        <circle cx="100" cy="100" r="3" fill={CLOCK_COLORS.lightGold} filter="url(#centerGlow)" />
+        {/* Diamante central (ornamentação real) com brilho - deslocado para o signo */}
+        <circle
+          cx={100 + centerOffsetX}
+          cy={100 + centerOffsetY}
+          r="3"
+          fill={CLOCK_COLORS.lightGold}
+          filter="url(#centerGlow)"
+        />
       </svg>
     </div>
   )

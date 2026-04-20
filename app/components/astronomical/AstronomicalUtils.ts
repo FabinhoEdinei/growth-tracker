@@ -76,6 +76,35 @@ export function getZodiacSignByName(name: string) {
   return ZODIAC_SIGNS.find((z) => z.name === name)
 }
 
+/**
+ * Calcula o ângulo de posição do signo zodiacal atual
+ * Áries começa em ~0° (lado direito)
+ * Retorna ângulo em graus (0-360)
+ */
+export function calculateZodiacAngle(date: Date): number {
+  const month = date.getMonth() + 1 // 1-12
+  const day = date.getDate()
+  
+  // Mapeamento de mês/dia para posição de signo
+  // Janeiro=0°, cada mês ocupa 30°
+  const monthAngle = ((month - 1) * 30) % 360
+  
+  // Ajuste fino baseado no dia (cada dia ~1°)
+  const dayAngle = Math.floor((day - 1) / 1.25) // ~1° por dia
+  
+  // Áries começa em março (30° no calendário)
+  // Deslocamos -90° para alinhar Áries com 0° (lado direito)
+  return (monthAngle + dayAngle - 90 + 360) % 360
+}
+
+/**
+ * Calcula o índice do signo (0-11) baseado na data
+ */
+export function getZodiacIndexByDate(date: Date): number {
+  const angle = calculateZodiacAngle(date)
+  return Math.floor(angle / 30) % 12
+}
+
 // ============================================================================
 // CÁLCULOS DE TEMPO
 // ============================================================================
