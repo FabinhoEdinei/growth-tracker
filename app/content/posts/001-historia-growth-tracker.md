@@ -14,7 +14,7 @@ excerpt: "Como símbolos geométricos ancestrais inspiraram o design do Growth T
 
 Tudo começou com uma pergunta simples: **"E se pudéssemos ver dados como partículas vivas?"**
 
-O que era apenas um canvas com alguns pontos coloridos se transformou em um ecossistema completo de dados, física e interatividade.
+O que era apenas um canvas com alguns pontos coloridos se transformou em um ecossistema completo de dados, física e interatividade, e muita coisas mais
 
 
 ## 🎯 **FASE 1: O Início - "Funcionando"**
