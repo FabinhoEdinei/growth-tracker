@@ -9,6 +9,7 @@
 
 import React, { useMemo } from 'react'
 import { useAstronomicalClock } from './useAstronomicalClock'
+import { calculateClockAngles } from './AstronomicalUtils'
 
 interface AstronomicalClockBackgroundProps {
   size?: 'sm' | 'md' | 'lg' | 'full'
@@ -64,9 +65,20 @@ export const AstronomicalClockBackground: React.FC<
   })
   const currentClockState = clockState || liveClockState
   // Calcular ângulos
-  const hourAngle = (currentClockState.hour % 12) * 30 + currentClockState.minute * 0.5
-  const minuteAngle = currentClockState.minute * 6 + currentClockState.second * 0.1
-  const secondAngle = currentClockState.second * 6
+  const { hour: hourAngle, minute: minuteAngle, second: secondAngle } = useMemo(
+    () =>
+      calculateClockAngles(
+        new Date(
+          0,
+          0,
+          0,
+          currentClockState.hour,
+          currentClockState.minute,
+          currentClockState.second,
+        ),
+      ),
+    [currentClockState],
+  )
 
   // Tamanhos mapeados
   const sizeMap = {
@@ -316,55 +328,46 @@ export const AstronomicalClockBackground: React.FC<
         <circle cx="100" cy="100" r="6" fill={CLOCK_COLORS.gold} filter="url(#shadow)" />
 
         {/* Ponteiro das horas */}
-        <line
-          x1="100"
-          y1="100"
-          x2="118"
-          y2="100"
-          stroke={CLOCK_COLORS.darkGold}
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          opacity="0.9"
-          style={{
-            transform: `rotate(${hourAngle}deg)`,
-            transformOrigin: '100px 100px',
-            transition: 'transform 0.5s ease-out',
-          }}
-        />
+        <g transform={`rotate(${hourAngle} 100 100)`}>
+          <line
+            x1="100"
+            y1="100"
+            x2="118"
+            y2="100"
+            stroke={CLOCK_COLORS.darkGold}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            opacity="0.9"
+          />
+        </g>
 
         {/* Ponteiro dos minutos */}
-        <line
-          x1="100"
-          y1="100"
-          x2="125"
-          y2="100"
-          stroke={CLOCK_COLORS.darkGold}
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          opacity="0.85"
-          style={{
-            transform: `rotate(${minuteAngle}deg)`,
-            transformOrigin: '100px 100px',
-            transition: 'transform 0.1s linear',
-          }}
-        />
+        <g transform={`rotate(${minuteAngle} 100 100)`}>
+          <line
+            x1="100"
+            y1="100"
+            x2="125"
+            y2="100"
+            stroke={CLOCK_COLORS.darkGold}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            opacity="0.85"
+          />
+        </g>
 
         {/* Ponteiro dos segundos (sutil) */}
-        <line
-          x1="100"
-          y1="100"
-          x2="128"
-          y2="100"
-          stroke={CLOCK_COLORS.cobaltBlue}
-          strokeWidth="0.8"
-          strokeLinecap="round"
-          opacity="0.6"
-          style={{
-            transform: `rotate(${secondAngle}deg)`,
-            transformOrigin: '100px 100px',
-            transition: 'transform 0.05s linear',
-          }}
-        />
+        <g transform={`rotate(${secondAngle} 100 100)`}>
+          <line
+            x1="100"
+            y1="100"
+            x2="128"
+            y2="100"
+            stroke={CLOCK_COLORS.cobaltBlue}
+            strokeWidth="0.8"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
+        </g>
 
         {/* Diamante central (ornamentação real) */}
         <circle cx="100" cy="100" r="3" fill={CLOCK_COLORS.lightGold} />
