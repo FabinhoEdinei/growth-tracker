@@ -338,8 +338,9 @@ export default function RPGDialogBox({ script, paginaAtual, dark, capId, onPageC
         marginLeft:    dialogo.avatar ? 76 : 14,
         padding:       '4px 14px 6px',
         background:    `${cor}18`,
-        border:        `1.5px solid ${cor}55`,
-        borderBottom:  'none',
+        borderTop:     `1.5px solid ${cor}55`,
+        borderLeft:    `1.5px solid ${cor}55`,
+        borderRight:   `1.5px solid ${cor}55`,
         borderRadius:  '10px 10px 0 0',
         position:      'relative', zIndex: 1,
       }}>
