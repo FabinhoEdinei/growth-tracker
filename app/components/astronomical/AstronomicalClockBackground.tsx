@@ -8,6 +8,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { useAstronomicalClock } from './useAstronomicalClock'
 
 interface AstronomicalClockBackgroundProps {
   size?: 'sm' | 'md' | 'lg' | 'full'
@@ -52,14 +53,20 @@ export const AstronomicalClockBackground: React.FC<
   size = 'full',
   opacity = 0.15,
   position = 'center',
-  clockState = { hour: 14, minute: 35, second: 42 },
+  clockState,
   showZodiac = true,
   blur = false,
 }) => {
+  // Use hook if no clockState provided
+  const { clockState: liveClockState } = useAstronomicalClock({
+    autoUpdate: !clockState,
+    updateInterval: 1000,
+  })
+  const currentClockState = clockState || liveClockState
   // Calcular ângulos
-  const hourAngle = (clockState.hour % 12) * 30 + clockState.minute * 0.5
-  const minuteAngle = clockState.minute * 6 + clockState.second * 0.1
-  const secondAngle = clockState.second * 6
+  const hourAngle = (currentClockState.hour % 12) * 30 + currentClockState.minute * 0.5
+  const minuteAngle = currentClockState.minute * 6 + currentClockState.second * 0.1
+  const secondAngle = currentClockState.second * 6
 
   // Tamanhos mapeados
   const sizeMap = {
@@ -312,8 +319,8 @@ export const AstronomicalClockBackground: React.FC<
         <line
           x1="100"
           y1="100"
-          x2={100 + 18 * Math.cos(((hourAngle - 90) * Math.PI) / 180)}
-          y2={100 + 18 * Math.sin(((hourAngle - 90) * Math.PI) / 180)}
+          x2="118"
+          y2="100"
           stroke={CLOCK_COLORS.darkGold}
           strokeWidth="2.5"
           strokeLinecap="round"
@@ -329,8 +336,8 @@ export const AstronomicalClockBackground: React.FC<
         <line
           x1="100"
           y1="100"
-          x2={100 + 25 * Math.cos(((minuteAngle - 90) * Math.PI) / 180)}
-          y2={100 + 25 * Math.sin(((minuteAngle - 90) * Math.PI) / 180)}
+          x2="125"
+          y2="100"
           stroke={CLOCK_COLORS.darkGold}
           strokeWidth="1.5"
           strokeLinecap="round"
@@ -346,8 +353,8 @@ export const AstronomicalClockBackground: React.FC<
         <line
           x1="100"
           y1="100"
-          x2={100 + 28 * Math.cos(((secondAngle - 90) * Math.PI) / 180)}
-          y2={100 + 28 * Math.sin(((secondAngle - 90) * Math.PI) / 180)}
+          x2="128"
+          y2="100"
           stroke={CLOCK_COLORS.cobaltBlue}
           strokeWidth="0.8"
           strokeLinecap="round"
