@@ -237,7 +237,7 @@ function MangaReader({ cap, dark, onBack, onToggleDark, paginaInicial = 0 }: {
         <AstronomicalBackground
           capId={cap.id}
           dark={dark}
-          opacity={0.12}
+          opacity={0.3}
           clockState={clockState}
         />
       )}

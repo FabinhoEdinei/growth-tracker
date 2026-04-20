@@ -93,7 +93,7 @@ export const AstronomicalClockBackground: React.FC<
   }
 
   const positionMap = {
-    center: 'absolute inset-0 flex items-center justify-center',
+    center: 'fixed inset-0',
     'top-right': 'absolute top-0 right-0',
     'top-left': 'absolute top-0 left-0',
     'bottom-right': 'absolute bottom-0 right-0',
@@ -140,13 +140,31 @@ export const AstronomicalClockBackground: React.FC<
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
           </filter>
 
-          {/* Sombra para profundidade */}
-          <filter id="shadow">
-            <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.3" />
+          {/* Filtros para profundidade 3D */}
+          <filter id="depth">
+            <feGaussianBlur stdDeviation="1" />
+            <feOffset dx="1" dy="1" />
+            <feComposite in="SourceGraphic" />
+          </filter>
+
+          <filter id="emboss">
+            <feConvolveMatrix
+              kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1"
+              divisor="1"
+              bias="0"
+            />
+          </filter>
+
+          <filter id="innerShadow">
+            <feFlood floodColor="#000" floodOpacity="0.3" />
+            <feComposite in2="SourceGraphic" operator="atop" />
+            <feGaussianBlur stdDeviation="2" />
+            <feOffset dx="1" dy="1" />
+            <feComposite in2="SourceGraphic" operator="over" />
           </filter>
         </defs>
 
-        {/* Fundo principal com textura */}
+        {/* Fundo principal com textura e profundidade */}
         <circle
           cx="100"
           cy="100"
@@ -154,11 +172,11 @@ export const AstronomicalClockBackground: React.FC<
           fill={CLOCK_COLORS.darkRed}
           stroke={CLOCK_COLORS.gold}
           strokeWidth="2"
-          filter="url(#texture)"
+          filter="url(#innerShadow)"
         />
 
-        {/* Gradiente sobre fundo */}
-        <circle cx="100" cy="100" r="98" fill="url(#clockMainGradient)" />
+        {/* Gradiente sobre fundo com efeito 3D */}
+        <circle cx="100" cy="100" r="98" fill="url(#clockMainGradient)" filter="url(#emboss)" />
 
         {/* Anel externo (ouro) */}
         <circle
@@ -329,53 +347,93 @@ export const AstronomicalClockBackground: React.FC<
           strokeWidth="1.5"
         />
 
-        {/* Centro com símbolo (Sol/Lua) */}
-        <circle cx="100" cy="100" r="6" fill={CLOCK_COLORS.gold} filter="url(#shadow)" />
+        {/* Centro com símbolo (Sol/Lua) com efeito 3D */}
+        <circle cx="100" cy="100" r="8" fill="#000" opacity="0.3" transform="translate(1,1)" />
+        <circle cx="100" cy="100" r="6" fill={CLOCK_COLORS.gold} filter="url(#centerGlow)" />
 
-        {/* Ponteiro das horas */}
+        {/* Ponteiro das horas com sombra 3D */}
         <g transform={`rotate(${hourAngle} 100 100)`}>
+          {/* Sombra */}
+          <line
+            x1="100"
+            y1="100"
+            x2="118"
+            y2="100"
+            stroke="#000"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            opacity="0.4"
+            transform="translate(1,1)"
+          />
+          {/* Ponteiro principal */}
           <line
             x1="100"
             y1="100"
             x2="118"
             y2="100"
             stroke={CLOCK_COLORS.darkGold}
-            strokeWidth="2.5"
+            strokeWidth="4"
             strokeLinecap="round"
-            opacity="0.9"
+            filter="url(#depth)"
           />
         </g>
 
-        {/* Ponteiro dos minutos */}
+        {/* Ponteiro dos minutos com sombra 3D */}
         <g transform={`rotate(${minuteAngle} 100 100)`}>
+          {/* Sombra */}
+          <line
+            x1="100"
+            y1="100"
+            x2="125"
+            y2="100"
+            stroke="#000"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            opacity="0.4"
+            transform="translate(1,1)"
+          />
+          {/* Ponteiro principal */}
           <line
             x1="100"
             y1="100"
             x2="125"
             y2="100"
             stroke={CLOCK_COLORS.darkGold}
-            strokeWidth="1.5"
+            strokeWidth="3"
             strokeLinecap="round"
-            opacity="0.85"
+            filter="url(#depth)"
           />
         </g>
 
-        {/* Ponteiro dos segundos (sutil) */}
+        {/* Ponteiro dos segundos com sombra 3D */}
         <g transform={`rotate(${secondAngle} 100 100)`}>
+          {/* Sombra */}
+          <line
+            x1="100"
+            y1="100"
+            x2="128"
+            y2="100"
+            stroke="#000"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            opacity="0.4"
+            transform="translate(1,1)"
+          />
+          {/* Ponteiro principal */}
           <line
             x1="100"
             y1="100"
             x2="128"
             y2="100"
             stroke={CLOCK_COLORS.cobaltBlue}
-            strokeWidth="0.8"
+            strokeWidth="2"
             strokeLinecap="round"
-            opacity="0.6"
+            filter="url(#depth)"
           />
         </g>
 
-        {/* Diamante central (ornamentação real) */}
-        <circle cx="100" cy="100" r="3" fill={CLOCK_COLORS.lightGold} />
+        {/* Diamante central (ornamentação real) com brilho */}
+        <circle cx="100" cy="100" r="3" fill={CLOCK_COLORS.lightGold} filter="url(#centerGlow)" />
       </svg>
     </div>
   )
