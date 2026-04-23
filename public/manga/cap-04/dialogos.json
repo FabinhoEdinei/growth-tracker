@@ -3,117 +3,302 @@
     {
       "pagina": 0,
       "personagem": "Sistema",
-      "fala": "Conexão neural estabelecida. Bem-vindo ao Growth Tracker Universe. clicando no ok a competição vai começar irá prosseguir!",
+      "fala": "Boot iniciado. Linha temporal carregada: 2004 → 2026. Local fixo: Caxias do Sul. Estado: jovem na casa dos pais. Narrador sincronizado. Início da travessia.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700",
+      "autoMs": 3000
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "2004… eu acordo sem saber direito o que fazer. Primeiro trabalho, pouca grana, muita vontade de sair daqui. Eu escuto música e imagino outra vida.",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Narrador",
+      "fala": "Tu não fazia ideia… mas esse desconforto era o início. Tu queria fugir, mas ainda não sabia construir.",
+      "avatar": "/manga/avatares/narrador.png",
+      "cor": "#a0a0b0"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2005: rotina consolidada. Trabalho repetitivo. Ganhos baixos. Consumo: música, sonhos e comparação com outros.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "Eu penso que ano que vem vai ser diferente… mas eu continuo no mesmo lugar.",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Narrador",
+      "fala": "E tu repetiu isso por anos… esperando mudança sem mudar o comportamento.",
+      "avatar": "/manga/avatares/narrador.png",
+      "cor": "#a0a0b0"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2006: primeiros conflitos internos. Desejo de independência aumenta. Ação ainda limitada.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "Eu não quero essa vida… mas também não sei qual eu quero.",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2007: pequenas mudanças. Novos trabalhos. Nenhuma estabilidade. Experiência acumulada sem direção clara.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Narrador",
+      "fala": "Tu começou a se mexer… mas ainda aceitava qualquer caminho.",
+      "avatar": "/manga/avatares/narrador.png",
+      "cor": "#a0a0b0"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2008: crise financeira global refletida localmente. Insegurança aumenta. Medo começa a influenciar decisões.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "Agora ficou pior… parece que nada depende de mim.",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2009: adaptação. Aceitação temporária da realidade. Sobrevivência acima de propósito.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2010: comparação social intensificada. Observação de trajetórias alheias. Sensação de atraso.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Narrador",
+      "fala": "Tu começou a se cobrar… mas ainda sem método.",
+      "avatar": "/manga/avatares/narrador.png",
+      "cor": "#a0a0b0"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2011: repetição de padrões. Trabalho, descanso, fuga mental. Ciclo contínuo.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2012: primeiras ideias de mudança real. Ainda não executadas.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2013: tentativa de novos caminhos. Falhas iniciais. Frustração registrada.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "Eu tentei… mas parece que nunca dá certo.",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2014: desgaste emocional. Questionamentos mais profundos surgem.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2015: ponto de ruptura parcial. Desejo de mudança cresce significativamente.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Narrador",
+      "fala": "Aqui tu quase virou o jogo… mas ainda faltava consistência.",
+      "avatar": "/manga/avatares/narrador.png",
+      "cor": "#a0a0b0"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2016: execução irregular. Avanços seguidos de recuos.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2017: amadurecimento gradual. Consciência maior sobre decisões.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2018: início de organização interna. Primeiras estruturas mentais sólidas.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Narrador",
+      "fala": "Aqui começou a mudar de verdade… devagar, mas mudou.",
+      "avatar": "/manga/avatares/narrador.png",
+      "cor": "#a0a0b0"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2019: tentativa de estabilidade. Planejamento ainda frágil.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2020: evento global. Isolamento. Tempo para reflexão. Ruído externo reduzido.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "Agora sou só eu comigo mesmo… sem desculpa.",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2021: reconstrução mental. Novas ideias surgem. Primeiros sinais de direção.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2022: tentativa de aplicar conhecimento. Resultados mistos.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2023: consciência de padrão. Ajustes começam a ser feitos com mais precisão.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2024: foco crescente. Menos dispersão. Mais intenção.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2025: estruturação de vida. Trabalho, rotina e pensamento alinhando gradualmente.",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "2026: estado atual. Consciência ativa. Não perfeito. Mas presente. Sistema e indivíduo parcialmente sincronizados.",
       "avatar": "/manga/avatares/sistema.png",
       "cor": "#ffd700",
       "autoMs": 3500
     },
-    {
-      "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "O que eu estou deixando de herança para o Fabio  que vive no futuro, daqui uns 5 anos mais ou menos, o que ele vai usar mais do que eu, do agora?",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
-      "cor": "#00d4ff"
-    },
-    {
-      "pagina": 0,
-      "personagem": "Narrador",
-      "fala": "Era bom eu ter feito isto antes!.",
-      "cor": "#a0a0b0",
-      "avatar": "/manga/avatares/narrador.png",
-      "autoMs": 4000
-    },
-    {
-      "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "Eu consigo ver os dados... consigo ver o crescimento.",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
-      "cor": "#00d4ff"
-    },
-    {
-      "pagina": 0,
-      "personagem": "Sistema",
-      "fala": "Protocolo GT-Chain ativado. Minerando bloco #001...",
-      "avatar": "/manga/avatares/sistema.png",
-      "cor": "#ffd700",
-      "autoMs": 2500
-    },
-    {
-      "pagina": 0,
-      "personagem": "Narrador",
-      "fala": "O que eu poderia falar sobre o role de ontem, se quero mudar uma coisa,mas uma reflexão fiz agora que se refere ao que vou escrever que sempre vai ser passado mas ideias futuras era nisso que tenho que mudar a direção dos pensamento pois viver debatendo ou remoendo passado não é mais meu foco.",
-      "cor": "#a0a0b0",
-      "avatar": "/manga/avatares/narrador.png",
-      "autoMs": 4000
-    },
-    {
-      "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "Ahhhhh, que preguiça... vamos lá! Ânimo cara, hoje eu começo no meu primeiro trabalho 😅",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
-      "cor": "#00d4ff"
-    },
-    {
-  "pagina": 0,
-  "personagem": "Sistema",
-  "fala": "Quer saber mais sobre o sono? Depois volta na home — no blog tem um post falando sobre o assunto.",
-  "avatar": "/manga/avatares/sistema.png",
-  "cor": "#ffd700",
-  "autoMs": 2500,
-  "link":"blog/sono-sonhos-ciencia-descanso-mente-noturna",
-  "linkLabel": "LER POST"
-}, 
-    {
-      "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "Agora sim, vou tomar esse café, e um pão novinho fofo igual essa chimia de abóbora...",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
-      "cor": "#00d4ff"
-    },
-    {
-      "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "Até vou por uma camada a mais vai saber como vai ser o dia,",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
-      "cor": "#00d4ff"
-    },
-    {
-      "pagina": 0,
-      "personagem": "Narrador",
-      "fala": "So uma informação importante,  ele comeu um pão de forma todo,aquele feito no formo de barro, na brincadeira de so mais um pouco se foi 1 e meio pote de chimia ",
-      "cor": "#a0a0b0",
-      "avatar": "/manga/avatares/narrador.png",
-      "autoMs": 4000
-    },
-     { 
-      "pagina": 0,
-      "personagem": "Sistema",
-      "fala": " Fabinho nunca foi isso ai de lavar as coisas, isso muda no futuro pois é como a vida ensina aos poucos.",
-      "cor": "#a0a0b0",
-      "avatar": "/manga/avatares/sistema.png",
-        "autoMs": 4000
-       }, 
-    {
-      "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "Esse lugar com essa bagunça me faz lembrar como era bagunça interna também, sem planos o futuro incerto",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
-      "cor": "#00d4ff"
-    },
-            {
-      "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "Cada dia se torna uma jornadade ida e volta não importa o sistemaque vive alto e baixo sempre vam esta brigando pelo controle e o meio faz parte do dia a dia",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
-      "cor": "#00d4ff"
-    },
-    {
-      "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "O que é rotina afinal",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
-      "cor": "#00d4ff"
-    }
 
+    {
+      "pagina": 0,
+      "personagem": "Fabinho",
+      "fala": "Então… eu não virei alguém completamente diferente… eu só fui entendendo aos poucos?",
+      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "cor": "#00d4ff"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Narrador",
+      "fala": "Exato. Não teve virada mágica… teve insistência. Mesmo errando, tu continuou.",
+      "avatar": "/manga/avatares/narrador.png",
+      "cor": "#a0a0b0"
+    },
+
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "Fim da leitura linear. Estado emocional consolidado: construção contínua. Deseja modificar a linha temporal?",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    },
+    {
+      "pagina": 0,
+      "personagem": "Sistema",
+      "fala": "1 - Inserir evento em ano específico\n2 - Alterar decisões do Narrador\n3 - Expandir detalhes de um ano\n4 - Criar ramificação alternativa",
+      "avatar": "/manga/avatares/sistema.png",
+      "cor": "#ffd700"
+    }
   ]
 }
