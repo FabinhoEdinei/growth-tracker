@@ -3,7 +3,7 @@
     {
       "pagina": 0,
       "personagem": "Sistema",
-      "fala": "Boot iniciado. Linha temporal carregada: 2004 → 2026. Local fixo: Caxias do Sul. Estado: jovem na casa dos pais. Narrador sincronizado. Início da travessia.",
+      "fala": "Boot iniciado. Linha temporal carregada: 2004 → 2026. Início da travessia.",
       "avatar": "/manga/avatares/sistema.png",
       "cor": "#ffd700",
       "autoMs": 3000
@@ -12,14 +12,14 @@
     {
       "pagina": 0,
       "personagem": "Fabinho",
-      "fala": "2004… eu acordo sem saber direito o que fazer. Primeiro trabalho, pouca grana, muita vontade de sair daqui. Eu escuto música e imagino outra vida.",
+      "fala": "2004… eu acordo sem saber direito o que é o game dessa outra vida.",
       "avatar": "/manga/avatares/fabinho-avatar.png",
       "cor": "#00d4ff"
     },
     {
       "pagina": 0,
       "personagem": "Narrador",
-      "fala": "Tu não fazia ideia… mas esse desconforto era o início. Tu queria fugir, mas ainda não sabia construir.",
+      "fala": "Tenho que falar sobre o jogo das sementes divinas ,onde consegue a vida eterna,  acredite ou não as flores que essas sementes derivam são muito densas e muito lindas so tenho uma em sua mão isso tornou real a  busca da mesma.",
       "avatar": "/manga/avatares/narrador.png",
       "cor": "#a0a0b0"
     },
