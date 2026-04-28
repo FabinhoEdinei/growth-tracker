@@ -1,7 +1,7 @@
 {
   "dialogos": [
     {
-      "pagina": 9,
+      "pagina": 0,
       "personagem": "Sistema",
       "fala": "Boot iniciado. Linha temporal carregada: 2004 → 2026. Local fixo: Caxias do Sul. Estado: jovem na casa dos pais. Narrador sincronizado. Início da travessia.",
       "avatar": "/manga/avatares/sistema.png",
@@ -10,7 +10,7 @@
     },
 
     {
-      "pagina": 9,
+      "pagina": 0,
       "personagem": "Fabinho",
       "fala": "2004… eu acordo sem saber direito o que fazer. Primeiro trabalho, pouca grana, muita vontade de sair daqui. Eu escuto música e imagino outra vida.",
       "avatar": "/manga/avatares/fabinho-avatar.png",
