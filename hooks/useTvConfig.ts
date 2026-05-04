@@ -21,6 +21,12 @@ export interface SlideConfig {
   id: string; type: SlideType; label: string;
   icon: string; color: string; active: boolean; order: number;
 
+  // Novas propriedades de borda
+  borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'groove' | 'ridge' | 'inset' | 'outset';
+  borderWidth?: number; // em px
+  borderRadius?: number; // em px
+  borderColor?: string; // cor da borda, padrão usa color
+
   producao?: {
     unidadesHoje: number; tempoOperacional: string;
     linhas: LinhaProducao[]; alerta?: string;
@@ -46,6 +52,7 @@ export const DEFAULT_SLIDES: SlideConfig[] = [
   {
     id:'metas', type:'builtin', label:'Metas do Dia',
     icon:'🎯', color:'#00ff88', active:true, order:0,
+    borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#00ff88',
     metas:{ items:[
       { texto:'Publicar post semanal', feito:false },
       { texto:'Atualizar dashboard',   feito:false },
@@ -55,6 +62,7 @@ export const DEFAULT_SLIDES: SlideConfig[] = [
   {
     id:'producao', type:'builtin', label:'Produção de Conteúdo',
     icon:'✍️', color:'#00d4ff', active:true, order:1,
+    borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#00d4ff',
     producao:{
       unidadesHoje:4832, tempoOperacional:'6h 42m',
       alerta:'Manutenção preventiva agendada: 14:00',
@@ -69,6 +77,7 @@ export const DEFAULT_SLIDES: SlideConfig[] = [
   {
     id:'ranking', type:'builtin', label:'Ranking',
     icon:'🏆', color:'#ffd700', active:true, order:2,
+    borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#ffd700',
     ranking:{
       titulo:'Ranking da Semana', subtitulo:'Top Performers',
       premio:'Prêmio do mês: Viagem para equipe vencedora!',
@@ -84,6 +93,7 @@ export const DEFAULT_SLIDES: SlideConfig[] = [
   {
     id:'comunicado', type:'builtin', label:'Comunicados',
     icon:'📢', color:'#a855f7', active:true, order:3,
+    borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#a855f7',
     comunicado:{ items:[
       { tipo:'URGENTE',  titulo:'Alteração no horário de almoço', quando:'Hoje'         },
       { tipo:'NOVIDADE', titulo:'Novo benefício: Gympass',         quando:'Ontem'        },
@@ -93,17 +103,19 @@ export const DEFAULT_SLIDES: SlideConfig[] = [
   {
     id:'clima', type:'builtin', label:'Clima',
     icon:'🌤️', color:'#38bdf8', active:true, order:4,
+    borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#38bdf8',
     clima:{ cidade:'São Paulo', temperatura:24, condicao:'Parcialmente nublado', umidade:68, vento:14 },
   },
   // ✅ Card de dados reais do app — consome /api/tv-report
   {
     id:'app-growth', type:'builtin', label:'Status do App',
     icon:'📡', color:'#00ff88', active:true, order:5,
+    borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#00ff88',
   },
 ];
 
 const LS_KEY     = 'gt_tv_config_v2';
-const LS_VERSION = 3; // ← incrementar aqui quando DEFAULT_SLIDES mudar
+const LS_VERSION = 4; // ← incrementar aqui quando DEFAULT_SLIDES mudar
 const LS_VER_KEY = 'gt_tv_config_version';
 
 // ── Valida se o dado do localStorage é utilizável ─────────────────────────────

@@ -25,6 +25,11 @@ export interface CanalSlide {
   // ── campos extras para o canal manga ──────────────────────────────────────
   tipo?:   'manga';                 // discriminador
   src?:    string;                  // caminho da imagem
+  // ── campos de estilo visual ──────────────────────────────────────────────
+  borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'groove' | 'ridge' | 'inset' | 'outset';
+  borderWidth?: number;
+  borderRadius?: number;
+  borderColor?: string;
 }
 
 export interface Canal {
@@ -47,9 +52,9 @@ export const CANAIS_DEFAULT: Canal[] = [
     cor: '#a855f7', corBg: 'linear-gradient(135deg,#1a0830,#0d0418)',
     ativo: true,
     slides: [
-      { id:'gt-boas-vindas', label:'Boas-vindas',    icon:'👋', active:true,  order:0, custom:{ titulo:'Bem-vindo à GT Network', corpo:'Canal central de comunicação corporativa do Growth Tracker.', rodape:'GT NETWORK · AO VIVO' }},
-      { id:'gt-destaques',   label:'Destaques',      icon:'⭐', active:true,  order:1, custom:{ titulo:'Destaques do Dia',        corpo:'Acompanhe os principais acontecimentos de todos os departamentos.', rodape:'Atualizado em tempo real' }},
-      { id:'gt-agenda',      label:'Agenda Geral',   icon:'📅', active:true,  order:2, custom:{ titulo:'Agenda Corporativa',      corpo:'Reuniões, eventos e marcos importantes da semana.', rodape:'Consulte seu gestor para detalhes' }},
+      { id:'gt-boas-vindas', label:'Boas-vindas',    icon:'👋', active:true,  order:0, borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#a855f7', custom:{ titulo:'Bem-vindo à GT Network', corpo:'Canal central de comunicação corporativa do Growth Tracker.', rodape:'GT NETWORK · AO VIVO' }},
+      { id:'gt-destaques',   label:'Destaques',      icon:'⭐', active:true,  order:1, borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#a855f7', custom:{ titulo:'Destaques do Dia',        corpo:'Acompanhe os principais acontecimentos de todos os departamentos.', rodape:'Atualizado em tempo real' }},
+      { id:'gt-agenda',      label:'Agenda Geral',   icon:'📅', active:true,  order:2, borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor:'#a855f7', custom:{ titulo:'Agenda Corporativa',      corpo:'Reuniões, eventos e marcos importantes da semana.', rodape:'Consulte seu gestor para detalhes' }},
     ],
   },
   {

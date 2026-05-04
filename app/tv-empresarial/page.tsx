@@ -49,11 +49,7 @@ function ChannelSelector({ canais, canalAtivo, onSelect, visible }: {
 }
 
 // ── Slide padrão (texto) ──────────────────────────────────────────────────────
-function SlideContent({ canal, idx }: { canal: Canal; idx: number }) {
-  const slides = canal.slides.filter(s=>s.active).sort((a,b)=>a.order-b.order);
-  const slide  = slides[idx];
-  if (!slide) return null;
-
+function SlideContent({ canal, slide }: { canal: Canal; slide: CanalSlide }) {
   // Redireciona para o render de imagem manga
   if (slide.tipo === 'manga' && slide.src) {
     return <SlideContentManga slide={slide} canal={canal} />;
@@ -65,8 +61,19 @@ function SlideContent({ canal, idx }: { canal: Canal; idx: number }) {
       {slide.icon} {slide.label}
     </div>
   );
+
+  // Aplicar estilos de borda se definidos
+  const borderStyle = slide.borderStyle ? `${slide.borderWidth || 1}px ${slide.borderStyle} ${slide.borderColor || canal.cor}88` : 'none';
+  const borderRadius = slide.borderRadius || 0;
+
   return (
-    <div style={{ width:'100%', textAlign:'center', padding:'0 8px' }}>
+    <div style={{
+      width:'100%', textAlign:'center', padding:'0 8px',
+      border: borderStyle,
+      borderRadius: borderRadius,
+      background: slide.borderStyle ? 'rgba(255,255,255,.02)' : 'transparent',
+      boxShadow: slide.borderStyle ? `0 0 20px ${slide.borderColor || canal.cor}22` : 'none',
+    }}>
       <div style={{ fontSize:42, marginBottom:14, filter:`drop-shadow(0 0 16px ${canal.cor}88)`, animation:'chFloat 3s ease-in-out infinite' }}>{slide.icon}</div>
       <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'3px 12px', marginBottom:12, background:`${canal.cor}18`, border:`1px solid ${canal.cor}44`, borderRadius:20, fontFamily:"'Courier New',monospace", fontSize:9, fontWeight:900, color:canal.cor, letterSpacing:2, textShadow:`0 0 8px ${canal.cor}88` }}>
         {canal.icone} {canal.sigla} · {canal.nome.toUpperCase()}
@@ -271,7 +278,7 @@ export default function TvEmpresarial() {
           <div key={`out-${outgoing}`} style={{position:'absolute',inset:0,zIndex:1,animation:`gtExit 480ms cubic-bezier(.4,0,.2,1) forwards`,['--gt-exit' as any]:exitTo}}>
             <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column'}}>
               <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding: isMangaChannel ? '48px 0 8px' : '56px 24px 16px',position:'relative'}}>
-                <SlideContent canal={canal} idx={outgoing}/>
+                <SlideContent canal={canal} slide={slides[outgoing]}/>
               </div>
             </div>
           </div>
@@ -286,7 +293,7 @@ export default function TvEmpresarial() {
               padding: isMangaChannel ? '48px 0 8px' : '56px 24px 16px',
               overflow:'hidden', position:'relative', zIndex:1,
             }}>
-              <SlideContent canal={canal} idx={safeCur}/>
+              <SlideContent canal={canal} slide={slides[safeCur]}/>
             </div>
             <ProgressBar color={canal.cor} paused={paused} uid={`${canalAtivo}-${safeCur}`}/>
           </div>

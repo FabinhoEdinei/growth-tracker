@@ -294,8 +294,8 @@ function SlideCard({
   return (
     <div style={{
       background: 'rgba(255,255,255,.03)',
-      border: `1px solid ${isEditing ? slide.color+'80' : 'rgba(255,255,255,.08)'}`,
-      borderRadius: 14, overflow:'hidden',
+      border: `${slide.borderWidth || 1}px ${slide.borderStyle || 'solid'} ${slide.borderColor || slide.color}80`,
+      borderRadius: slide.borderRadius || 14, overflow:'hidden',
       transition: 'border-color .3s',
       opacity: slide.active ? 1 : 0.5,
     }}>
@@ -372,6 +372,44 @@ function SlideCard({
             </Field>
           </div>
 
+          {/* ── Estilo Visual (Bordas) ── */}
+          <div style={{ margin:'14px 0', padding:'12px', background:'rgba(255,255,255,.02)', borderRadius:8, border:'1px solid rgba(255,255,255,.05)' }}>
+            <div style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.6)', marginBottom:10, letterSpacing:1, textTransform:'uppercase' }}>🎨 Estilo Visual</div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(120px, 1fr))', gap:10 }}>
+              <Field label="Estilo da borda">
+                <select style={{...inp,padding:'8px 6px'}} value={slide.borderStyle || 'solid'} onChange={e=>onChange({borderStyle: e.target.value as any})}>
+                  <option value="solid">Sólida</option>
+                  <option value="dashed">Tracejada</option>
+                  <option value="dotted">Pontilhada</option>
+                  <option value="double">Dupla</option>
+                  <option value="groove">Sulco</option>
+                  <option value="ridge">Relevo</option>
+                  <option value="inset">Inserido</option>
+                  <option value="outset">Saindo</option>
+                </select>
+              </Field>
+              <Field label="Largura (px)">
+                <input style={inp} type="number" min={0} max={10} value={slide.borderWidth || 1} onChange={e=>onChange({borderWidth: Number(e.target.value)})} />
+              </Field>
+              <Field label="Raio (px)">
+                <input style={inp} type="number" min={0} max={50} value={slide.borderRadius || 14} onChange={e=>onChange({borderRadius: Number(e.target.value)})} />
+              </Field>
+              <Field label="Cor da borda">
+                <div style={{ display:'flex', gap:5, flexWrap:'wrap', paddingTop:2 }}>
+                  {COLORS.map(c => (
+                    <button key={c} onClick={()=>onChange({borderColor:c})} style={{
+                      width:22,height:22,borderRadius:'50%',background:c,border:'none',cursor:'pointer',
+                      boxShadow: (slide.borderColor || slide.color)===c ? `0 0 0 2px #fff, 0 0 0 4px ${c}` : 'none',
+                      transition:'box-shadow .2s',
+                    }}/>
+                  ))}
+                  <input type="color" value={slide.borderColor || slide.color} onChange={e=>onChange({borderColor:e.target.value})}
+                    style={{ width:22,height:22,padding:0,border:'none',borderRadius:'50%',cursor:'pointer',background:'none' }}/>
+                </div>
+              </Field>
+            </div>
+          </div>
+
           {/* Editor específico por tipo */}
           {slide.type==='builtin' && slide.id==='producao'  && <ProducaoEditor  slide={slide} onChange={onChange}/>}
           {slide.type==='builtin' && slide.id==='ranking'   && <RankingEditor   slide={slide} onChange={onChange}/>}
@@ -408,6 +446,7 @@ export default function TvConfigPage() {
       id:     uid(), type: novoTipo,
       label:  novoLabel, icon: novoIcon, color: novoCor,
       active: true, order: slides.length,
+      borderStyle:'solid', borderWidth:1, borderRadius:14, borderColor: novoCor,
     };
     if (novoTipo==='blog'||novoTipo==='jornal') base.selectedSlugs=[];
     if (novoTipo==='custom') base.custom={ titulo:novoLabel, corpo:'' };

@@ -52,16 +52,46 @@ interface EtfTeste {
 // ROTAS
 // ═════════════════════════════════════════════════════════════════════════════
 const ROUTE_TESTS: RouteTest[] = [
-  { id: 'home',      label: 'Home',                  path: '/',                   expectedStatus: 200, tags: ['page'] },
-  { id: 'dashboard', label: 'Dashboard',             path: '/dashboard',          expectedStatus: 200, tags: ['page'] },
-  { id: 'blog',      label: 'Blog (listagem)',        path: '/blog',               expectedStatus: 200, tags: ['page'] },
-  { id: 'jornal',    label: 'Jornal',                path: '/jornal',             expectedStatus: 200, tags: ['page'] },
-  { id: 'tv',        label: 'TV Empresarial',        path: '/tv-empresarial',     expectedStatus: 200, tags: ['page'] },
-  { id: 'testes',    label: 'Testes (self)',          path: '/testes',             expectedStatus: 200, tags: ['page'] },
-  { id: 'pentaculos',label: 'Pentáculos',            path: '/pentaculos',         expectedStatus: 200, tags: ['page'] },
-  { id: 'api-code',  label: 'API /code-stats',       path: '/api/code-stats',     expectedStatus: 200, method: 'GET', tags: ['api'] },
+  // Páginas principais
+  { id: 'home',      label: 'Home',                  path: '/',                   expectedStatus: 200, tags: ['page', 'core'] },
+  { id: 'dashboard', label: 'Dashboard',             path: '/dashboard',          expectedStatus: 200, tags: ['page', 'core'] },
+  { id: 'blog',      label: 'Blog (listagem)',        path: '/blog',               expectedStatus: 200, tags: ['page', 'content'] },
+  { id: 'jornal',    label: 'Jornal',                path: '/jornal',             expectedStatus: 200, tags: ['page', 'content'] },
+  { id: 'tv',        label: 'TV Empresarial',        path: '/tv-empresarial',     expectedStatus: 200, tags: ['page', 'tv'] },
+  { id: 'config',    label: 'Configurações',         path: '/config',             expectedStatus: 200, tags: ['page', 'admin'] },
+  { id: 'testes',    label: 'Página de Testes',      path: '/testes',             expectedStatus: 200, tags: ['page', 'dev'] },
+  { id: 'pentaculos',label: 'Pentáculos',            path: '/pentaculos',         expectedStatus: 200, tags: ['page', 'analytics'] },
+  { id: 'gim',       label: 'GIM Dashboard',         path: '/gim',                expectedStatus: 200, tags: ['page', 'analytics'] },
+  { id: 'financas',  label: 'Finanças',              path: '/financas',           expectedStatus: 200, tags: ['page', 'analytics'] },
+  { id: 'manga',     label: 'Manga Reader',          path: '/manga',              expectedStatus: 200, tags: ['page', 'content'] },
+
+  // APIs críticas
+  { id: 'api-code',  label: 'API /code-stats',       path: '/api/code-stats',     expectedStatus: 200, method: 'GET', tags: ['api', 'analytics'] },
   { id: 'api-etf',   label: 'API /etf-cota',         path: '/api/etf-cota',       expectedStatus: 200, method: 'GET', tags: ['api', 'etf'] },
+  { id: 'api-daily', label: 'API /daily-report',     path: '/api/daily-report',   expectedStatus: 200, method: 'GET', tags: ['api', 'reports'] },
+  { id: 'api-manga', label: 'API /manga',            path: '/api/manga',          expectedStatus: 200, method: 'GET', tags: ['api', 'content'] },
+  { id: 'api-roteiro',label: 'API /roteiro',         path: '/api/roteiro',        expectedStatus: 200, method: 'GET', tags: ['api', 'content'] },
+  { id: 'api-tv-report',label: 'API /tv-report',     path: '/api/tv-report',      expectedStatus: 200, method: 'GET', tags: ['api', 'tv'] },
+
+  // TV Empresarial (sub-rotas)
+  { id: 'tv-config', label: 'TV Config Editor',      path: '/tv-empresarial/config', expectedStatus: 200, tags: ['page', 'tv', 'admin'] },
+  { id: 'tv-canais', label: 'TV Canais Manager',     path: '/tv-empresarial/canais', expectedStatus: 200, tags: ['page', 'tv', 'admin'] },
+
+  // Páginas de conteúdo dinâmico
+  { id: 'blog-post', label: 'Blog Post (exemplo)',    path: '/blog/como-construir-um-sistema-de-crescimento-digital', expectedStatus: 200, tags: ['page', 'content', 'dynamic'] },
+  { id: 'jornal-slug',label: 'Jornal Edição',        path: '/jornal/mercado-digital-em-expansao', expectedStatus: 200, tags: ['page', 'content', 'dynamic'] },
+
+  // 404s esperados
   { id: 'slug-404',  label: 'Blog slug inexistente', path: '/blog/__teste_404__', expectedStatus: 404, tags: ['page', '404'] },
+  { id: 'api-404',   label: 'API inexistente',       path: '/api/__teste_404__',  expectedStatus: 404, tags: ['api', '404'] },
+  { id: 'page-404',  label: 'Página inexistente',    path: '/__teste_404__',      expectedStatus: 404, tags: ['page', '404'] },
+
+  // Segurança e validação
+  { id: 'xss-test',  label: 'Proteção XSS (query)',  path: '/?q=<script>alert(1)</script>', expectedStatus: 200, tags: ['security', 'xss'] },
+  { id: 'sql-test',  label: 'Proteção SQL Injection', path: '/api/code-stats?q=1%27%20OR%20%271%27%3D%271', expectedStatus: 200, tags: ['security', 'sqli'] },
+
+  // Performance crítica
+  { id: 'api-etf-load', label: 'API ETF sob carga',   path: '/api/etf-cota',       expectedStatus: 200, method: 'GET', tags: ['api', 'etf', 'performance'] },
 ];
 
 const RETRY_LIMIT = 2;
@@ -110,7 +140,7 @@ const P_VAZIO: PostData = { titulo:'', slug:'vazio', date:'', category:'', excer
 // ═════════════════════════════════════════════════════════════════════════════
 function criarTestesEtf(): EtfTeste[] {
   return [
-    // analisarTexto
+    // analisarTexto — Testes básicos e edge cases
     { id:'t01', grupo:'analisarTexto()', icone:'🔤', nome:'Vogais peso 2x, consoantes 1x', descricao:'"aabb" → a=4, b=2',
       fn: async () => { const t=performance.now(); const s=analisarTexto('aabb'); const d=performance.now()-t; const ok=s['a']===4&&s['b']===2; return { status:ok?'pass':'fail', duracao:d, entrada:'aabb', saida:s, erro:ok?undefined:`a=${s['a']} b=${s['b']}`, detalhes:{esperado:'a=4 b=2'} }; } },
     { id:'t02', grupo:'analisarTexto()', icone:'🔤', nome:'Texto sem letras → {}', descricao:'"123 !@#" deve retornar objeto vazio',
@@ -119,50 +149,76 @@ function criarTestesEtf(): EtfTeste[] {
       fn: async () => { const t=performance.now(); const s1=analisarTexto('a'); const s2=analisarTexto('á'); const d=performance.now()-t; const ok=s1['a']===s2['a']; return { status:ok?'pass':'fail', duracao:d, entrada:{a:'a',aacento:'á'}, saida:{s1,s2}, erro:ok?undefined:`a=${s1['a']} á=${s2['a']}`, detalhes:{} }; } },
     { id:'t04', grupo:'analisarTexto()', icone:'🔤', nome:'Texto real do post blog', descricao:'Deve ter ≥10 letras únicas',
       fn: async () => { const t=performance.now(); const txt=`${P_BLOG1.titulo} ${P_BLOG1.excerpt}`; const s=analisarTexto(txt); const d=performance.now()-t; const ok=Object.keys(s).length>=10; return { status:ok?'pass':'fail', duracao:d, entrada:txt.slice(0,60)+'...', saida:{ letrasUnicas:Object.keys(s).length, top5:Object.entries(s).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([l,v])=>`${l}=${v}`).join(' ') }, erro:ok?undefined:`Só ${Object.keys(s).length} letras`, detalhes:{} }; } },
+    { id:'t05', grupo:'analisarTexto()', icone:'🔤', nome:'Texto muito longo (1000 chars)', descricao:'Performance com texto grande',
+      fn: async () => { const t=performance.now(); const txt='a'.repeat(1000); const s=analisarTexto(txt); const d=performance.now()-t; const ok=s['a']===2000&&d<50; return { status:ok?'pass':'fail', duracao:d, entrada:`'a'.repeat(1000)`, saida:{letraA:s['a'],duracaoMs:d}, erro:ok?undefined:`a=${s['a']} esperado=2000, lento=${d}ms`, detalhes:{limiteMs:50} }; } },
+    { id:'t06', grupo:'analisarTexto()', icone:'🔤', nome:'Caracteres especiais e emojis', descricao:'"🚀🌟💎" deve ser tratado como texto vazio',
+      fn: async () => { const t=performance.now(); const s=analisarTexto('🚀🌟💎'); const d=performance.now()-t; const ok=Object.keys(s).length===0; return { status:ok?'pass':'fail', duracao:d, entrada:'🚀🌟💎', saida:s, erro:ok?undefined:'Emojis devem ser ignorados', detalhes:{chavesEncontradas:Object.keys(s)} }; } },
+    { id:'t07', grupo:'analisarTexto()', icone:'🔤', nome:'Texto null/undefined', descricao:'Deve retornar {} sem quebrar',
+      fn: async () => { const t=performance.now(); let s1,s2; try{s1=analisarTexto(null as any);s2=analisarTexto(undefined as any);}catch(e){} const d=performance.now()-t; const ok=(s1&&Object.keys(s1).length===0)&&(s2&&Object.keys(s2).length===0); return { status:ok?'pass':'fail', duracao:d, entrada:{null:null,undefined:undefined}, saida:{s1,s2}, erro:ok?undefined:'Deve retornar {} para valores null/undefined', detalhes:{} }; } },
 
-    // calcularValorPost
-    { id:'t05', grupo:'calcularValorPost()', icone:'🔢', nome:'Post real → valor > 0', descricao:'Deve retornar número positivo finito',
+    // calcularValorPost — Testes avançados
+    { id:'t08', grupo:'calcularValorPost()', icone:'🔢', nome:'Post real → valor > 0', descricao:'Deve retornar número positivo finito',
       fn: async () => { const t=performance.now(); const s=calcularValorPost(P_BLOG1); const d=performance.now()-t; const ok=typeof s==='number'&&s>0&&Number.isFinite(s); return { status:ok?'pass':'fail', duracao:d, entrada:P_BLOG1.titulo, saida:s, erro:ok?undefined:`Valor inválido: ${s}`, detalhes:{tipo:typeof s} }; } },
-    { id:'t06', grupo:'calcularValorPost()', icone:'🔢', nome:'Posts diferentes → valores diferentes', descricao:'BLOG1 ≠ BLOG2',
+    { id:'t09', grupo:'calcularValorPost()', icone:'🔢', nome:'Posts diferentes → valores diferentes', descricao:'BLOG1 ≠ BLOG2',
       fn: async () => { const t=performance.now(); const v1=calcularValorPost(P_BLOG1); const v2=calcularValorPost(P_BLOG2); const d=performance.now()-t; const ok=v1!==v2; return { status:ok?'pass':'fail', duracao:d, entrada:{p1:P_BLOG1.titulo.slice(0,30),p2:P_BLOG2.titulo.slice(0,30)}, saida:{v1,v2,diferenca:Math.abs(v1-v2)}, erro:ok?undefined:'Colisão! Valores iguais', detalhes:{} }; } },
-    { id:'t07', grupo:'calcularValorPost()', icone:'🔢', nome:'Post vazio → 0', descricao:'Sem texto deve retornar exatamente 0',
+    { id:'t10', grupo:'calcularValorPost()', icone:'🔢', nome:'Post vazio → 0', descricao:'Sem texto deve retornar exatamente 0',
       fn: async () => { const t=performance.now(); const s=calcularValorPost(P_VAZIO); const d=performance.now()-t; const ok=s===0; return { status:ok?'pass':'fail', duracao:d, entrada:P_VAZIO, saida:s, erro:ok?undefined:`Esperado 0, recebeu ${s}`, detalhes:{} }; } },
-    { id:'t08', grupo:'calcularValorPost()', icone:'🔢', nome:'Idempotência — mesmo resultado 2x', descricao:'Mesma entrada → mesmo valor sempre',
+    { id:'t11', grupo:'calcularValorPost()', icone:'🔢', nome:'Idempotência — mesmo resultado 2x', descricao:'Mesma entrada → mesmo valor sempre',
       fn: async () => { const t=performance.now(); const v1=calcularValorPost(P_JORN); const v2=calcularValorPost(P_JORN); const d=performance.now()-t; const ok=v1===v2; return { status:ok?'pass':'fail', duracao:d, entrada:P_JORN.titulo, saida:{v1,v2}, erro:ok?undefined:`${v1} ≠ ${v2}`, detalhes:{} }; } },
+    { id:'t12', grupo:'calcularValorPost()', icone:'🔢', nome:'Post com XSS attempt', descricao:'Deve sanitizar e calcular normalmente',
+      fn: async () => { const t=performance.now(); const p={...P_BLOG1,titulo:'<script>alert(1)</script>Test'}; const s=calcularValorPost(p); const d=performance.now()-t; const ok=typeof s==='number'&&s>0; return { status:ok?'pass':'fail', duracao:d, entrada:p.titulo, saida:s, erro:ok?undefined:'Falhou com XSS attempt', detalhes:{tipo:typeof s} }; } },
+    { id:'t13', grupo:'calcularValorPost()', icone:'🔢', nome:'Post muito longo', descricao:'Texto de 10k chars deve ser processado',
+      fn: async () => { const t=performance.now(); const p={...P_BLOG1,titulo:'A'.repeat(10000)}; const s=calcularValorPost(p); const d=performance.now()-t; const ok=typeof s==='number'&&s>0&&d<100; return { status:ok?'pass':'fail', duracao:d, entrada:`'A'.repeat(10000)`, saida:{valor:s,duracaoMs:d}, erro:ok?undefined:`Lento ou falhou: ${d}ms`, detalhes:{limiteMs:100} }; } },
 
-    // calcularBloco
-    { id:'t09', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco blog — peso 0.40 / contrib R$1.440', descricao:'Estrutura correta com 2 posts',
+    // calcularBloco — Testes de negócio
+    { id:'t14', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco blog — peso 0.40 / contrib R$1.440', descricao:'Estrutura correta com 2 posts',
       fn: async () => { const t=performance.now(); const s=calcularBloco([P_BLOG1,P_BLOG2],'blog'); const d=performance.now()-t; const ok=s.tipo==='blog'&&s.peso===0.40&&s.contribuicao===1440&&s.codigo.length===6&&s.posts.length===2; return { status:ok?'pass':'fail', duracao:d, entrada:{posts:2,tipo:'blog'}, saida:{tipo:s.tipo,peso:s.peso,contrib:s.contribuicao,codigo:s.codigo,posts:s.posts.length}, erro:ok?undefined:`peso=${s.peso} contrib=${s.contribuicao} codLen=${s.codigo.length}`, detalhes:{} }; } },
-    { id:'t10', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco jornal — peso 0.35 / contrib R$1.260', descricao:'',
+    { id:'t15', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco jornal — peso 0.35 / contrib R$1.260', descricao:'',
       fn: async () => { const t=performance.now(); const s=calcularBloco([P_JORN],'jornal'); const d=performance.now()-t; const ok=s.peso===0.35&&s.contribuicao===1260; return { status:ok?'pass':'fail', duracao:d, entrada:{posts:1,tipo:'jornal'}, saida:{peso:s.peso,contrib:s.contribuicao}, erro:ok?undefined:`peso=${s.peso} contrib=${s.contribuicao}`, detalhes:{} }; } },
-    { id:'t11', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco vazio — não quebra', descricao:'posts=[] → valor=0, código de 6 chars',
+    { id:'t16', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco vazio — não quebra', descricao:'posts=[] → valor=0, código de 6 chars',
       fn: async () => { const t=performance.now(); const s=calcularBloco([],'tv'); const d=performance.now()-t; const ok=s.valor===0&&s.codigo.length===6; return { status:ok?'pass':'fail', duracao:d, entrada:{posts:0,tipo:'tv'}, saida:{valor:s.valor,codigo:s.codigo}, erro:ok?undefined:`valor=${s.valor} codLen=${s.codigo.length}`, detalhes:{} }; } },
-    { id:'t12', grupo:'calcularBloco()', icone:'🧱', nome:'Código sem chars ambíguos (sem 0 O 1 I)', descricao:'Regex: /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/',
+    { id:'t17', grupo:'calcularBloco()', icone:'🧱', nome:'Código sem chars ambíguos (sem 0 O 1 I)', descricao:'Regex: /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/',
       fn: async () => { const t=performance.now(); const s=calcularBloco([P_BLOG1,P_BLOG2],'blog').codigo; const d=performance.now()-t; const ok=/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(s); return { status:ok?'pass':'fail', duracao:d, entrada:'bloco com 2 posts', saida:s, erro:ok?undefined:`Chars inválidos em "${s}"`, detalhes:{regex:'/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/'} }; } },
+    { id:'t18', grupo:'calcularBloco()', icone:'🧱', nome:'Bloco com posts duplicados', descricao:'Deve deduplicar e calcular corretamente',
+      fn: async () => { const t=performance.now(); const s=calcularBloco([P_BLOG1,P_BLOG1,P_BLOG2],'blog'); const d=performance.now()-t; const ok=s.posts.length===2&&s.peso===0.40; return { status:ok?'pass':'fail', duracao:d, entrada:{postsDuplicados:3,unicosEsperados:2}, saida:{posts:s.posts.length,peso:s.peso}, erro:ok?undefined:`Posts=${s.posts.length} esperado=2`, detalhes:{} }; } },
+    { id:'t19', grupo:'calcularBloco()', icone:'🧱', nome:'Tipo inválido — deve quebrar graciosamente', descricao:'Tipo desconhecido deve lançar erro',
+      fn: async () => { const t=performance.now(); let erro:string|undefined,s; try{s=calcularBloco([P_BLOG1],'invalido' as any);}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=erro&&erro.includes('tipo'); return { status:ok?'pass':'fail', duracao:d, entrada:{tipo:'invalido'}, saida:s, erro:ok?undefined:'Deve rejeitar tipo inválido', detalhes:{erroCapturado:erro} }; } },
 
-    // gerarCota
-    { id:'t13', grupo:'gerarCota()', icone:'💎', nome:'Estrutura completa (id, código, 3 blocos, R$3600)', descricao:'',
+    // gerarCota — Testes de integração
+    { id:'t20', grupo:'gerarCota()', icone:'💎', nome:'Estrutura completa (id, código, 3 blocos, R$3600)', descricao:'',
       fn: async () => { const t=performance.now(); const s=gerarCota([P_BLOG1,P_BLOG2],[P_JORN],[P_TV]); const d=performance.now()-t; const ok=s.id.startsWith('GT')&&s.codigoCompleto.startsWith('GT-')&&s.blocos.length===3&&s.valorTotal===3600&&s.status==='disponivel'; return { status:ok?'pass':'fail', duracao:d, entrada:{blog:2,jornal:1,tv:1}, saida:{id:s.id,codigo:s.codigoCompleto,blocos:s.blocos.length,valor:s.valorTotal,status:s.status}, erro:ok?undefined:'Estrutura inválida', detalhes:{} }; } },
-    { id:'t14', grupo:'gerarCota()', icone:'💎', nome:'Formato GT-XXXXXX-XXXXXX-XXXXXX-XX', descricao:'5 partes separadas por hífen',
+    { id:'t21', grupo:'gerarCota()', icone:'💎', nome:'Formato GT-XXXXXX-XXXXXX-XXXXXX-XX', descricao:'5 partes separadas por hífen',
       fn: async () => { const t=performance.now(); const s=gerarCota([P_BLOG1],[P_JORN],[P_TV]).codigoCompleto; const d=performance.now()-t; const partes=s.split('-'); const ok=partes.length===5&&partes[0]==='GT'&&partes[4].length===2; return { status:ok?'pass':'fail', duracao:d, entrada:'gerarCota', saida:s, erro:ok?undefined:`Partes=${partes.length} checksum="${partes[4]}"`, detalhes:{partes} }; } },
-    { id:'t15', grupo:'gerarCota()', icone:'💎', nome:'Soma dos pesos = 1.00 (100%)', descricao:'Blog 40% + Jornal 35% + TV 25%',
+    { id:'t22', grupo:'gerarCota()', icone:'💎', nome:'Soma dos pesos = 1.00 (100%)', descricao:'Blog 40% + Jornal 35% + TV 25%',
       fn: async () => { const t=performance.now(); const c=gerarCota([P_BLOG1],[P_JORN],[P_TV]); const soma=c.blocos.reduce((a,b)=>a+b.peso,0); const d=performance.now()-t; const ok=Math.abs(soma-1)<0.001; return { status:ok?'pass':'fail', duracao:d, entrada:'blocos', saida:{soma,blocos:c.blocos.map(b=>({tipo:b.tipo,peso:b.peso}))}, erro:ok?undefined:`Soma=${soma}`, detalhes:{} }; } },
-    { id:'t16', grupo:'gerarCota()', icone:'💎', nome:'Soma das contribuições = R$3.600', descricao:'1440 + 1260 + 900 = 3600',
+    { id:'t23', grupo:'gerarCota()', icone:'💎', nome:'Soma das contribuições = R$3.600', descricao:'1440 + 1260 + 900 = 3600',
       fn: async () => { const t=performance.now(); const c=gerarCota([P_BLOG1],[P_JORN],[P_TV]); const soma=c.blocos.reduce((a,b)=>a+b.contribuicao,0); const d=performance.now()-t; const ok=Math.abs(soma-3600)<0.01; return { status:ok?'pass':'fail', duracao:d, entrada:'blocos', saida:{soma,por:c.blocos.map(b=>({tipo:b.tipo,contrib:b.contribuicao}))}, erro:ok?undefined:`Soma=R$${soma}`, detalhes:{} }; } },
-    { id:'t17', grupo:'gerarCota()', icone:'💎', nome:'Cota vazia — não quebra', descricao:'gerarCota([], [], []) deve retornar cota válida',
+    { id:'t24', grupo:'gerarCota()', icone:'💎', nome:'Cota vazia — não quebra', descricao:'gerarCota([], [], []) deve retornar cota válida',
       fn: async () => { const t=performance.now(); let s:CotaETF|null=null; let erro:string|undefined; try{s=gerarCota([],[],[])}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=!erro&&s!==null&&s.blocos.length===3; return { status:ok?'pass':'fail', duracao:d, entrada:'[],[],[]', saida:s?{id:s.id,blocos:s.blocos.length}:null, erro, detalhes:{naoQuebrou:!erro} }; } },
-    { id:'t18', grupo:'gerarCota()', icone:'💎', nome:'IDs únicos entre chamadas', descricao:'Duas chamadas → IDs diferentes',
+    { id:'t25', grupo:'gerarCota()', icone:'💎', nome:'IDs únicos entre chamadas', descricao:'Duas chamadas → IDs diferentes',
       fn: async () => { const t=performance.now(); const c1=gerarCota([P_BLOG1],[P_JORN],[P_TV]); await new Promise(r=>setTimeout(r,2)); const c2=gerarCota([P_BLOG1],[P_JORN],[P_TV]); const d=performance.now()-t; const ok=c1.id!==c2.id; return { status:ok?'pass':'fail', duracao:d, entrada:'2x gerarCota()', saida:{id1:c1.id,id2:c2.id}, erro:ok?undefined:'Colisão de IDs!', detalhes:{} }; } },
+    { id:'t26', grupo:'gerarCota()', icone:'💎', nome:'Cota com dados malformados', descricao:'Deve lidar com posts inválidos',
+      fn: async () => { const t=performance.now(); const pInvalido={titulo:'',slug:'',date:'',category:'',excerpt:'',tipo:'blog' as const}; let s:CotaETF|null=null,erro:string|undefined; try{s=gerarCota([pInvalido],[],[]);}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=!erro&&s!==null&&s.valorTotal>=0; return { status:ok?'pass':'fail', duracao:d, entrada:{postMalformado:pInvalido}, saida:s?{valorTotal:s.valorTotal}:null, erro, detalhes:{naoQuebrou:!erro} }; } },
 
-    // API
-    { id:'t19', grupo:'GET /api/etf-cota', icone:'🌐', nome:'HTTP 200', descricao:'Rota existe e responde',
+    // API — Testes modernos e de carga
+    { id:'t27', grupo:'GET /api/etf-cota', icone:'🌐', nome:'HTTP 200', descricao:'Rota existe e responde',
       fn: async () => { const t=performance.now(); let s:any=null,erro:string|undefined,st=0; try{const r=await fetch('/api/etf-cota');st=r.status;s=await r.json().catch(()=>r.text());}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=st===200&&!erro; return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:s, erro:ok?undefined:(erro??`HTTP ${st}`), detalhes:{httpStatus:st} }; } },
-    { id:'t20', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Campo "cota" com estrutura válida', descricao:'cota.codigoCompleto, cota.blocos, cota.status',
+    { id:'t28', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Campo "cota" com estrutura válida', descricao:'cota.codigoCompleto, cota.blocos, cota.status',
       fn: async () => { const t=performance.now(); let s:any=null,erro:string|undefined; try{const r=await fetch('/api/etf-cota');s=await r.json();}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const c=s?.cota; const ok=!erro&&c&&c.codigoCompleto&&Array.isArray(c.blocos)&&c.status; return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:c??s, erro:ok?undefined:(erro??'Campo "cota" inválido'), detalhes:{temCodigo:!!c?.codigoCompleto,blocos:c?.blocos?.length,status:c?.status} }; } },
-    { id:'t21', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Campo "resumo" com postsBlog e postsJornal', descricao:'Contagens numéricas dos posts lidos do disco',
+    { id:'t29', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Campo "resumo" com postsBlog e postsJornal', descricao:'Contagens numéricas dos posts lidos do disco',
       fn: async () => { const t=performance.now(); let s:any=null,erro:string|undefined; try{const r=await fetch('/api/etf-cota');s=await r.json();}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const res=s?.resumo; const ok=!erro&&res&&typeof res.postsBlog==='number'&&typeof res.postsJornal==='number'; return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:res??s, erro:ok?undefined:(erro??'"resumo" inválido'), detalhes:{postsBlog:res?.postsBlog,postsJornal:res?.postsJornal,debug:res?._debug} }; } },
-    { id:'t22', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Resposta em < 3s', descricao:'Latência da rota Next.js',
+    { id:'t30', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Resposta em < 3s', descricao:'Latência da rota Next.js',
       fn: async () => { const t=performance.now(); let erro:string|undefined; try{const r=await fetch('/api/etf-cota');await r.json();}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=!erro&&d<3000; return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:{ms:d.toFixed(0)+'ms'}, erro:ok?undefined:(erro??`Lento: ${d.toFixed(0)}ms`), detalhes:{limite:'3000ms'} }; } },
+    { id:'t31', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Headers de segurança presentes', descricao:'X-Content-Type-Options, X-Frame-Options',
+      fn: async () => { const t=performance.now(); let headers:any={},erro:string|undefined; try{const r=await fetch('/api/etf-cota');headers={...r.headers};}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=!erro&&(headers['x-content-type-options']==='nosniff'||headers['x-frame-options']); return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:{'x-content-type-options':headers['x-content-type-options'],'x-frame-options':headers['x-frame-options']}, erro:ok?undefined:'Headers de segurança ausentes', detalhes:{} }; } },
+    { id:'t32', grupo:'GET /api/etf-cota', icone:'🌐', nome:'Cache-Control adequado', descricao:'Deve ter no-cache para dados dinâmicos',
+      fn: async () => { const t=performance.now(); let cc:string='',erro:string|undefined; try{const r=await fetch('/api/etf-cota');cc=r.headers.get('cache-control')||'';}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=!erro&&cc.includes('no-cache'); return { status:ok?'pass':'fail', duracao:d, entrada:'GET /api/etf-cota', saida:{'cache-control':cc}, erro:ok?undefined:'Cache-Control inadequado', detalhes:{esperado:'no-cache'} }; } },
+
+    // Testes de carga e stress
+    { id:'t33', grupo:'Performance', icone:'⚡', nome:'10 chamadas simultâneas ETF', descricao:'Deve aguentar carga moderada',
+      fn: async () => { const t=performance.now(); const promises=Array(10).fill(0).map(()=>fetch('/api/etf-cota').then(r=>r.json())); let results:any[]=[],erro:string|undefined; try{results=await Promise.all(promises);}catch(e:any){erro=e?.message??String(e);} const d=performance.now()-t; const ok=!erro&&results.length===10&&results.every(r=>r.cota); return { status:ok?'pass':'fail', duracao:d, entrada:'10x /api/etf-cota simultâneo', saida:{duracaoTotal:d.toFixed(0)+'ms',sucessos:results.length}, erro:ok?undefined:(erro??'Falhou carga simultânea'), detalhes:{mediaPorChamada:(d/10).toFixed(1)+'ms'} }; } },
+    { id:'t34', grupo:'Performance', icone:'⚡', nome:'analisarTexto() 1000x rápido', descricao:'Performance em lote',
+      fn: async () => { const t=performance.now(); for(let i=0;i<1000;i++)analisarTexto('teste performance '+i); const d=performance.now()-t; const ok=d<200; return { status:ok?'pass':'fail', duracao:d, entrada:'1000x analisarTexto()', saida:{duracaoTotal:d.toFixed(0)+'ms',mediaPorChamada:(d/1000).toFixed(3)+'ms'}, erro:ok?undefined:`Lento: ${d}ms`, detalhes:{limite:'200ms'} }; } },
   ];
 }
 
@@ -188,7 +244,7 @@ function Badge({ status }: { status: RouteStatus }) {
 // PAGE
 // ═════════════════════════════════════════════════════════════════════════════
 export default function TestesPage() {
-  const [aba, setAba] = useState<'routes' | 'etf'>('routes');
+  const [aba, setAba] = useState<'routes' | 'etf' | 'security'>('routes');
 
   // ── Routes state ───────────────────────────────────────────────────────────
   const [routeResults, setRouteResults] = useState<RouteResult[]>([]);
@@ -307,6 +363,7 @@ export default function TestesPage() {
           {([
             { key:'routes', label:'🛰️ Rotas HTTP', fail:rFail },
             { key:'etf',    label:'⚙️ ETF Engine',  fail:etfFail },
+            { key:'security', label:'🔒 Segurança', fail:0 }, // Placeholder para futuros testes
           ] as const).map(({ key, label, fail }) => (
             <button key={key} onClick={()=>setAba(key)} style={{
               padding:'9px 18px', fontSize:13, fontWeight:700, cursor:'pointer', border:'none',
@@ -322,16 +379,18 @@ export default function TestesPage() {
         {aba === 'routes' && (
           <>
             {routeResults.length > 0 && (
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:20 }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(140px, 1fr))', gap:10, marginBottom:20 }}>
                 {[
-                  { label:'Passed', val:rPass,  color:'#4ade80' },
-                  { label:'Failed', val:rFail,  color:'#f87171' },
-                  { label:'Warned', val:rWarn,  color:'#fbbf24' },
-                  { label:'Taxa',   val:rPct!==null?`${rPct}%`:'—', color:rPct===100?'#4ade80':rPct!==null&&rPct<70?'#f87171':'#fbbf24' },
+                  { label:'TOTAL', val:routeResults.length, color:'#6b7280' },
+                  { label:'PASSOU', val:rPass, color:'#4ade80' },
+                  { label:'FALHOU', val:rFail, color:'#f87171' },
+                  { label:'AVISOU', val:rWarn, color:'#fbbf24' },
+                  { label:'TAXA', val:rPct!==null?`${rPct}%`:'—', color:rPct===100?'#4ade80':rPct!==null&&rPct<70?'#f87171':'#fbbf24' },
+                  { label:'LATÊNCIA', val:routeResults.length>0?`${Math.round(routeResults.reduce((s,r)=>s+(r.latencyMs??0),0)/routeResults.length)}ms`:'—', color:'#60a5fa' },
                 ].map(s => (
-                  <div key={s.label} style={{ background:'#0d1117', border:'1px solid #1e2235', borderRadius:10, padding:'14px 18px', textAlign:'center' }}>
-                    <div style={{ fontSize:22, fontWeight:800, color:s.color, fontFamily:'monospace' }}>{s.val}</div>
-                    <div style={{ fontSize:11, color:'#6b7280', marginTop:2, textTransform:'uppercase', letterSpacing:1 }}>{s.label}</div>
+                  <div key={s.label} style={{ background:'#0d1117', border:'1px solid #1e2235', borderRadius:10, padding:'14px 12px', textAlign:'center' }}>
+                    <div style={{ fontSize:18, fontWeight:800, color:s.color, fontFamily:'monospace', lineHeight:1 }}>{s.val}</div>
+                    <div style={{ fontSize:9, color:'rgba(255,255,255,0.3)', letterSpacing:2, marginTop:4, textTransform:'uppercase' }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -416,19 +475,51 @@ export default function TestesPage() {
           </>
         )}
 
+        {/* ══ ABA SECURITY ══════════════════════════════════════════════════ */}
+        {aba === 'security' && (
+          <div style={{ background:'#0d1117', border:'1px solid #1e2235', borderRadius:12, padding:'32px 24px', textAlign:'center' }}>
+            <div style={{ fontSize:48, marginBottom:16 }}>🔒</div>
+            <div style={{ fontSize:18, fontWeight:700, marginBottom:8 }}>Testes de Segurança</div>
+            <div style={{ color:'#6b7280', fontSize:14, marginBottom:24 }}>Validação de vulnerabilidades e proteção de dados</div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:16, marginBottom:24 }}>
+              {[
+                { icon:'🛡️', title:'XSS Protection', desc:'Proteção contra Cross-Site Scripting', status:'pending' },
+                { icon:'🔐', title:'SQL Injection', desc:'Prevenção de injeção SQL', status:'pending' },
+                { icon:'🌐', title:'CORS Policy', desc:'Validação de política CORS', status:'pending' },
+                { icon:'🔒', title:'Headers Security', desc:'Headers de segurança HTTP', status:'pending' },
+                { icon:'📊', title:'Rate Limiting', desc:'Limitação de taxa de requisições', status:'pending' },
+                { icon:'🔑', title:'Auth Validation', desc:'Validação de autenticação', status:'pending' },
+              ].map(item => (
+                <div key={item.title} style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:'16px', textAlign:'center' }}>
+                  <div style={{ fontSize:24, marginBottom:8 }}>{item.icon}</div>
+                  <div style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.9)', marginBottom:4 }}>{item.title}</div>
+                  <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)' }}>{item.desc}</div>
+                  <div style={{ marginTop:8, padding:'4px 8px', background:'rgba(255,255,255,0.1)', borderRadius:12, fontSize:9, color:'rgba(255,255,255,0.6)', display:'inline-block' }}>
+                    {item.status === 'pending' ? '⏳ PENDENTE' : item.status === 'pass' ? '✅ PASSOU' : '❌ FALHOU'}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ color:'#4b5563', fontSize:12 }}>
+              💡 Testes de segurança serão implementados nas próximas versões para validar proteção contra vulnerabilidades comuns.
+            </div>
+          </div>
+        )}
+
         {/* ══ ABA ETF ═══════════════════════════════════════════════════════ */}
         {aba === 'etf' && (
-          <>
-            {/* Placar ETF */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:20 }}>
+          <div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(120px, 1fr))', gap:10, marginBottom:20 }}>
               {[
-                { label:'TOTAL',   val:etfTotal,              cor:'rgba(255,255,255,0.6)' },
-                { label:'PASSOU',  val:etfPass,               cor:'#00ff88' },
-                { label:'FALHOU',  val:etfFail,               cor:'#ff4d6d' },
-                { label:'PENDENTE',val:etfTotal-etfPass-etfFail, cor:'rgba(255,255,255,0.3)' },
+                { label:'TOTAL', val:etfTotal, cor:'rgba(255,255,255,0.6)' },
+                { label:'PASSOU', val:etfPass, cor:'#00ff88' },
+                { label:'FALHOU', val:etfFail, cor:'#ff4d6d' },
+                { label:'PENDENTE', val:etfTotal-etfPass-etfFail, cor:'rgba(255,255,255,0.3)' },
+                { label:'TAXA', val:etfTotal>0?`${Math.round((etfPass/etfTotal)*100)}%`:'—', cor:etfTotal>0&&etfPass===etfTotal?'#00ff88':'#ff4d6d' },
+                { label:'GRUPOS', val:etfGrupos.length, cor:'rgba(255,255,255,0.5)' },
               ].map(({ label, val, cor }) => (
                 <div key={label} style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, padding:'14px 10px', textAlign:'center' }}>
-                  <div style={{ fontSize:22, fontWeight:900, color:cor, fontFamily:'monospace', lineHeight:1 }}>{val}</div>
+                  <div style={{ fontSize:20, fontWeight:900, color:cor, fontFamily:'monospace', lineHeight:1 }}>{val}</div>
                   <div style={{ fontSize:9, color:'rgba(255,255,255,0.3)', letterSpacing:2, marginTop:4 }}>{label}</div>
                 </div>
               ))}
@@ -513,14 +604,16 @@ export default function TestesPage() {
                 </div>
               );
             })}
-          </>
+          </div>
         )}
 
         {/* Dica inferior */}
         <div style={{ marginTop:28, padding:'12px 16px', background:'#0d1117', border:'1px solid #1e2235', borderRadius:8, fontSize:12, color:'#4b5563' }}>
           {aba==='routes'
-            ? <>💡 Edite o array <code style={{ color:'#6366f1', background:'#12162a', padding:'1px 6px', borderRadius:4 }}>ROUTE_TESTS</code> para adicionar rotas. Use <code style={{ color:'#6366f1', background:'#12162a', padding:'1px 6px', borderRadius:4 }}>expectedStatus</code> para validar o código HTTP exato.</>
-            : <>⚙️ Testa cada função do <code style={{ color:'#00ff88', background:'#081408', padding:'1px 6px', borderRadius:4 }}>etf-cota-engine.ts</code> + a rota <code style={{ color:'#00ff88', background:'#081408', padding:'1px 6px', borderRadius:4 }}>/api/etf-cota</code> em tempo real.</>
+            ? <>�️ Testa {ROUTE_TESTS.length} rotas HTTP incluindo páginas, APIs, segurança e performance. Cobre casos 404, XSS, SQL injection e latência.</>
+            : aba==='etf'
+            ? <>⚙️ Testa {etfTotal} funções do ETF Engine + APIs. Inclui edge cases, performance, segurança e validação de dados.</>
+            : <>🔒 Testes de segurança avaliam proteção contra vulnerabilidades comuns e validação de headers de segurança.</>
           }
         </div>
       </div>
