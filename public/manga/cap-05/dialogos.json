@@ -49,15 +49,15 @@
     {
       "pagina": 0,
       "personagem": "Sistema",
-      "fala": "2006: primeiros conflitos internos. Desejo de independência aumenta. Ação ainda limitada.",
+      "fala": "Bem vindo, agora a mundo cheio de conteúdo dinâmico que possa desfrutar. '.",
       "avatar": "/manga/avatares/sistema.png",
       "cor": "#ffd700"
     },
     {
       "pagina": 0,
-      "personagem": "Fabinho",
-      "fala": "Eu não quero essa vida… mas também não sei qual eu quero.",
-      "avatar": "/manga/avatares/fabinho-avatar.png",
+      "personagem": "Narrador",
+      "fala": "A realidade de um conteúdo posso ter uma ideia sobre, se conseguir ver três vezes o mesmo assunto ai ele passa ser interesante, massivo, tornal bruto .",
+      "avatar": "/manga/avatares/narrador.png",
       "cor": "#00d4ff"
     },
 
