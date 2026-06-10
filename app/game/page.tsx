@@ -1,43 +1,73 @@
-
 "use client";
+
 import { useState, useEffect, useRef, useCallback } from "react";
+
+// ══════════════════════════════════════════════
+// TYPES
+// ══════════════════════════════════════════════
+interface CardData {
+  id: number;
+  emoji: string;
+  pt: string;
+  es: string;
+  en: string;
+  cat: string;
+}
+
+interface DeckCard extends CardData {
+  cardId: string;
+  lang: "pt" | "es" | "en";
+  matchId: number;
+}
+
+interface Level {
+  id: number;
+  name: string;
+  nameEs: string;
+  nameEn: string;
+  pairs: number;
+  timeLimit: number;
+  color: string;
+  glowColor: string;
+  stars: number;
+}
 
 // ══════════════════════════════════════════════
 // CARD DATABASE — Trios: emoji + PT + ES + EN
 // ══════════════════════════════════════════════
-const CARD_DB = [
+const CARD_DB: CardData[] = [
   // COISAS / OBJETOS
-  { id: 1, emoji: "🍎", pt: "Maçã", es: "Manzana", en: "Apple", cat: "fruit" },
-  { id: 2, emoji: "🐉", pt: "Dragão", es: "Dragón", en: "Dragon", cat: "creature" },
-  { id: 3, emoji: "⚔️", pt: "Espada", es: "Espada", en: "Sword", cat: "item" },
-  { id: 4, emoji: "🌙", pt: "Lua", es: "Luna", en: "Moon", cat: "nature" },
-  { id: 5, emoji: "🔥", pt: "Fogo", es: "Fuego", en: "Fire", cat: "element" },
-  { id: 6, emoji: "💎", pt: "Diamante", es: "Diamante", en: "Diamond", cat: "item" },
-  { id: 7, emoji: "🏰", pt: "Castelo", es: "Castillo", en: "Castle", cat: "place" },
-  { id: 8, emoji: "🦊", pt: "Raposa", es: "Zorro", en: "Fox", cat: "animal" },
-  { id: 9, emoji: "🌊", pt: "Onda", es: "Ola", en: "Wave", cat: "nature" },
-  { id: 10, emoji: "🎯", pt: "Alvo", es: "Objetivo", en: "Target", cat: "item" },
+  { id: 1,  emoji: "🍎", pt: "Maçã",             es: "Manzana",        en: "Apple",        cat: "fruit"    },
+  { id: 2,  emoji: "🐉", pt: "Dragão",            es: "Dragón",         en: "Dragon",       cat: "creature" },
+  { id: 3,  emoji: "⚔️", pt: "Espada",            es: "Espada",         en: "Sword",        cat: "item"     },
+  { id: 4,  emoji: "🌙", pt: "Lua",               es: "Luna",           en: "Moon",         cat: "nature"   },
+  { id: 5,  emoji: "🔥", pt: "Fogo",              es: "Fuego",          en: "Fire",         cat: "element"  },
+  { id: 6,  emoji: "💎", pt: "Diamante",          es: "Diamante",       en: "Diamond",      cat: "item"     },
+  { id: 7,  emoji: "🏰", pt: "Castelo",           es: "Castillo",       en: "Castle",       cat: "place"    },
+  { id: 8,  emoji: "🦊", pt: "Raposa",            es: "Zorro",          en: "Fox",          cat: "animal"   },
+  { id: 9,  emoji: "🌊", pt: "Onda",              es: "Ola",            en: "Wave",         cat: "nature"   },
+  { id: 10, emoji: "🎯", pt: "Alvo",              es: "Objetivo",       en: "Target",       cat: "item"     },
   { id: 11, emoji: "🌸", pt: "Flor de Cerejeira", es: "Flor de Cerezo", en: "Cherry Blossom", cat: "nature" },
-  { id: 12, emoji: "🎮", pt: "Videogame", es: "Videojuego", en: "Video Game", cat: "item" },
+  { id: 12, emoji: "🎮", pt: "Videogame",         es: "Videojuego",     en: "Video Game",   cat: "item"     },
   // AÇÕES
-  { id: 13, emoji: "🏃", pt: "Correr", es: "Correr", en: "Run", cat: "action" },
-  { id: 14, emoji: "💤", pt: "Dormir", es: "Dormir", en: "Sleep", cat: "action" },
-  { id: 15, emoji: "🎵", pt: "Cantar", es: "Cantar", en: "Sing", cat: "action" },
-  { id: 16, emoji: "📖", pt: "Ler", es: "Leer", en: "Read", cat: "action" },
-  { id: 17, emoji: "🍳", pt: "Cozinhar", es: "Cocinar", en: "Cook", cat: "action" },
-  { id: 18, emoji: "✈️", pt: "Voar", es: "Volar", en: "Fly", cat: "action" },
-  { id: 19, emoji: "💃", pt: "Dançar", es: "Bailar", en: "Dance", cat: "action" },
-  { id: 20, emoji: "🤝", pt: "Ajudar", es: "Ayudar", en: "Help", cat: "action" },
+  { id: 13, emoji: "🏃", pt: "Correr",  es: "Correr",  en: "Run",   cat: "action" },
+  { id: 14, emoji: "💤", pt: "Dormir",  es: "Dormir",  en: "Sleep", cat: "action" },
+  { id: 15, emoji: "🎵", pt: "Cantar",  es: "Cantar",  en: "Sing",  cat: "action" },
+  { id: 16, emoji: "📖", pt: "Ler",     es: "Leer",    en: "Read",  cat: "action" },
+  { id: 17, emoji: "🍳", pt: "Cozinhar",es: "Cocinar", en: "Cook",  cat: "action" },
+  { id: 18, emoji: "✈️", pt: "Voar",    es: "Volar",   en: "Fly",   cat: "action" },
+  { id: 19, emoji: "💃", pt: "Dançar",  es: "Bailar",  en: "Dance", cat: "action" },
+  { id: 20, emoji: "🤝", pt: "Ajudar",  es: "Ayudar",  en: "Help",  cat: "action" },
   // LUGARES
   { id: 21, emoji: "🏔️", pt: "Montanha", es: "Montaña", en: "Mountain", cat: "place" },
-  { id: 22, emoji: "🌋", pt: "Vulcão", es: "Volcán", en: "Volcano", cat: "place" },
-  { id: 23, emoji: "🏖️", pt: "Praia", es: "Playa", en: "Beach", cat: "place" },
-  { id: 24, emoji: "🌆", pt: "Cidade", es: "Ciudad", en: "City", cat: "place" },
-  // NATUREZA
-  { id: 25, emoji: "⚡", pt: "Relâmpago", es: "Rayo", en: "Lightning", cat: "element" },
-  { id: 26, emoji: "❄️", pt: "Neve", es: "Nieve", en: "Snow", cat: "element" },
-  { id: 27, emoji: "🌪️", pt: "Tornado", es: "Tornado", en: "Tornado", cat: "element" },
-  { id: 28, emoji: "🌈", pt: "Arco-íris", es: "Arcoíris", en: "Rainbow", cat: "nature" },
+  { id: 22, emoji: "🌋", pt: "Vulcão",   es: "Volcán",  en: "Volcano",  cat: "place" },
+  { id: 23, emoji: "🏖️", pt: "Praia",    es: "Playa",   en: "Beach",    cat: "place" },
+  { id: 24, emoji: "🌆", pt: "Cidade",   es: "Ciudad",  en: "City",     cat: "place" },
+  // ELEMENTOS
+  { id: 25, emoji: "⚡",  pt: "Relâmpago", es: "Rayo",    en: "Lightning", cat: "element" },
+  { id: 26, emoji: "❄️",  pt: "Neve",      es: "Nieve",   en: "Snow",      cat: "element" },
+  { id: 27, emoji: "🌪️", pt: "Tornado",   es: "Tornado", en: "Tornado",   cat: "element" },
+  { id: 28, emoji: "🌈", pt: "Arco-íris", es: "Arcoíris",en: "Rainbow",   cat: "nature"  },
   // CRIATURAS
   { id: 29, emoji: "🐺", pt: "Lobo", es: "Lobo", en: "Wolf", cat: "animal" },
   { id: 30, emoji: "🦁", pt: "Leão", es: "León", en: "Lion", cat: "animal" },
@@ -46,12 +76,12 @@ const CARD_DB = [
 // ══════════════════════════════════════════════
 // LEVEL CONFIG
 // ══════════════════════════════════════════════
-const LEVELS = [
-  { id: 1, name: "Aprendiz", nameEs: "Aprendiz", nameEn: "Apprentice", pairs: 4, timeLimit: 120, color: "#00ff88", glowColor: "#00ff8855", stars: 1 },
-  { id: 2, name: "Guerreiro", nameEs: "Guerrero", nameEn: "Warrior", pairs: 6, timeLimit: 100, color: "#00ccff", glowColor: "#00ccff55", stars: 2 },
-  { id: 3, name: "Mestre", nameEs: "Maestro", nameEn: "Master", pairs: 8, timeLimit: 80, color: "#ff00ff", glowColor: "#ff00ff55", stars: 3 },
-  { id: 4, name: "Lenda", nameEs: "Leyenda", nameEn: "Legend", pairs: 10, timeLimit: 60, color: "#ff9900", glowColor: "#ff990055", stars: 4 },
-  { id: 5, name: "Deus", nameEs: "Dios", nameEn: "God", pairs: 12, timeLimit: 45, color: "#ff0044", glowColor: "#ff004455", stars: 5 },
+const LEVELS: Level[] = [
+  { id: 1, name: "Aprendiz",  nameEs: "Aprendiz", nameEn: "Apprentice", pairs: 4,  timeLimit: 120, color: "#00ff88", glowColor: "#00ff8855", stars: 1 },
+  { id: 2, name: "Guerreiro", nameEs: "Guerrero", nameEn: "Warrior",    pairs: 6,  timeLimit: 100, color: "#00ccff", glowColor: "#00ccff55", stars: 2 },
+  { id: 3, name: "Mestre",    nameEs: "Maestro",  nameEn: "Master",     pairs: 8,  timeLimit: 80,  color: "#ff00ff", glowColor: "#ff00ff55", stars: 3 },
+  { id: 4, name: "Lenda",     nameEs: "Leyenda",  nameEn: "Legend",     pairs: 10, timeLimit: 60,  color: "#ff9900", glowColor: "#ff990055", stars: 4 },
+  { id: 5, name: "Deus",      nameEs: "Dios",     nameEn: "God",        pairs: 12, timeLimit: 45,  color: "#ff0044", glowColor: "#ff004455", stars: 5 },
 ];
 
 // ══════════════════════════════════════════════
@@ -66,9 +96,9 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function buildDeck(pairs) {
+function buildDeck(pairs: number): DeckCard[] {
   const selected = shuffle(CARD_DB).slice(0, pairs);
-  const deck = [];
+  const deck: DeckCard[] = [];
   selected.forEach((card) => {
     deck.push({ ...card, cardId: `${card.id}-pt`, lang: "pt", matchId: card.id });
     deck.push({ ...card, cardId: `${card.id}-es`, lang: "es", matchId: card.id });
@@ -80,28 +110,46 @@ function buildDeck(pairs) {
 // ══════════════════════════════════════════════
 // CARD COMPONENT
 // ══════════════════════════════════════════════
-function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const cardRef = useRef(null);
+interface Card3DProps {
+  card: DeckCard;
+  isFlipped: boolean;
+  isMatched: boolean;
+  isWrong: boolean;
+  onClick: (card: DeckCard) => void;
+  delay?: number;
+}
 
-  const handleMouseMove = (e) => {
-    if (!isFlipped || isMatched) return;
+function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }: Card3DProps) {
+  // BUG FIX: tilt vai no wrapper externo (perspective container),
+  // NÃO na face frontal — senão o backfaceVisibility quebra e a
+  // carta fica visível dos dois lados ao mesmo tempo.
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isFlipped || isMatched || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const dx = (e.clientX - cx) / (rect.width / 2);
     const dy = (e.clientY - cy) / (rect.height / 2);
-    setTilt({ x: -dy * 12, y: dx * 12 });
+    setTilt({ x: -dy * 8, y: dx * 8 });
   };
 
   const handleMouseLeave = () => setTilt({ x: 0, y: 0 });
 
-  const langColors = { pt: "#00ff88", es: "#ff9900", en: "#00ccff" };
-  const langLabels = { pt: "PT", es: "ES", en: "EN" };
+  const langColors: Record<string, string> = { pt: "#00ff88", es: "#ff9900", en: "#00ccff" };
+  const langLabels: Record<string, string> = { pt: "PT", es: "ES", en: "EN" };
   const langColor = langColors[card.lang];
 
-  const wordMap = { pt: card.pt, es: card.es, en: card.en };
+  const wordMap: Record<string, string> = { pt: card.pt, es: card.es, en: card.en };
   const word = wordMap[card.lang];
+
+  // Transform correto: quando virado, aplica rotateY(180deg) + tilt no wrapper.
+  // As faces usam apenas backfaceVisibility e rotateY(180deg) estático — sem tilt próprio.
+  const wrapperTransform = isFlipped
+    ? `rotateY(180deg) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`
+    : `rotateY(0deg)`;
 
   return (
     <div
@@ -123,9 +171,7 @@ function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
           height: "100%",
           position: "relative",
           transformStyle: "preserve-3d",
-          transform: isFlipped
-            ? `rotateY(180deg) rotateX(${tilt.x}deg) rotateY(calc(180deg + ${tilt.y}deg))`
-            : `rotateY(0deg)`,
+          transform: wrapperTransform,
           transition: "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
           filter: isMatched
             ? `drop-shadow(0 0 12px ${langColor}) brightness(1.2)`
@@ -141,6 +187,7 @@ function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
             width: "100%",
             height: "100%",
             backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
             borderRadius: "10px",
             background: "linear-gradient(135deg, #0a0f1e 0%, #111830 50%, #0d1425 100%)",
             border: "1px solid #1e3a5f",
@@ -152,10 +199,9 @@ function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
           }}
         >
           <div style={{
-            fontSize: "28px",
-            opacity: 0.15,
-            background: "repeating-linear-gradient(45deg, #00ccff22 0px, transparent 2px, transparent 20px, #00ccff22 22px)",
             position: "absolute", inset: 0,
+            background: "repeating-linear-gradient(45deg, #00ccff22 0px, transparent 2px, transparent 20px, #00ccff22 22px)",
+            opacity: 0.15,
           }} />
           <div style={{
             width: "40px", height: "40px",
@@ -164,16 +210,18 @@ function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
             border: "1px solid #00ccff44",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: "18px",
+            position: "relative",
           }}>🌐</div>
         </div>
 
-        {/* FRONT */}
+        {/* FRONT — transform estático rotateY(180deg) apenas, sem tilt próprio */}
         <div
           style={{
             position: "absolute",
             width: "100%",
             height: "100%",
             backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
             borderRadius: "10px",
             background: isMatched
@@ -188,7 +236,6 @@ function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
             padding: "8px 4px",
             boxShadow: `0 0 ${isMatched ? 20 : 8}px ${langColor}33`,
             overflow: "hidden",
-            transform: `rotateY(180deg) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
           }}
         >
           {/* Lang badge */}
@@ -202,7 +249,7 @@ function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
           }}>{langLabels[card.lang]}</div>
 
           {/* Emoji */}
-          <div style={{ fontSize: "30px", lineHeight: 1, filter: isMatched ? "none" : "saturate(0.8)" }}>
+          <div style={{ fontSize: "30px", lineHeight: "1", filter: isMatched ? "none" : "saturate(0.8)" }}>
             {card.emoji}
           </div>
 
@@ -213,7 +260,7 @@ function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
             color: isMatched ? langColor : "#e0e8ff",
             fontWeight: "bold",
             textAlign: "center",
-            lineHeight: 1.2,
+            lineHeight: "1.2",
             textShadow: isMatched ? `0 0 8px ${langColor}` : "none",
             padding: "0 4px",
           }}>{word}</div>
@@ -238,8 +285,13 @@ function Card3D({ card, isFlipped, isMatched, isWrong, onClick, delay = 0 }) {
 // ══════════════════════════════════════════════
 // LEVEL SELECT SCREEN
 // ══════════════════════════════════════════════
-function LevelSelect({ onSelect, scores }) {
-  const [hovered, setHovered] = useState(null);
+interface LevelSelectProps {
+  onSelect: (lvl: Level) => void;
+  scores: Record<number, number>;
+}
+
+function LevelSelect({ onSelect, scores }: LevelSelectProps) {
+  const [hovered, setHovered] = useState<number | null>(null);
 
   return (
     <div style={{
@@ -274,7 +326,6 @@ function LevelSelect({ onSelect, scores }) {
           background: "linear-gradient(90deg, #00ff88, #00ccff, #ff00ff)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
-          textShadow: "none",
           letterSpacing: "-1px",
         }}>CARD GAME</h1>
         <p style={{ color: "#4a6080", fontSize: "12px", marginTop: "8px", letterSpacing: "3px" }}>
@@ -310,7 +361,9 @@ function LevelSelect({ onSelect, scores }) {
                 cursor: "pointer",
                 transition: "all 0.3s ease",
                 textAlign: "center",
-                boxShadow: isHov ? `0 0 24px ${lvl.glowColor}, 0 0 48px ${lvl.glowColor}` : `0 0 8px ${lvl.glowColor}`,
+                boxShadow: isHov
+                  ? `0 0 24px ${lvl.glowColor}, 0 0 48px ${lvl.glowColor}`
+                  : `0 0 8px ${lvl.glowColor}`,
                 transform: isHov ? "translateY(-6px) scale(1.05)" : "none",
                 animationDelay: `${i * 100}ms`,
               }}
@@ -332,7 +385,7 @@ function LevelSelect({ onSelect, scores }) {
               }}>
                 {lvl.pairs * 3} cartas · {lvl.timeLimit}s
               </div>
-              {best && (
+              {best !== undefined && (
                 <div style={{ fontSize: "9px", color: lvl.color, marginTop: "4px" }}>
                   ✓ {best}pts
                 </div>
@@ -344,9 +397,9 @@ function LevelSelect({ onSelect, scores }) {
 
       <p style={{
         color: "#1e3a5f", fontSize: "11px", marginTop: "32px",
-        textAlign: "center", maxWidth: "300px", lineHeight: 1.6,
+        textAlign: "center", maxWidth: "300px", lineHeight: "1.6",
       }}>
-        Monte trios de cartas com a mesma palavra em 3 idiomas.<br/>
+        Monte trios de cartas com a mesma palavra em 3 idiomas.<br />
         Emoji + ação + objeto em cada fase.
       </p>
     </div>
@@ -356,56 +409,87 @@ function LevelSelect({ onSelect, scores }) {
 // ══════════════════════════════════════════════
 // GAME SCREEN
 // ══════════════════════════════════════════════
-function GameScreen({ level, onBack, onWin, onLose }) {
-  const [deck, setDeck] = useState([]);
-  const [flipped, setFlipped] = useState([]);
-  const [matched, setMatched] = useState(new Set());
-  const [wrong, setWrong] = useState([]);
+interface GameScreenProps {
+  level: Level;
+  onBack: () => void;
+  onWin: (score: number) => void;
+  onLose: (score: number) => void;
+}
+
+function GameScreen({ level, onBack, onWin, onLose }: GameScreenProps) {
+  const [deck, setDeck] = useState<DeckCard[]>([]);
+  const [flipped, setFlipped] = useState<DeckCard[]>([]);
+  const [matched, setMatched] = useState<Set<number>>(new Set());
+  const [wrong, setWrong] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(level.timeLimit);
   const [moves, setMoves] = useState(0);
   const [combo, setCombo] = useState(0);
   const [shake, setShake] = useState(false);
   const [dealAnim, setDealAnim] = useState(false);
-  const [lastMatch, setLastMatch] = useState(null);
-  const timerRef = useRef(null);
+  const [lastMatch, setLastMatch] = useState<{ pts: number; combo: number } | null>(null);
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockRef = useRef(false);
 
-  // Init
+  // BUG FIX: refs para callbacks estáveis nos efeitos
+  const onWinRef = useRef(onWin);
+  const onLoseRef = useRef(onLose);
+  useEffect(() => { onWinRef.current = onWin; }, [onWin]);
+  useEffect(() => { onLoseRef.current = onLose; }, [onLose]);
+
+  const scoreRef = useRef(score);
+  useEffect(() => { scoreRef.current = score; }, [score]);
+
+  const matchedRef = useRef(matched);
+  useEffect(() => { matchedRef.current = matched; }, [matched]);
+
+  const timeLeftRef = useRef(timeLeft);
+  useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
+
+  // Init deck + timer
   useEffect(() => {
     const d = buildDeck(level.pairs);
     setDeck(d);
     setDealAnim(true);
-    setTimeout(() => setDealAnim(false), 800);
+    const animTimer = setTimeout(() => setDealAnim(false), 800);
 
     timerRef.current = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
-          clearInterval(timerRef.current);
+          clearInterval(timerRef.current!);
           return 0;
         }
         return t - 1;
       });
     }, 1000);
-    return () => clearInterval(timerRef.current);
+
+    return () => {
+      clearInterval(timerRef.current!);
+      clearTimeout(animTimer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Time out → lose
   useEffect(() => {
-    if (timeLeft === 0 && matched.size < level.pairs) onLose(score);
-  }, [timeLeft]);
+    if (timeLeft === 0 && matchedRef.current.size < level.pairs) {
+      onLoseRef.current(scoreRef.current);
+    }
+  }, [timeLeft, level.pairs]);
 
   // Win check
   useEffect(() => {
     if (deck.length > 0 && matched.size === level.pairs) {
-      clearInterval(timerRef.current);
-      const bonus = timeLeft * 5;
-      const total = score + bonus;
-      setTimeout(() => onWin(total), 800);
+      clearInterval(timerRef.current!);
+      const bonus = timeLeftRef.current * 5;
+      const total = scoreRef.current + bonus;
+      const t = setTimeout(() => onWinRef.current(total), 800);
+      return () => clearTimeout(t);
     }
-  }, [matched]);
+  }, [matched, deck.length, level.pairs]);
 
-  const handleFlip = useCallback((card) => {
+  const handleFlip = useCallback((card: DeckCard) => {
     if (lockRef.current) return;
     if (flipped.find((c) => c.cardId === card.cardId)) return;
     if (matched.has(card.matchId)) return;
@@ -418,12 +502,14 @@ function GameScreen({ level, onBack, onWin, onLose }) {
       setMoves((m) => m + 1);
       const allSame = newFlipped.every((c) => c.matchId === newFlipped[0].matchId);
       if (allSame) {
-        const newCombo = combo + 1;
-        setCombo(newCombo);
-        const pts = 100 + newCombo * 50;
-        setScore((s) => s + pts);
-        setLastMatch({ pts, combo: newCombo });
-        setTimeout(() => setLastMatch(null), 1200);
+        setCombo((prev) => {
+          const newCombo = prev + 1;
+          const pts = 100 + newCombo * 50;
+          setScore((s) => s + pts);
+          setLastMatch({ pts, combo: newCombo });
+          setTimeout(() => setLastMatch(null), 1200);
+          return newCombo;
+        });
         setTimeout(() => {
           setMatched((m) => new Set([...m, newFlipped[0].matchId]));
           setFlipped([]);
@@ -441,12 +527,15 @@ function GameScreen({ level, onBack, onWin, onLose }) {
         }, 900);
       }
     }
-  }, [flipped, matched, combo, score]);
+  }, [flipped, matched]);
 
   const timerPct = (timeLeft / level.timeLimit) * 100;
   const timerColor = timerPct > 50 ? level.color : timerPct > 25 ? "#ff9900" : "#ff0044";
   const matchedCount = matched.size;
   const totalPairs = level.pairs;
+
+  // Suppress unused warning
+  void moves;
 
   return (
     <div style={{
@@ -483,7 +572,9 @@ function GameScreen({ level, onBack, onWin, onLose }) {
         >← Voltar</button>
 
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "9px", color: "#4a6080", letterSpacing: "2px" }}>NÍVEL {level.id} — {level.name.toUpperCase()}</div>
+          <div style={{ fontSize: "9px", color: "#4a6080", letterSpacing: "2px" }}>
+            NÍVEL {level.id} — {level.name.toUpperCase()}
+          </div>
           <div style={{
             height: "4px", background: "#0a1525", borderRadius: "2px", marginTop: "4px",
             position: "relative", overflow: "hidden",
@@ -500,7 +591,10 @@ function GameScreen({ level, onBack, onWin, onLose }) {
         </div>
 
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "18px", fontWeight: "bold", color: timerColor, textShadow: `0 0 12px ${timerColor}` }}>
+          <div style={{
+            fontSize: "18px", fontWeight: "bold",
+            color: timerColor, textShadow: `0 0 12px ${timerColor}`,
+          }}>
             {String(Math.floor(timeLeft / 60)).padStart(2, "0")}:{String(timeLeft % 60).padStart(2, "0")}
           </div>
         </div>
@@ -539,7 +633,7 @@ function GameScreen({ level, onBack, onWin, onLose }) {
         </div>
       )}
 
-      {/* Progress lang indicators */}
+      {/* Lang indicators */}
       <div style={{
         display: "flex", justifyContent: "center", gap: "20px",
         padding: "8px", fontSize: "11px", color: "#2a4060",
@@ -566,14 +660,14 @@ function GameScreen({ level, onBack, onWin, onLose }) {
         }}
       >
         {deck.map((card, i) => {
-          const isFlipped = !!flipped.find((c) => c.cardId === card.cardId) || matched.has(card.matchId);
+          const isFlippedCard = !!flipped.find((c) => c.cardId === card.cardId) || matched.has(card.matchId);
           const isMatched = matched.has(card.matchId);
           const isWrong = wrong.includes(card.cardId);
           return (
             <div
               key={card.cardId}
               style={{
-                animation: dealAnim ? `dealIn 0.4s ease both` : "none",
+                animation: dealAnim ? "dealIn 0.4s ease both" : "none",
                 animationDelay: `${i * 30}ms`,
                 opacity: isMatched ? 0.5 : 1,
                 transition: "opacity 0.5s ease",
@@ -581,7 +675,7 @@ function GameScreen({ level, onBack, onWin, onLose }) {
             >
               <Card3D
                 card={card}
-                isFlipped={isFlipped}
+                isFlipped={isFlippedCard}
                 isMatched={isMatched}
                 isWrong={isWrong}
                 onClick={handleFlip}
@@ -594,21 +688,21 @@ function GameScreen({ level, onBack, onWin, onLose }) {
 
       <style>{`
         @keyframes floatUp {
-          0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+          0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
           100% { opacity: 0; transform: translateX(-50%) translateY(-40px); }
         }
         @keyframes dealIn {
-          0% { opacity: 0; transform: scale(0.5) translateY(-20px); }
+          0%   { opacity: 0; transform: scale(0.5) translateY(-20px); }
           100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes shakeBoard {
           0%,100% { transform: translateX(0); }
-          25% { transform: translateX(-6px); }
-          75% { transform: translateX(6px); }
+          25%     { transform: translateX(-6px); }
+          75%     { transform: translateX(6px); }
         }
         @keyframes pulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.15); }
+          0%   { transform: scale(1); }
+          50%  { transform: scale(1.15); }
           100% { transform: scale(1); }
         }
       `}</style>
@@ -619,9 +713,20 @@ function GameScreen({ level, onBack, onWin, onLose }) {
 // ══════════════════════════════════════════════
 // RESULT SCREEN
 // ══════════════════════════════════════════════
-function ResultScreen({ won, score, level, onReplay, onBack }) {
+interface ResultScreenProps {
+  won: boolean;
+  score: number;
+  level: Level;
+  onReplay: () => void;
+  onBack: () => void;
+}
+
+function ResultScreen({ won, score, level, onReplay, onBack }: ResultScreenProps) {
   const [show, setShow] = useState(false);
-  useEffect(() => { setTimeout(() => setShow(true), 100); }, []);
+  useEffect(() => {
+    const t = setTimeout(() => setShow(true), 100);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div style={{
@@ -708,9 +813,7 @@ function ResultScreen({ won, score, level, onReplay, onBack }) {
               boxShadow: `0 0 16px ${level.glowColor}`,
               transition: "all 0.2s",
             }}
-          >
-            ↺ Jogar Novamente
-          </button>
+          >↺ Jogar Novamente</button>
           <button
             onClick={onBack}
             style={{
@@ -725,9 +828,7 @@ function ResultScreen({ won, score, level, onReplay, onBack }) {
               letterSpacing: "1px",
               transition: "all 0.2s",
             }}
-          >
-            ☰ Níveis
-          </button>
+          >☰ Níveis</button>
         </div>
       </div>
     </div>
@@ -738,33 +839,40 @@ function ResultScreen({ won, score, level, onReplay, onBack }) {
 // MAIN APP
 // ══════════════════════════════════════════════
 export default function LinguaTrioGame() {
-  const [screen, setScreen] = useState("levels"); // levels | game | result
-  const [selectedLevel, setSelectedLevel] = useState(null);
-  const [gameResult, setGameResult] = useState(null); // { won, score }
-  const [scores, setScores] = useState({});
+  const [screen, setScreen] = useState<"levels" | "game" | "result">("levels");
+  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
+  const [gameResult, setGameResult] = useState<{ won: boolean; score: number } | null>(null);
+  const [scores, setScores] = useState<Record<number, number>>({});
 
-  const handleSelectLevel = (lvl) => {
+  // BUG FIX: gameKey estável — só muda ao iniciar NOVO jogo,
+  // nunca em re-renders. Antes usava Date.now() direto no JSX
+  // o que causava remount em todo render e perda de estado.
+  const [gameKey, setGameKey] = useState(0);
+
+  const handleSelectLevel = (lvl: Level) => {
     setSelectedLevel(lvl);
+    setGameKey((k) => k + 1); // nova key apenas ao selecionar nível
     setScreen("game");
   };
 
-  const handleWin = (score) => {
+  const handleWin = (score: number) => {
     setScores((s) => ({
       ...s,
-      [selectedLevel.id]: Math.max(s[selectedLevel.id] || 0, score),
+      [selectedLevel!.id]: Math.max(s[selectedLevel!.id] || 0, score),
     }));
     setGameResult({ won: true, score });
     setScreen("result");
   };
 
-  const handleLose = (score) => {
+  const handleLose = (score: number) => {
     setGameResult({ won: false, score });
     setScreen("result");
   };
 
   const handleReplay = () => {
-    setScreen("game");
+    setGameKey((k) => k + 1); // força remount limpo só aqui
     setGameResult(null);
+    setScreen("game");
   };
 
   const handleBack = () => {
@@ -775,7 +883,7 @@ export default function LinguaTrioGame() {
   if (screen === "game" && selectedLevel) {
     return (
       <GameScreen
-        key={`game-${Date.now()}`}
+        key={gameKey}
         level={selectedLevel}
         onBack={handleBack}
         onWin={handleWin}
