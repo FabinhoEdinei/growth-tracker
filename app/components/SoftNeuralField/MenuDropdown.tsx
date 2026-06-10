@@ -29,6 +29,13 @@ const menuItems: MenuItem[] = [
   gradient: 'linear-gradient(135deg,rgba(255,140,66,0.2),rgba(168,85,247,0.2))',
 },
 {
+  icon: '🎬',
+  label: 'game',
+  href: '/Game/game',
+  badge: 'Dev',
+  badgeColor: '#ff8e42',
+  gradient: 'linear-gradient(135deg,rgba(255,140,66,0.2),rgba(168,85,247,0.2))',
+{
   icon: '📖',
   label: 'Manga',
   href: '/manga',
