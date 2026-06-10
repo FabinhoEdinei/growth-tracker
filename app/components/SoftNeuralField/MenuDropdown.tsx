@@ -31,7 +31,7 @@ const menuItems: MenuItem[] = [
 {
   icon: '🎮',
   label: 'game',
-  href: '/game,
+  href: '/game',
   badge: 'Dev',
   badgeColor: '#FA8D44',
   gradient: 'linear-gradient(135deg,rgba(255,140,66,0.2),rgba(168,85,247,0.2))'},
