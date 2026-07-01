@@ -1,6 +1,6 @@
 ---
-title: "Seguindo a saga do agora"
-slug: "modulo-3-silencio-ativo-imersao"
+title: "Seguindo  do dia a dia e a saga do agora"
+slug: "modulo-3-ativo-imersao-historia"
 date: "2026-07-01"
 author: "Fabio Edinei"
 category: "Jornada"
